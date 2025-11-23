@@ -70,7 +70,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   useEffect(() => {
     if (userId) {
       // 1. RECHERCHE OPTIMISTE (CACHE)
-      // On regarde si on connait déjà cet utilisateur via le serveur actif ou les DMs
       const cachedMember = activeServer?.members?.find((m: any) => m.user.id === userId);
       const cachedDMUser = conversations.flatMap(c => c.users).find(u => u.id === userId);
       const cachedSelf = isMe ? currentUser : null;
@@ -78,14 +77,14 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
       const cachedUser = cachedMember?.user || cachedDMUser || cachedSelf;
 
       if (cachedUser) {
-        // Si trouvé, on affiche immédiatement les infos de base !
         setProfile({
             id: cachedUser.id,
             username: cachedUser.username,
             discriminator: cachedUser.discriminator,
             avatarUrl: cachedUser.avatarUrl,
-            // Les champs suivants resteront undefined le temps du fetch
-            bannerUrl: null, 
+            // ✅ CORRECTION : On essaie de récupérer la bannière du cache aussi !
+            // (Caste en 'any' car TypeScript ne sait pas toujours si bannerUrl est dans la liste des membres)
+            bannerUrl: (cachedUser as any).bannerUrl || null, 
             bio: null,
             createdAt: undefined
         });
@@ -94,9 +93,10 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
       }
 
       setLoading(true);
+      
       // 2. RECHERCHE COMPLÈTE (API)
       api.get(`/users/${userId}`)
-         .then(res => setProfile(res.data)) // Remplace le profil partiel par le complet
+         .then(res => setProfile(res.data))
          .catch(console.error)
          .finally(() => setLoading(false));
     }
