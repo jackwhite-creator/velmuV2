@@ -9,8 +9,12 @@ export const ChatService = {
       take: limit,
       skip: cursor ? 1 : 0,
       cursor: cursor ? { id: cursor } : undefined,
-      where: { channelId }, // Filtre simple et efficace grâce à l'index
-      orderBy: { createdAt: 'desc' },
+      where: { channelId },
+      // ✅ CORRECTION : Tri stable (Date PUIS Id) pour éviter les sauts de pagination sur Neon
+      orderBy: [
+        { createdAt: 'desc' },
+        { id: 'desc' }
+      ],
       include: {
         user: { select: { id: true, username: true, discriminator: true, avatarUrl: true } },
         attachments: true,
@@ -31,8 +35,12 @@ export const ChatService = {
       take: limit,
       skip: cursor ? 1 : 0,
       cursor: cursor ? { id: cursor } : undefined,
-      where: { conversationId }, // Filtre simple
-      orderBy: { createdAt: 'desc' },
+      where: { conversationId },
+      // ✅ CORRECTION ICI AUSSI
+      orderBy: [
+        { createdAt: 'desc' },
+        { id: 'desc' }
+      ],
       include: {
         user: { select: { id: true, username: true, discriminator: true, avatarUrl: true } },
         attachments: true,
@@ -56,9 +64,6 @@ export const ChatService = {
     conversationId?: string;
     replyToId?: string;
   }) {
-    // Note: La validation des droits (Member/Friend) se fait dans le contrôleur maintenant
-    // pour bien séparer la logique HTTP de la logique DB.
-
     return await prisma.message.create({
       data: {
         content: data.content,
@@ -87,7 +92,6 @@ export const ChatService = {
     });
   },
   
-  // Update et Delete restent similaires, on peut les garder ici ou les refactoriser plus tard
   async deleteMessage(userId: string, messageId: string) {
       const msg = await prisma.message.findUnique({ where: { id: messageId }});
       if (!msg || msg.userId !== userId) throw new Error("Unauthorized");
