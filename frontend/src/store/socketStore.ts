@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
 import { useAuthStore } from './authStore';
-import { useServerStore } from './serverStore';
 
 interface SocketState {
   socket: Socket | null;
@@ -27,10 +26,12 @@ export const useSocketStore = create<SocketState>((set, get) => ({
 
     // 3. Initialisation propre
     const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
-    const newSocket = io('BASE_URL', {
+    
+    // ⚠️ CORRECTION ICI : On utilise la variable BASE_URL (sans guillemets !)
+    const newSocket = io(BASE_URL, {
       auth: { token },
-      reconnection: true,       // Essaye de se reconnecter auto
-      reconnectionAttempts: 5,  // Max 5 fois
+      reconnection: true,
+      reconnectionAttempts: 5,
     });
 
     // 4. Gestion des événements de base (Debug & État)
@@ -48,9 +49,6 @@ export const useSocketStore = create<SocketState>((set, get) => ({
       console.error('Socket connection error:', err);
     });
     
-    // --- ICI ON BRANCHERA LES ÉCOUTEURS GLOBAUX PLUS TARD ---
-    // Ex: newSocket.on('notification', ...)
-
     set({ socket: newSocket });
   },
 
