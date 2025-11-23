@@ -19,44 +19,57 @@ const Icons = {
 interface UserProfileModalProps { userId: string | null; onClose: () => void; onOpenSettings: () => void; }
 interface FullProfile { id: string; username: string; discriminator: string; avatarUrl: string | null; bannerUrl: string | null; bio: string | null; createdAt: string; }
 
-// ✅ NOUVEAU : Le composant Skeleton pour le profil
+// ✅ SKELETON PIXEL-PERFECT
+// Il utilise exactement les mêmes classes de layout que le composant réel pour éviter le "saut"
 const ProfileSkeleton = () => (
   <div className="bg-slate-900 flex flex-col min-h-[500px] animate-pulse">
-     {/* Bannière Skeleton */}
-     <div className="h-40 w-full bg-slate-800/80 relative">
-         <div className="absolute top-4 right-4 h-9 w-9 bg-slate-700/50 rounded-full"></div>
-     </div>
+     {/* Bannière : h-40 comme le vrai */}
+     <div className="h-40 w-full bg-slate-800" />
+     
      <div className="px-8 relative">
+        {/* Ligne Avatar + Boutons : Margins identiques (-mt-16 mb-4) */}
         <div className="flex justify-between items-end -mt-16 mb-4">
-           {/* Avatar Skeleton */}
+           {/* Avatar : w-32 h-32 p-[6px] */}
            <div className="w-32 h-32 rounded-full bg-slate-900 p-[6px]">
-               <div className="w-full h-full rounded-full bg-slate-700/80"></div>
+               <div className="w-full h-full rounded-full bg-slate-700"></div>
            </div>
-           {/* Boutons d'action Skeleton */}
+           
+           {/* Boutons Actions */}
            <div className="flex gap-3 mb-2">
-               <div className="h-10 w-36 bg-slate-700/80 rounded-md"></div>
-               <div className="h-10 w-10 bg-slate-700/80 rounded-md"></div>
+               <div className="h-10 w-32 bg-slate-700 rounded-md"></div> {/* Bouton principal */}
+               <div className="h-10 w-10 bg-slate-700 rounded-md"></div> {/* Bouton menu */}
            </div>
         </div>
-        {/* Info User Skeleton */}
-        <div className="mb-6 space-y-3">
-            <div className="h-8 w-64 bg-slate-700/80 rounded"></div>
-            <div className="h-4 w-48 bg-slate-700/50 rounded"></div>
+
+        {/* Info User : mb-6 */}
+        <div className="mb-6">
+            <div className="flex items-baseline gap-2">
+                <div className="h-9 w-48 bg-slate-700 rounded mb-2"></div> {/* Pseudo (taille approx text-3xl) */}
+            </div>
+            <div className="h-4 w-32 bg-slate-700/50 rounded mt-2"></div> {/* Date membre */}
         </div>
      </div>
-     {/* Onglets Skeleton */}
-     <div className="px-8 border-b border-slate-800 flex gap-8 mt-2">
-         <div className="pb-3 h-4 w-24 bg-slate-700/50 rounded mb-1"></div>
-         <div className="pb-3 h-4 w-32 bg-slate-700/50 rounded mb-1"></div>
-         <div className="pb-3 h-4 w-28 bg-slate-700/50 rounded mb-1"></div>
+
+     {/* Onglets : px-8 border-b */}
+     <div className="px-8 border-b border-slate-800 flex gap-8">
+         <div className="pb-3 w-24">
+            <div className="h-4 bg-slate-700 rounded w-full"></div>
+         </div>
+         <div className="pb-3 w-32">
+            <div className="h-4 bg-slate-700/50 rounded w-full"></div>
+         </div>
+         <div className="pb-3 w-28">
+            <div className="h-4 bg-slate-700/50 rounded w-full"></div>
+         </div>
      </div>
-     {/* Contenu Skeleton (Bio) */}
-     <div className="flex-1 p-8 bg-slate-900/50 mt-1 space-y-4">
-         <div className="h-4 w-32 bg-slate-700/50 rounded"></div>
+
+     {/* Contenu Bio : p-8 min-h-[250px] */}
+     <div className="flex-1 p-8 bg-slate-900/50 min-h-[250px]">
+         <div className="h-3 w-24 bg-slate-700/50 rounded mb-3"></div> {/* Titre "À PROPOS" */}
          <div className="space-y-2">
-             <div className="h-3 w-full bg-slate-700/50 rounded"></div>
-             <div className="h-3 w-[90%] bg-slate-700/50 rounded"></div>
-             <div className="h-3 w-[95%] bg-slate-700/50 rounded"></div>
+             <div className="h-3 w-full bg-slate-700/30 rounded"></div>
+             <div className="h-3 w-[90%] bg-slate-700/30 rounded"></div>
+             <div className="h-3 w-[95%] bg-slate-700/30 rounded"></div>
          </div>
      </div>
   </div>
@@ -83,10 +96,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   useEffect(() => {
     if (userId) {
       setLoading(true);
-      // Petit délai artificiel pour apprécier le skeleton (à retirer en prod si l'API est ultra rapide)
-      // setTimeout(() => {
-        api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
-      // }, 500);
+      api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
     }
   }, [userId]);
 
@@ -180,7 +190,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
 
   return (
     <Modal isOpen={!!userId} onClose={onClose} size="lg">
-      {/* ✅ CORRECTION : Utilisation du ProfileSkeleton pendant le chargement */}
       {loading ? ( 
         <ProfileSkeleton />
       ) : 
