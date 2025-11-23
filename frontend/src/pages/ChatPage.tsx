@@ -47,8 +47,9 @@ export default function ChatPage() {
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // 👇 CORRECTION : On retire les refs de scroll d'ici car elles sont gérées dans MessageList via le hook
+  // const scrollRef = useRef<HTMLDivElement>(null);
+  // const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (socket && activeServer?.id) {
@@ -99,12 +100,14 @@ export default function ChatPage() {
   const showFriendsDashboard = isDmMode && !activeConversation;
   const effectiveChannel = isDmMode && activeConversation ? { id: activeConversation.id, name: activeConversation.users.find(u => u.id !== user?.id)?.username || 'Ami', type: 'dm' } : activeChannel;
   
-  const handleScroll = () => {
+  // ❌ SUPPRESSION : On retire handleScroll qui faisait conflit avec le hook
+  /* const handleScroll = () => {
     if (scrollRef.current && scrollRef.current.scrollTop === 0 && hasMore && !loading) {
       const oldHeight = scrollRef.current.scrollHeight;
       loadMore().then(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight - oldHeight; });
     }
-  };
+  }; 
+  */
   
   const handleUserClick = (e: React.MouseEvent, userId: string) => {
     e.stopPropagation(); 
@@ -119,18 +122,13 @@ export default function ChatPage() {
  const handleSendRequest = async () => {
     if (!userMenu) return;
     try {
-      // 1. On envoie la requête et on ATTEND la réponse
       const res = await api.post('/friends/request', { 
         username: userMenu.user.username,
         discriminator: userMenu.user.discriminator
       });
-
-      // 2. MAGIE : On met à jour le store local avec la nouvelle demande
       addRequest(res.data);
-      
     } catch (err: any) {
       console.error("Erreur ajout ami", err);
-      // Gérer l'affichage de l'erreur si besoin
     } finally {
       setUserMenu(null);
     }
@@ -165,7 +163,6 @@ export default function ChatPage() {
     setFriendToDelete(null);
   };
 
-  // 👇 LOGIQUE DE VÉRIFICATION D'AMITIÉ
   const isFriend = userMenu && requests.some(
     req => req.status === 'ACCEPTED' && 
            ((req.senderId === user?.id && req.receiverId === userMenu.user.id) || 
@@ -206,7 +203,13 @@ export default function ChatPage() {
             inputValue={inputValue} setInputValue={setInputValue}
             showMembers={showMembers} onToggleMembers={() => setShowMembers(!showMembers)}
             socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
-            onScroll={handleScroll} scrollRef={scrollRef} messagesEndRef={messagesEndRef}
+            
+            // 👇 CORRECTION : On passe directement loadMore ici !
+            onScroll={loadMore} 
+            
+            // onScroll={handleScroll} <--- Ancien code
+            // scrollRef={scrollRef} messagesEndRef={messagesEndRef} <--- Plus besoin de passer les refs
+            
             onUserClick={handleUserClick} sendMessage={sendMessage}
           />
           {activeServer && showMembers && (
@@ -228,7 +231,6 @@ export default function ChatPage() {
             <ContextMenuItem label="Profil" onClick={() => { setViewingUserProfile(userMenu.user.id); setUserMenu(null); }} />
             <ContextMenuItem label="Copier Pseudo" onClick={() => { navigator.clipboard.writeText(`${userMenu.user.username}#${userMenu.user.discriminator}`); setUserMenu(null); }} />
             
-            {/* On vérifie que ce n'est pas notre propre profil pour afficher l'option */}
             {user?.id !== userMenu.user.id && (
               <>
                 <ContextMenuSeparator />
