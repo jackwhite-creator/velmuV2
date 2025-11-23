@@ -56,19 +56,31 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   
   const handleEditProfile = () => { onClose(); onOpenSettings(); };
 
+  // ✅ CORRECTION ICI : Gestion robuste de la navigation vers les DM
   const handleStartDM = async () => {
     if (!profile) return;
     setActionLoading(true);
     try {
       const res = await api.post('/conversations', { targetUserId: profile.id });
-      addConversation(res.data);
-      setActiveServer(null);
-      setActiveConversation(res.data);
+      
+      // 1. On ferme la modale tout de suite
       onClose();
+
+      // 2. On navigue vers la racine des DM
       navigate('/channels/@me');
+
+      // 3. On utilise un petit délai pour laisser le temps au Router et à ChatPage de faire leur nettoyage (setActiveServer(null))
+      // Si on le fait trop tôt, ChatPage va écraser notre conversation active.
+      setTimeout(() => {
+          addConversation(res.data);
+          setActiveServer(null); 
+          setActiveConversation(res.data);
+      }, 50);
+
     } catch (err) { console.error(err); } 
     finally { setActionLoading(false); }
   };
+
   const handleSendRequest = async () => {
     if (!profile) return;
     setActionLoading(true);
