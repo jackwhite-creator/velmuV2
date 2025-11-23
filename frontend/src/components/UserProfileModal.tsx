@@ -19,6 +19,49 @@ const Icons = {
 interface UserProfileModalProps { userId: string | null; onClose: () => void; onOpenSettings: () => void; }
 interface FullProfile { id: string; username: string; discriminator: string; avatarUrl: string | null; bannerUrl: string | null; bio: string | null; createdAt: string; }
 
+// ✅ NOUVEAU : Le composant Skeleton pour le profil
+const ProfileSkeleton = () => (
+  <div className="bg-slate-900 flex flex-col min-h-[500px] animate-pulse">
+     {/* Bannière Skeleton */}
+     <div className="h-40 w-full bg-slate-800/80 relative">
+         <div className="absolute top-4 right-4 h-9 w-9 bg-slate-700/50 rounded-full"></div>
+     </div>
+     <div className="px-8 relative">
+        <div className="flex justify-between items-end -mt-16 mb-4">
+           {/* Avatar Skeleton */}
+           <div className="w-32 h-32 rounded-full bg-slate-900 p-[6px]">
+               <div className="w-full h-full rounded-full bg-slate-700/80"></div>
+           </div>
+           {/* Boutons d'action Skeleton */}
+           <div className="flex gap-3 mb-2">
+               <div className="h-10 w-36 bg-slate-700/80 rounded-md"></div>
+               <div className="h-10 w-10 bg-slate-700/80 rounded-md"></div>
+           </div>
+        </div>
+        {/* Info User Skeleton */}
+        <div className="mb-6 space-y-3">
+            <div className="h-8 w-64 bg-slate-700/80 rounded"></div>
+            <div className="h-4 w-48 bg-slate-700/50 rounded"></div>
+        </div>
+     </div>
+     {/* Onglets Skeleton */}
+     <div className="px-8 border-b border-slate-800 flex gap-8 mt-2">
+         <div className="pb-3 h-4 w-24 bg-slate-700/50 rounded mb-1"></div>
+         <div className="pb-3 h-4 w-32 bg-slate-700/50 rounded mb-1"></div>
+         <div className="pb-3 h-4 w-28 bg-slate-700/50 rounded mb-1"></div>
+     </div>
+     {/* Contenu Skeleton (Bio) */}
+     <div className="flex-1 p-8 bg-slate-900/50 mt-1 space-y-4">
+         <div className="h-4 w-32 bg-slate-700/50 rounded"></div>
+         <div className="space-y-2">
+             <div className="h-3 w-full bg-slate-700/50 rounded"></div>
+             <div className="h-3 w-[90%] bg-slate-700/50 rounded"></div>
+             <div className="h-3 w-[95%] bg-slate-700/50 rounded"></div>
+         </div>
+     </div>
+  </div>
+);
+
 export default function UserProfileModal({ userId, onClose, onOpenSettings }: UserProfileModalProps) {
   const navigate = useNavigate();
   const { onlineUsers, addConversation, setActiveConversation, setActiveServer } = useServerStore();
@@ -40,7 +83,10 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   useEffect(() => {
     if (userId) {
       setLoading(true);
-      api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
+      // Petit délai artificiel pour apprécier le skeleton (à retirer en prod si l'API est ultra rapide)
+      // setTimeout(() => {
+        api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
+      // }, 500);
     }
   }, [userId]);
 
@@ -56,27 +102,18 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   
   const handleEditProfile = () => { onClose(); onOpenSettings(); };
 
-  // ✅ CORRECTION ICI : Gestion robuste de la navigation vers les DM
   const handleStartDM = async () => {
     if (!profile) return;
     setActionLoading(true);
     try {
       const res = await api.post('/conversations', { targetUserId: profile.id });
-      
-      // 1. On ferme la modale tout de suite
       onClose();
-
-      // 2. On navigue vers la racine des DM
       navigate('/channels/@me');
-
-      // 3. On utilise un petit délai pour laisser le temps au Router et à ChatPage de faire leur nettoyage (setActiveServer(null))
-      // Si on le fait trop tôt, ChatPage va écraser notre conversation active.
       setTimeout(() => {
           addConversation(res.data);
           setActiveServer(null); 
           setActiveConversation(res.data);
       }, 50);
-
     } catch (err) { console.error(err); } 
     finally { setActionLoading(false); }
   };
@@ -143,9 +180,12 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
 
   return (
     <Modal isOpen={!!userId} onClose={onClose} size="lg">
-      {loading ? ( <div className="h-[600px] flex items-center justify-center text-slate-400">Chargement...</div> ) : 
+      {/* ✅ CORRECTION : Utilisation du ProfileSkeleton pendant le chargement */}
+      {loading ? ( 
+        <ProfileSkeleton />
+      ) : 
       profile ? (
-        <div className="bg-slate-900 flex flex-col text-slate-100 min-h-[500px]">
+        <div className="bg-slate-900 flex flex-col text-slate-100 min-h-[500px] animate-in fade-in duration-200">
           <div className="h-40 w-full bg-indigo-500 relative overflow-hidden">
              {profile.bannerUrl && <img src={profile.bannerUrl} className="w-full h-full object-cover" alt="Bannière" />}
              <button onClick={onClose} className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition backdrop-blur-sm">
