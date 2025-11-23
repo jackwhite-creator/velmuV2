@@ -14,12 +14,12 @@ import messageRoutes from './routes/message.routes';
 
 const app = express();
 
-// ✅ CORRECTION CORS : On autorise explicitement Vercel ET Localhost
+// ✅ CORRECTION TYPESCRIPT : Ajout de "as string[]" pour rassurer le compilateur
 const allowedOrigins = [
-  "http://localhost:5173",             // Pour le dev local
-  "https://velmu.vercel.app",          // Pour la prod (Vercel)
-  process.env.CLIENT_URL               // Au cas où tu changes d'URL plus tard
-].filter(Boolean); // Filtre les valeurs vides (undefined)
+  "http://localhost:5173",
+  "https://velmu.vercel.app",
+  process.env.CLIENT_URL
+].filter(Boolean) as string[]; // <--- C'est ici que ça bloquait
 
 app.use(cors({
     origin: allowedOrigins,
