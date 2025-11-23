@@ -34,6 +34,7 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     targetIdRef.current = targetId;
   }, [targetId]);
 
+  // Initial Load
   useEffect(() => {
     if (!targetId) return;
     setLoading(true);
@@ -43,22 +44,25 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
 
     const params = isDm ? { conversationId: targetId } : { channelId: targetId };
 
+    console.log("🚀 [Chat] Chargement initial pour:", targetId);
+
     api.get('/messages', { params })
       .then((res) => {
+        console.log("📥 [Chat] Reçu initial:", res.data.items.length, "messages. NextCursor:", res.data.nextCursor);
         setMessages(res.data.items.reverse());
         setHasMore(!!res.data.nextCursor);
       })
-      .catch(console.error)
+      .catch(err => console.error("❌ [Chat] Erreur load initial:", err))
       .finally(() => setLoading(false));
   }, [targetId, isDm]);
 
+  // Socket Events
   useEffect(() => {
     if (!socket || !targetId) return;
     
     const joinEvent = isDm ? 'join_conversation' : 'join_channel';
     const leaveEvent = isDm ? 'leave_conversation' : 'leave_channel';
     
-    // 1. On rejoint la nouvelle room
     socket.emit(joinEvent, targetId);
 
     const handleNewMessage = (msg: Message) => {
@@ -86,21 +90,22 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     socket.on('message_updated', handleMessageUpdate);
     socket.on('message_deleted', handleMessageDelete);
 
-    // 2. La fonction de nettoyage de useEffect est PARFAITE pour ça :
-    // Elle sera appelée AVANT que le prochain effet ne s'exécute (quand on change de salon).
     return () => {
       socket.emit(leaveEvent, targetId);
       socket.off('new_message', handleNewMessage);
       socket.off('message_updated', handleMessageUpdate);
       socket.off('message_deleted', handleMessageDelete);
     };
-  }, [socket, targetId, isDm]); // Cet effet se relance à chaque changement de salon
+  }, [socket, targetId, isDm]);
 
+  // Load More (Scroll Up)
   const loadMore = useCallback(async () => {
-    if (isLoadingMore || !hasMore || messages.length === 0) {
-      return;
-    }
-    
+    // Debugging conditions
+    if (messages.length === 0) return console.log("⚠️ [LoadMore] Bloqué: Pas de messages");
+    if (isLoadingMore) return console.log("⚠️ [LoadMore] Bloqué: Déjà en cours");
+    if (!hasMore) return console.log("⚠️ [LoadMore] Bloqué: Plus de messages (HasMore=false)");
+
+    console.log("🔄 [LoadMore] Lancement...");
     setIsLoadingMore(true);
     
     const oldestId = messages[0].id; 
@@ -111,7 +116,10 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     try {
       const res = await api.get('/messages', { params });
       
+      console.log("📥 [LoadMore] Reçu:", res.data.items.length, "anciens messages.");
+
       if (!res.data.nextCursor) {
+        console.log("🛑 [LoadMore] Fin de l'historique atteinte.");
         setHasMore(false);
       }
       
@@ -127,7 +135,7 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
         setHasMore(false);
       }
     } catch (err) { 
-      console.error('Erreur loadMore:', err); 
+      console.error('❌ [LoadMore] Erreur API:', err); 
     } finally {
       setIsLoadingMore(false);
     }
