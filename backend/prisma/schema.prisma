@@ -1,0 +1,193 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ✅ ENUMS : Pour éviter les fautes de frappe et sécuriser la logique
+enum ChannelType {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+}
+
+model User {
+  id               String          @id @default(uuid())
+  email            String          @unique
+  passwordHash     String
+  username         String
+  discriminator    String
+  avatarUrl        String?
+  bannerUrl        String?
+  bio              String?
+  createdAt        DateTime        @default(now())
+  
+  memberships      Member[]
+  messages         Message[]
+  createdInvites   Invite[]
+
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+  
+  conversations    Conversation[]  @relation("UserConversations") // Nom de relation explicite pour clarté
+  
+  @@unique([username, discriminator])
+  @@index([email])
+}
+
+model Server {
+  id          String     @id @default(uuid())
+  name        String
+  iconUrl     String?
+  ownerId     String
+  createdAt   DateTime   @default(now())
+  
+  members     Member[]
+  channels    Channel[]  @relation("ServerChannels")
+  categories  Category[]
+  invites     Invite[]
+  roles       Role[]
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  name        String
+  color       String   @default("#99aab5")
+  permissions String[] 
+  position    Int      @default(0)
+  
+  serverId    String
+  server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  
+  members     Member[]
+}
+
+model Member {
+  id        String   @id @default(uuid())
+  joinedAt  DateTime @default(now())
+  nickname  String?
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  serverId  String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  
+  roleIds   String[] 
+  roles     Role[] 
+
+  @@unique([userId, serverId])
+  @@index([userId])
+  @@index([serverId])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  order     Int       @default(0)
+  
+  serverId  String
+  server    Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  
+  channels  Channel[]
+}
+
+model Channel {
+  id         String      @id @default(uuid())
+  name       String
+  type       ChannelType @default(TEXT) // 👈 Utilisation de l'Enum ici
+  order      Int         @default(0)
+  
+  categoryId String?
+  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  
+  serverId   String
+  server     Server      @relation("ServerChannels", fields: [serverId], references: [id], onDelete: Cascade)
+  
+  messages   Message[]
+}
+
+model Invite {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  uses      Int      @default(0)
+  maxUses   Int      @default(0)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  
+  serverId  String
+  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
+  
+  creatorId String
+  creator   User     @relation(fields: [creatorId], references: [id])
+}
+
+model Conversation {
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  
+  users     User[]    @relation("UserConversations")
+  messages  Message[]
+}
+
+model Message {
+  id             String    @id @default(uuid())
+  content        String    @db.Text
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  channelId      String?
+  channel        Channel?  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  replyToId      String?
+  replyTo        Message?  @relation("ReplyTo", fields: [replyToId], references: [id])
+  replies        Message[] @relation("ReplyTo")
+
+  attachments    Attachment[]
+  
+  isAiGenerated  Boolean   @default(false)
+
+  @@index([channelId, createdAt(sort: Desc)]) 
+  @@index([conversationId, createdAt(sort: Desc)])
+}
+
+model Attachment {
+  id        String   @id @default(uuid())
+  url       String
+  filename  String
+  type      String   
+  size      Int      @default(0)
+  
+  messageId String
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model FriendRequest {
+  id        String        @id @default(uuid())
+  createdAt DateTime      @default(now())
+  status    RequestStatus @default(PENDING) // 👈 Utilisation de l'Enum ici
+
+  senderId  String
+  sender    User          @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+
+  receiverId String
+  receiver   User         @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+}
