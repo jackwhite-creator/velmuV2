@@ -30,74 +30,61 @@ export const useChatScroll = ({
     }
   };
 
-  // ✅ NOUVEAU : Charger automatiquement si pas assez de contenu pour scroller
+  // ✅ AUTO-LOAD SÉCURISÉ
   useEffect(() => {
     const container = scrollRef.current;
     if (!container || !hasMore) {
       return;
     }
 
-    // Si le contenu ne dépasse pas le conteneur, on charge plus
     const canScroll = container.scrollHeight > container.clientHeight;
     
-    console.log('🔍 CHECK AUTO-LOAD:', { 
-      canScroll, 
-      scrollHeight: container.scrollHeight, 
-      clientHeight: container.clientHeight,
-      hasMore, 
-      messagesLength,
-      isLoadingMore,
-      isLoadingRef: isLoadingRef.current
-    });
-    
-    // ✅ CORRECTION : On vérifie seulement isLoadingMore du parent, pas isLoadingRef
+    // On vérifie isLoadingMore du parent pour ne pas spammer
     if (!canScroll && hasMore && messagesLength > 0 && !isLoadingMore) {
-      console.log('🔄 AUTO-LOAD: Pas assez de contenu pour scroller, chargement auto...');
+      console.log('🔄 AUTO-LOAD: Pas assez de contenu, chargement auto...');
       
-      loadMore()
+      // 🔥 CORRECTION ICI : On utilise Promise.resolve() pour éviter le crash
+      // Si loadMore() renvoie undefined (erreur courante), Promise.resolve le gère sans planter.
+      Promise.resolve(loadMore())
         .then(() => {
-          console.log('✅ AUTO-LOAD terminé, nouveaux messages chargés');
+          console.log('✅ AUTO-LOAD terminé');
         })
         .catch(e => console.error('❌ AUTO-LOAD erreur:', e));
     }
   }, [messagesLength, hasMore, isLoadingMore, loadMore]);
 
-  // ✅ Attacher l'événement scroll avec addEventListener
+  // ✅ SCROLL LISTENER
   useLayoutEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
 
-    // ✅ Throttle pour éviter trop d'appels
     let scrollTimeout: NodeJS.Timeout | null = null;
 
     const onScroll = () => {
       const { scrollTop, scrollHeight, clientHeight } = container;
       
-      // Mise à jour de la position (toujours faire ça)
       isAtBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
 
-      // ✅ Débounce le chargement pour éviter le spam
       if (scrollTimeout) clearTimeout(scrollTimeout);
       
       scrollTimeout = setTimeout(async () => {
-        // ✅ Zone de trigger plus large (200px au lieu de 100px)
         if (scrollTop < 200 && hasMore && !isLoadingRef.current && !isLoadingMore) {
           console.log('🔄 SCROLL LOAD: Chargement déclenché');
           isLoadingRef.current = true;
           
           try {
+            // Ici await gère nativement le undefined, donc pas de crash
             await loadMore();
             console.log('✅ SCROLL LOAD terminé');
           } catch (e) {
             console.error('❌ Erreur chargement:', e);
           } finally {
-            // ✅ Délai plus court pour réactivité
             setTimeout(() => {
               isLoadingRef.current = false;
             }, 200);
           }
         }
-      }, 50); // Petit délai pour throttle
+      }, 50);
     };
 
     container.addEventListener('scroll', onScroll, { passive: true });
@@ -119,7 +106,7 @@ export const useChatScroll = ({
     return () => clearTimeout(timeout);
   }, [channelId]);
 
-  // ✅ Maintien de position lors du chargement d'anciens messages
+  // Maintien de position
   useLayoutEffect(() => {
     const container = scrollRef.current;
     if (!container) return;
@@ -128,24 +115,19 @@ export const useChatScroll = ({
     const prevScrollHeight = prevScrollHeightRef.current;
     const prevMessagesLength = prevMessagesLengthRef.current;
 
-    // Si on a chargé de nouveaux messages (anciens en haut)
     if (messagesLength > prevMessagesLength && prevScrollHeight > 0) {
       const heightDiff = currentScrollHeight - prevScrollHeight;
       
-      // Si on était pas en bas, on maintient la position
       if (!isAtBottomRef.current && heightDiff > 0) {
         container.scrollTop = container.scrollTop + heightDiff;
       } 
-      // ✅ Si on était en bas, on scroll en bas (sans animation pour être instantané)
       else if (isAtBottomRef.current) {
         requestAnimationFrame(() => scrollToBottom('auto'));
       }
     }
-    // ✅ Premier chargement - scroll en bas immédiatement
     else if (messagesLength > 0 && prevMessagesLength === 0) {
       requestAnimationFrame(() => scrollToBottom('auto'));
     }
-    // ✅ AJOUT : Nouveau message unique = on scroll en bas si on était déjà en bas
     else if (messagesLength === prevMessagesLength + 1 && prevMessagesLength > 0) {
       if (isAtBottomRef.current) {
         requestAnimationFrame(() => scrollToBottom('auto'));
