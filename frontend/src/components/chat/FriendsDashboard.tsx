@@ -93,27 +93,33 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
     return [];
   };
 
-  const tabClass = (isActive: boolean, color: string = 'bg-slate-800') => `
-    px-4 py-1.5 rounded-md transition font-medium text-sm
-    ${isActive ? `${color} text-white` : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}
+  // ✅ NOUVEAU STYLE DES ONGLETS : Plus ronds, plus modernes (Pill shape)
+  const tabClass = (isActive: boolean, color: string = 'bg-slate-100 text-slate-900') => `
+    px-5 py-2 rounded-full transition-all font-medium text-sm border
+    ${isActive 
+        ? `${color} border-transparent shadow-md shadow-indigo-500/10` 
+        : 'border-slate-700 text-slate-400 hover:border-slate-600 hover:text-slate-200 hover:bg-slate-800'}
   `;
 
   return (
-    <div className="flex-1 flex flex-col bg-slate-900 min-w-0">
+    <div className="flex-1 flex flex-col bg-slate-900 min-w-0 font-sans">
       
-      {/* HEADER */}
-      <div className="h-14 border-b border-slate-800 flex items-center px-6 shadow-sm flex-shrink-0 bg-slate-900 z-10 select-none">
-        <div className="flex items-center gap-3 mr-6 pr-6 border-r border-slate-700/50 text-slate-200 font-bold text-lg">
-           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-           Amis
+      {/* HEADER MODERNE */}
+      <div className="h-20 border-b border-slate-800 flex items-center px-8 shadow-sm flex-shrink-0 bg-slate-900/95 backdrop-blur-sm z-10 select-none">
+        <div className="flex items-center gap-3 mr-8 pr-8 border-r border-slate-800 text-white font-bold text-xl tracking-tight">
+           {/* Icône Personnes plus stylisée */}
+           <div className="p-2 bg-slate-800 rounded-xl">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+           </div>
+           <span>Espace Amis</span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3 overflow-x-auto no-scrollbar py-2">
            <button onClick={() => setActiveTab('online')} className={tabClass(activeTab === 'online')}>En ligne</button>
            <button onClick={() => setActiveTab('all')} className={tabClass(activeTab === 'all')}>Tous</button>
            <button onClick={() => setActiveTab('pending')} className={tabClass(activeTab === 'pending')}>
-             En attente {pending.length > 0 && <span className="bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1.5">{pending.length}</span>}
+             En attente {pending.length > 0 && <span className="ml-2 bg-indigo-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">{pending.length}</span>}
            </button>
-           <button onClick={() => setActiveTab('add')} className={`ml-2 px-4 py-1.5 rounded-md transition font-medium text-sm ${activeTab === 'add' ? 'text-green-400 bg-transparent' : 'bg-green-600 text-white hover:bg-green-700'}`}>Ajouter un ami</button>
+           <button onClick={() => setActiveTab('add')} className={`ml-2 px-5 py-2 rounded-full transition font-medium text-sm border ${activeTab === 'add' ? 'border-emerald-500/50 text-emerald-400 bg-emerald-500/10' : 'bg-emerald-600 border-transparent text-white hover:bg-emerald-500 shadow-lg shadow-emerald-900/20'}`}>Ajouter un ami</button>
         </div>
       </div>
 
@@ -121,39 +127,57 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
          {/* LISTE PRINCIPALE */}
          <div className="flex-1 p-8 overflow-y-auto custom-scrollbar">
             {activeTab === 'add' ? (
-               <div className="max-w-2xl mt-4 border-b border-slate-800 pb-8">
-                  <h2 className="text-white font-bold text-xl mb-2 uppercase tracking-wide text-sm">Ajouter un ami</h2>
-                  <p className="text-slate-400 text-sm mb-6">Tu peux ajouter des amis grâce à leur pseudo Velmu (ex: Pseudo#0000).</p>
+               <div className="max-w-2xl mt-8 mx-auto">
+                  <div className="text-center mb-8">
+                    <h2 className="text-white font-bold text-3xl mb-3">Agrandis ton cercle</h2>
+                    <p className="text-slate-400 text-base">Entre le pseudo Velmu de ton ami pour vous connecter.</p>
+                  </div>
                   
-                  <form onSubmit={handleAddFriend} className="relative group">
-                     <div className={`absolute inset-0 rounded-lg opacity-20 transition ${addStatus?.type === 'success' ? 'bg-green-500' : addStatus?.type === 'error' ? 'bg-red-500' : 'bg-indigo-500 group-focus-within:opacity-40'}`}></div>
-                     <input 
-                        value={addUsername}
-                        onChange={e => setAddUsername(e.target.value)}
-                        placeholder="Tu peux ajouter des amis avec leur pseudo Velmu"
-                        className="w-full bg-slate-950 border border-slate-800 p-4 rounded-lg text-white focus:outline-none focus:border-indigo-500/50 transition relative z-10 placeholder-slate-500 h-14 text-base font-medium"
-                        autoFocus
-                     />
-                     <button type="submit" disabled={!addUsername} className="absolute right-3 top-2.5 z-20 bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2 rounded text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition shadow-lg shadow-indigo-900/20">
-                        Envoyer la demande
-                     </button>
+                  <form onSubmit={handleAddFriend} className="relative group max-w-xl mx-auto">
+                     <div className={`absolute inset-0 rounded-2xl opacity-20 blur transition duration-500 ${addStatus?.type === 'success' ? 'bg-emerald-500' : addStatus?.type === 'error' ? 'bg-red-500' : 'bg-indigo-500 group-focus-within:opacity-40 group-focus-within:blur-md'}`}></div>
+                     <div className="relative flex items-center bg-slate-950 border border-slate-800 rounded-2xl overflow-hidden p-1 transition group-focus-within:border-indigo-500/50">
+                        <input 
+                            value={addUsername}
+                            onChange={e => setAddUsername(e.target.value)}
+                            placeholder="Exemple: Pseudo#0000"
+                            className="flex-1 bg-transparent p-4 text-white focus:outline-none placeholder-slate-600 text-lg font-medium"
+                            autoFocus
+                        />
+                        <button type="submit" disabled={!addUsername} className="bg-slate-800 hover:bg-indigo-600 text-white px-8 py-3 rounded-xl text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md mr-1">
+                            Envoyer
+                        </button>
+                     </div>
                   </form>
-                  {addStatus && <p className={`text-sm mt-4 font-medium ${addStatus.type === 'success' ? 'text-green-400' : 'text-red-400'}`}>{addStatus.msg}</p>}
+                  {addStatus && (
+                      <div className={`mt-6 text-center p-4 rounded-xl border ${addStatus.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-red-500/10 border-red-500/20 text-red-400'}`}>
+                          {addStatus.type === 'success' ? (
+                              <div className="flex items-center justify-center gap-2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> {addStatus.msg}</div>
+                          ) : (
+                              <div className="flex items-center justify-center gap-2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> {addStatus.msg}</div>
+                          )}
+                      </div>
+                  )}
                </div>
             ) : (
-               <div className="space-y-3">
-                  <div className="text-xs font-bold text-slate-400 uppercase mb-6 pb-3 border-b border-slate-800/50 tracking-wider">
-                     {activeTab === 'online' ? `En ligne — ${displayedList().length}` : 
-                      activeTab === 'all' ? `Tous les amis — ${displayedList().length}` : 
-                      `En attente — ${displayedList().length}`}
+               <div className="space-y-4 max-w-5xl mx-auto">
+                  <div className="text-xs font-bold text-slate-500 uppercase mb-6 tracking-wider flex items-center gap-4">
+                     <span>{activeTab === 'online' ? "En ligne" : activeTab === 'all' ? "Tous les amis" : "En attente"} — {displayedList().length}</span>
+                     <div className="h-px bg-slate-800 flex-1"></div>
                   </div>
 
                   {displayedList().length === 0 ? (
-                     <div className="flex flex-col items-center justify-center mt-32 opacity-50 select-none">
-                        <div className="w-40 h-40 bg-slate-800/50 rounded-full flex items-center justify-center mb-6">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+                     // ✅ EMPTY STATE ORIGINAL : Plus de Wumpus ! Design abstrait "Radar"
+                     <div className="flex flex-col items-center justify-center mt-24 opacity-60 select-none">
+                        <div className="relative w-48 h-48 mb-6 flex items-center justify-center">
+                           <div className="absolute inset-0 border-2 border-slate-800 rounded-full animate-[ping_3s_linear_infinite]"></div>
+                           <div className="absolute inset-4 border-2 border-slate-800 rounded-full animate-[ping_3s_linear_infinite_1s]"></div>
+                           <div className="absolute inset-8 border-2 border-slate-800 rounded-full"></div>
+                           <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center relative z-10 shadow-xl">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                           </div>
                         </div>
-                        <p className="text-slate-400 text-base font-medium">Wumpus n'attend personne...</p>
+                        <h3 className="text-slate-300 text-lg font-semibold mb-2">C'est calme... trop calme.</h3>
+                        <p className="text-slate-500 text-sm">Aucun signal détecté pour le moment.</p>
                      </div>
                   ) : (
                      displayedList().map(req => {
@@ -166,45 +190,44 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
                         return (
                            <div 
                               key={req.id} 
-                              className="group flex items-center justify-between p-3.5 rounded-xl hover:bg-slate-800/40 border-t border-slate-800/0 hover:border-slate-800 transition cursor-pointer select-none" 
+                              className="group flex items-center justify-between p-4 rounded-2xl bg-slate-800/30 hover:bg-slate-800 border border-slate-800/50 hover:border-slate-700 transition-all cursor-pointer select-none" 
                               onClick={() => setViewProfileId(friend.id)}
                               onContextMenu={(e) => onUserContextMenu(e, friend)}
                            >
-                              <div className="flex items-center gap-4 flex-1">
+                              <div className="flex items-center gap-5 flex-1">
                                  <div className="relative">
-                                    {/* Avatar agrandi w-11 h-11 (44px) */}
-                                    <div className="w-11 h-11 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold text-base overflow-hidden shadow-sm">
+                                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-lg ring-4 ring-slate-900">
                                        {friend.avatarUrl ? <img src={friend.avatarUrl} className="w-full h-full object-cover" alt={friend.username} /> : friend.username[0].toUpperCase()}
                                     </div>
                                     {activeTab !== 'pending' && (
-                                        <div className={`absolute bottom-0 right-0 w-4 h-4 border-[3px] border-slate-900 rounded-full ${isOnline ? 'bg-green-500' : 'bg-slate-500'}`}></div>
+                                        <div className={`absolute -bottom-1 -right-1 w-5 h-5 border-[4px] border-slate-900 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-slate-600'}`}></div>
                                     )}
                                  </div>
                                  <div className="flex flex-col">
-                                    <div className="flex items-center gap-1.5">
-                                       <span className="font-bold text-slate-200 text-base group-hover:text-white transition">{friend.username}</span>
-                                       <span className="text-xs text-slate-500 font-medium opacity-0 group-hover:opacity-100 transition translate-y-0.5">#{friend.discriminator}</span>
+                                    <div className="flex items-center gap-2">
+                                       <span className="font-bold text-white text-lg">{friend.username}</span>
+                                       <span className="text-xs text-slate-500 font-medium opacity-0 group-hover:opacity-100 transition bg-slate-900 px-1.5 py-0.5 rounded">#{friend.discriminator}</span>
                                     </div>
-                                    <div className="text-xs text-slate-400 font-medium">
-                                       {req.status === 'PENDING' ? (isIncoming ? "Demande reçue" : "Demande envoyée") : (isOnline ? "En ligne" : "Hors ligne")}
+                                    <div className="text-sm text-slate-400 font-medium flex items-center gap-2">
+                                       {req.status === 'PENDING' ? (isIncoming ? "Demande reçue" : "Demande envoyée") : (isOnline ? <span className="text-emerald-400">En ligne</span> : "Hors ligne")}
                                     </div>
                                  </div>
                               </div>
-                              <div className="flex gap-2.5">
+                              <div className="flex gap-3">
                                  {req.status === 'ACCEPTED' && (
                                     <>
-                                        <button onClick={(e) => { e.stopPropagation(); startDM(friend.id); }} className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 hover:border-indigo-500 transition shadow-sm" title="Message"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
-                                        <button onClick={(e) => { e.stopPropagation(); confirmDeleteFriend(req.id, friend.username); }} className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-red-600 hover:border-red-500 transition shadow-sm" title="Retirer"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                        <button onClick={(e) => { e.stopPropagation(); startDM(friend.id); }} className="w-10 h-10 rounded-xl bg-slate-900 text-slate-400 hover:text-white hover:bg-indigo-600 transition shadow-sm flex items-center justify-center" title="Message"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></button>
+                                        <button onClick={(e) => { e.stopPropagation(); confirmDeleteFriend(req.id, friend.username); }} className="w-10 h-10 rounded-xl bg-slate-900 text-slate-400 hover:text-white hover:bg-red-600 transition shadow-sm flex items-center justify-center" title="Retirer"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                                     </>
                                  )}
                                  {isIncoming && (
                                     <>
-                                      <button onClick={(e) => { e.stopPropagation(); handleAccept(req.id); }} className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-green-500 hover:text-white hover:bg-green-600 hover:border-green-500 transition shadow-sm" title="Accepter"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
-                                      <button onClick={(e) => { e.stopPropagation(); handleDecline(req.id); }} className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-red-500 hover:text-white hover:bg-red-600 hover:border-red-500 transition shadow-sm" title="Refuser"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                      <button onClick={(e) => { e.stopPropagation(); handleAccept(req.id); }} className="w-10 h-10 rounded-xl bg-slate-900 text-emerald-500 hover:text-white hover:bg-emerald-600 transition shadow-sm flex items-center justify-center" title="Accepter"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button>
+                                      <button onClick={(e) => { e.stopPropagation(); handleDecline(req.id); }} className="w-10 h-10 rounded-xl bg-slate-900 text-red-500 hover:text-white hover:bg-red-600 transition shadow-sm flex items-center justify-center" title="Refuser"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                                     </>
                                  )}
                                  {(req.status === 'PENDING' && !isIncoming) && (
-                                    <button onClick={(e) => { e.stopPropagation(); handleDecline(req.id); }} className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-red-500 hover:text-white hover:bg-red-600 hover:border-red-500 transition shadow-sm" title="Annuler"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleDecline(req.id); }} className="w-10 h-10 rounded-xl bg-slate-900 text-slate-400 hover:text-white hover:bg-red-600 transition shadow-sm flex items-center justify-center" title="Annuler"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                                  )}
                               </div>
                            </div>
@@ -215,12 +238,15 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
             )}
          </div>
 
-         {/* SIDEBAR DROITE "En ligne maintenant" */}
-         <div className="w-96 bg-slate-900 border-l border-slate-800 hidden 2xl:flex flex-col p-6">
-            <h3 className="text-xl font-bold text-white mb-6">En ligne maintenant</h3>
-            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-50 select-none">
-               <div className="w-full p-8 rounded-xl bg-slate-800/30 border-2 border-dashed border-slate-800 mb-4">
-                  <p className="text-sm text-slate-400 font-medium">C'est très calme par ici...</p>
+         {/* SIDEBAR DROITE REVISITÉE */}
+         <div className="w-96 bg-slate-900 border-l border-slate-800 hidden 2xl:flex flex-col p-8">
+            <h3 className="text-xl font-bold text-white mb-6 tracking-tight">Activité récente</h3>
+            <div className="flex-1 flex flex-col items-center justify-center text-center opacity-40 select-none">
+               <div className="w-full p-8 rounded-2xl bg-gradient-to-b from-slate-800/50 to-slate-900/50 border border-slate-800 mb-4">
+                  <div className="w-16 h-16 bg-slate-800 rounded-xl mx-auto mb-4 flex items-center justify-center rotate-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.47a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </div>
+                  <p className="text-sm text-slate-400 font-medium">Personne ne fait rien d'intéressant pour le moment.</p>
                </div>
             </div>
          </div>
