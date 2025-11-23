@@ -7,7 +7,9 @@ export const registerRoomHandlers = (io: Server, socket: Socket) => {
 
     const syncTypingState = (room: string, context: { channelId?: string, conversationId?: string }) => {
         const currentTypers = typingUsers.get(room);
-        const typingArray = [];
+        
+        // CORRECTION : On définit explicitement le type du tableau
+        const typingArray: { userId: string, username: string }[] = [];
 
         if (currentTypers && currentTypers.size > 0) {
             currentTypers.forEach((username, typerId) => {
@@ -54,7 +56,6 @@ export const registerRoomHandlers = (io: Server, socket: Socket) => {
          socket.join(`server_${serverId}`);
     });
 
-    // ✅ NOUVEAUX HANDLERS POUR QUITTER
     socket.on('leave_channel', (channelId: string) => {
         socket.leave(channelId);
     });

@@ -17,9 +17,11 @@ export const MemberController = {
               discriminator: true,
               avatarUrl: true,
             }
-          }
+          },
+          roles: true // On inclut les rôles pour l'affichage frontend si besoin
         },
-        orderBy: { role: 'asc' }
+        // CORRECTION : On trie par date d'arrivée car le tri par 'role' est impossible directement ici
+        orderBy: { joinedAt: 'asc' } 
       });
 
       res.json(members);
@@ -32,7 +34,6 @@ export const MemberController = {
   async kick(req: Request, res: Response) {
     try {
       const requesterId = req.user?.userId;
-      // On récupère bien memberId qui correspond maintenant à la route :memberId
       const { serverId, memberId } = req.params; 
 
       const server = await prisma.server.findUnique({ where: { id: serverId } });
@@ -46,10 +47,9 @@ export const MemberController = {
         return res.status(400).json({ error: "Impossible de s'auto-exclure" });
       }
 
-      // Recherche robuste avec findFirst
       const memberToDelete = await prisma.member.findFirst({
         where: {
-          userId: memberId, // memberId est l'ID de l'utilisateur (User.id)
+          userId: memberId,
           serverId: serverId
         }
       });
