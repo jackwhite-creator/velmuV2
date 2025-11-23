@@ -11,7 +11,7 @@ export default function DMSidebar({ onUserContextMenu }: DMSidebarProps) {
   const { user } = useAuthStore();
   const { 
     conversations, activeConversation, onlineUsers,
-    setConversations, setActiveConversation 
+    setConversations, setActiveConversation, closeConversation 
   } = useServerStore();
   
   const [isLoading, setIsLoading] = useState(true);
@@ -28,12 +28,9 @@ export default function DMSidebar({ onUserContextMenu }: DMSidebarProps) {
     return conversation.users.find(u => u.id !== user?.id) || conversation.users[0];
   };
 
-  // Petit composant interne pour les placeholders
   const DMPlaceholder = ({ animate = false }: { animate?: boolean }) => (
     <div className={`flex items-center gap-3 px-2 py-2 mb-1 ${animate ? 'animate-pulse' : 'opacity-20'}`}>
-      {/* Cercle Avatar */}
       <div className="w-8 h-8 rounded-full bg-slate-700 flex-shrink-0" />
-      {/* Barre Pseudo */}
       <div className="h-3 w-24 bg-slate-700 rounded-full" />
     </div>
   );
@@ -41,7 +38,6 @@ export default function DMSidebar({ onUserContextMenu }: DMSidebarProps) {
   return (
     <div className="flex flex-col min-h-0 p-2 space-y-0.5 select-none">
         
-      {/* Bouton Amis */}
       <div 
         onClick={() => setActiveConversation(null)} 
         className={`flex items-center gap-3 px-2 py-2.5 rounded cursor-pointer mb-4 transition-colors
@@ -59,14 +55,12 @@ export default function DMSidebar({ onUserContextMenu }: DMSidebarProps) {
           <span className="hover:text-white cursor-pointer text-lg leading-3 transition-colors">+</span>
       </div>
 
-      {/* 1. CHARGEMENT : On affiche des skeletons animés */}
       {isLoading && (
         <div className="space-y-1">
            {[...Array(3)].map((_, i) => <DMPlaceholder key={i} animate={true} />)}
         </div>
       )}
 
-      {/* 2. LISTE RÉELLE */}
       {!isLoading && conversations.map(conv => {
         const otherUser = getOtherUser(conv);
         const isActive = activeConversation?.id === conv.id;
@@ -98,20 +92,23 @@ export default function DMSidebar({ onUserContextMenu }: DMSidebarProps) {
                 </span>
             </div>
 
-            <div className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-white transition-opacity">
+            <div 
+                className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-white transition-opacity p-1 hover:bg-slate-600 rounded"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    closeConversation(conv.id);
+                }}
+            >
                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </div>
           </div>
         );
       })}
 
-      {/* 3. VIDE : Si pas de conv et pas de chargement, on affiche les fantômes statiques */}
       {!isLoading && conversations.length === 0 && (
          <div className="flex flex-col">
-            {/* On génère 5 placeholders fantômes */}
             {[...Array(5)].map((_, i) => <DMPlaceholder key={`ghost-${i}`} animate={false} />)}
             
-            {/* Petit message discret */}
             <div className="mt-4 px-2 text-center">
                 <p className="text-xs text-slate-600">Aucune conversation récente.</p>
                 <p className="text-[10px] text-slate-700 mt-1">Ajoute des amis pour discuter !</p>

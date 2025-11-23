@@ -18,7 +18,7 @@ export interface Server {
   iconUrl: string | null;
   ownerId: string;
   categories?: Category[];
-  members?: any[]; // Ajout pour typage
+  members?: any[];
 }
 
 export interface Conversation {
@@ -47,8 +47,8 @@ interface ServerState {
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   setActiveConversation: (conversation: Conversation | null) => void;
+  closeConversation: (conversationId: string) => void;
   
-  // Simplifié : juste le setter global
   setOnlineUsers: (userIds: string[]) => void;
 }
 
@@ -77,7 +77,11 @@ export const useServerStore = create<ServerState>((set) => ({
     activeServer: null, 
     activeChannel: null 
   }),
+  
+  closeConversation: (conversationId) => set((state) => ({
+    conversations: state.conversations.filter(c => c.id !== conversationId),
+    activeConversation: state.activeConversation?.id === conversationId ? null : state.activeConversation
+  })),
 
-  // Mise à jour atomique de toute la liste
   setOnlineUsers: (userIds) => set({ onlineUsers: new Set(userIds) }),
 }));
