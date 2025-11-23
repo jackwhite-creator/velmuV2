@@ -17,10 +17,8 @@ const Icons = {
 };
 
 interface UserProfileModalProps { userId: string | null; onClose: () => void; onOpenSettings: () => void; }
-// On rend certains champs optionnels pour gérer le profil "Partiel" (juste nom/avatar)
 interface FullProfile { id: string; username: string; discriminator: string; avatarUrl: string | null; bannerUrl?: string | null; bio?: string | null; createdAt?: string; }
 
-// Skeleton complet (quand on ne connait RIEN de l'user)
 const FullSkeleton = () => (
   <div className="bg-slate-900 flex flex-col min-h-[500px] animate-pulse">
      <div className="h-40 w-full bg-slate-800" />
@@ -36,7 +34,6 @@ const FullSkeleton = () => (
   </div>
 );
 
-// Skeleton Partiel (Juste pour la Bio et la Date quand le reste est déjà là)
 const BioSkeleton = () => (
   <div className="animate-pulse space-y-4">
       <div className="h-4 w-32 bg-slate-700/50 rounded"></div>
@@ -50,13 +47,12 @@ const BioSkeleton = () => (
 
 export default function UserProfileModal({ userId, onClose, onOpenSettings }: UserProfileModalProps) {
   const navigate = useNavigate();
-  // ✅ AJOUT : on récupère les members et conversations pour chercher l'user en cache
   const { onlineUsers, addConversation, setActiveConversation, setActiveServer, activeServer, conversations } = useServerStore();
   const { requests, addRequest, updateRequest, removeRequest } = useFriendStore(); 
   const { user: currentUser } = useAuthStore();
 
   const [profile, setProfile] = useState<FullProfile | null>(null);
-  const [loading, setLoading] = useState(true); // Loading = "Est-ce qu'on cherche encore des infos ?"
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'info' | 'mutual_servers' | 'mutual_friends'>('info');
   
@@ -69,7 +65,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
 
   useEffect(() => {
     if (userId) {
-      // 1. RECHERCHE OPTIMISTE (CACHE)
       const cachedMember = activeServer?.members?.find((m: any) => m.user.id === userId);
       const cachedDMUser = conversations.flatMap(c => c.users).find(u => u.id === userId);
       const cachedSelf = isMe ? currentUser : null;
@@ -82,9 +77,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
             username: cachedUser.username,
             discriminator: cachedUser.discriminator,
             avatarUrl: cachedUser.avatarUrl,
-            // ✅ CORRECTION : On essaie de récupérer la bannière du cache aussi !
-            // (Caste en 'any' car TypeScript ne sait pas toujours si bannerUrl est dans la liste des membres)
-            bannerUrl: (cachedUser as any).bannerUrl || null, 
+            bannerUrl: (cachedUser as any).bannerUrl || null,
             bio: null,
             createdAt: undefined
         });
@@ -93,12 +86,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
       }
 
       setLoading(true);
-      
-      // 2. RECHERCHE COMPLÈTE (API)
-      api.get(`/users/${userId}`)
-         .then(res => setProfile(res.data))
-         .catch(console.error)
-         .finally(() => setLoading(false));
+      api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
     }
   }, [userId, activeServer, conversations, currentUser, isMe]);
 
@@ -119,17 +107,14 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
     setActionLoading(true);
     try {
       const res = await api.post('/conversations', { targetUserId: profile.id });
+      addConversation(res.data);
+      setActiveServer(null);
+      setActiveConversation(res.data);
       onClose();
       navigate('/channels/@me');
-      setTimeout(() => {
-          addConversation(res.data);
-          setActiveServer(null); 
-          setActiveConversation(res.data);
-      }, 50);
     } catch (err) { console.error(err); } 
     finally { setActionLoading(false); }
   };
-
   const handleSendRequest = async () => {
     if (!profile) return;
     setActionLoading(true);
@@ -173,7 +158,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   };
 
   const renderActionButton = () => {
-    // Si on a un profil partiel, on peut déjà afficher les boutons d'action !
     if (!profile) return null;
     const btnBase = "px-6 py-2.5 rounded-md font-semibold text-sm transition shadow-md flex items-center justify-center gap-2";
 
@@ -191,7 +175,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
     }
   };
 
-  // Si loading est true MAIS qu'on n'a pas de profil du tout (même pas partiel), on affiche le FullSkeleton
   const showFullSkeleton = loading && !profile;
 
   return (
@@ -201,8 +184,9 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
       ) : 
       profile ? (
         <div className="bg-slate-900 flex flex-col text-slate-100 min-h-[500px] animate-in fade-in duration-200">
-          <div className="h-40 w-full bg-indigo-500 relative overflow-hidden">
-             {profile.bannerUrl && <img src={profile.bannerUrl} className="w-full h-full object-cover" alt="Bannière" />}
+          {/* ✅ CORRECTION ICI : bg-indigo-500 remplacé par bg-slate-800 */}
+          <div className="h-40 w-full bg-slate-800 relative overflow-hidden">
+             {profile.bannerUrl && <img src={profile.bannerUrl} className="w-full h-full object-cover animate-in fade-in duration-300" alt="Bannière" />}
              <button onClick={onClose} className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white p-2 rounded-full transition backdrop-blur-sm">
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
              </button>
@@ -229,7 +213,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
                     <h2 className="text-3xl font-bold text-white">{profile.username}</h2>
                     <span className="text-xl text-slate-500 font-normal">#{profile.discriminator}</span>
                 </div>
-                {/* On affiche la date seulement si elle est chargée, sinon skeleton discret */}
                 {profile.createdAt ? (
                     <p className="text-sm text-slate-400 mt-2">Membre depuis le {new Date(profile.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                 ) : (
@@ -251,7 +234,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <div>
                         <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wide">À propos de moi</h3>
-                        {/* Si Bio chargée : Texte. Si loading et pas de bio : Skeleton. */}
                         {profile.bio !== undefined ? (
                              <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{profile.bio || "Cet utilisateur préfère rester mystérieux..."}</p>
                         ) : (
@@ -260,7 +242,6 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
                     </div>
                  </div> 
              )}
-             {/* Onglets secondaires inchangés */}
              {activeTab === 'mutual_servers' && ( <div className="grid grid-cols-1 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"><div className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/40 border border-slate-700/30 hover:bg-slate-800 transition cursor-pointer"><div className="w-10 h-10 rounded-[14px] bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">VL</div><div><div className="text-white font-medium">Velmu Serveur</div><div className="text-xs text-slate-400">Serveur Principal</div></div></div></div> )}
              {activeTab === 'mutual_friends' && ( <div className="flex flex-col items-center justify-center py-8 opacity-60 animate-in fade-in slide-in-from-bottom-2 duration-200"><svg className="w-12 h-12 text-slate-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><div className="text-slate-400 text-sm font-medium">Aucun ami en commun</div></div> )}
           </div>
