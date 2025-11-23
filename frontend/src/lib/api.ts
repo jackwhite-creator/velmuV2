@@ -1,7 +1,11 @@
 import axios from 'axios';
 
+// ✅ CORRECTION ICI : On récupère la variable d'environnement définie sur Vercel
+// Si on est en local (dev), ça prendra 'http://localhost:4000' par défaut.
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+
 const api = axios.create({
-  baseURL: 'http://localhost:4000/api',
+  baseURL: `${BASE_URL}/api`, // On ajoute /api à la fin de l'URL de base
 });
 
 // 1. INTERCEPTEUR DE REQUÊTE (Ajoute le token)

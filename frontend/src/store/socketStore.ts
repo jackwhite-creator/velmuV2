@@ -26,7 +26,8 @@ export const useSocketStore = create<SocketState>((set, get) => ({
     if (!token) return;
 
     // 3. Initialisation propre
-    const newSocket = io('http://localhost:4000', {
+    const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000';
+    const newSocket = io('BASE_URL', {
       auth: { token },
       reconnection: true,       // Essaye de se reconnecter auto
       reconnectionAttempts: 5,  // Max 5 fois
