@@ -1,10 +1,9 @@
 import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
-import { ChannelType } from '@prisma/client'; // 👈 IMPORT IMPORTANT
+import { ChannelType } from '@prisma/client';
 
 export const ChannelController = {
   
-  // 1. CRÉER UN SALON
   async create(req: Request, res: Response) {
     try {
       const userId = req.user?.userId;
@@ -31,7 +30,7 @@ export const ChannelController = {
       if (!member) return res.status(403).json({ error: "Accès refusé" });
 
       const isOwner = member.server.ownerId === userId;
-      // Vérification simplifiée des permissions (à adapter selon ta logique de rôles)
+      
       const hasPermission = member.roles.some(r => 
         r.permissions.includes('ADMIN') || r.permissions.includes('MANAGE_CHANNELS')
       );
@@ -40,15 +39,14 @@ export const ChannelController = {
         return res.status(403).json({ error: "Vous n'avez pas la permission de créer des salons." });
       }
 
-      // ✅ CORRECTION ICI : Conversion String -> Enum
-      let prismaType = ChannelType.TEXT; // Valeur par défaut
+      let prismaType: ChannelType = ChannelType.TEXT;
       if (type === 'audio' || type === 'AUDIO') prismaType = ChannelType.AUDIO;
       if (type === 'video' || type === 'VIDEO') prismaType = ChannelType.VIDEO;
 
       const channel = await prisma.channel.create({
         data: {
           name,
-          type: prismaType, // 👈 Utilisation de l'Enum
+          type: prismaType,
           categoryId,
           serverId: category.serverId
         }
@@ -64,7 +62,6 @@ export const ChannelController = {
     }
   },
 
-  // 2. SUPPRIMER UN SALON
   async delete(req: Request, res: Response) {
     try {
       const userId = req.user?.userId;
@@ -98,7 +95,6 @@ export const ChannelController = {
     }
   },
 
-  // 3. MODIFIER UN SALON
   async update(req: Request, res: Response) {
     try {
       const { channelId } = req.params;
@@ -121,7 +117,6 @@ export const ChannelController = {
     }
   },
 
-  // 4. RÉORDONNER LES SALONS (Drag & Drop)
   async reorder(req: Request, res: Response) {
       try {
           const { categoryId, orderedIds } = req.body; 
@@ -130,7 +125,6 @@ export const ChannelController = {
               return res.status(400).json({ error: "Données invalides" });
           }
 
-          // A. Transaction DB : On met à jour l'ordre
           await prisma.$transaction(
             orderedIds.map((id: string, index: number) => 
                 prisma.channel.update({
@@ -143,16 +137,13 @@ export const ChannelController = {
             )
           );
 
-          // B. Récupération du serverId via la catégorie (Nécessaire pour le socket)
           const category = await prisma.category.findUnique({
               where: { id: categoryId },
               select: { serverId: true }
           });
 
-          // C. Notification Temps Réel
           if (category) {
               const io = req.app.get('io');
-              // On notifie tous les membres connectés au serveur
               io.to(`server_${category.serverId}`).emit('refresh_server_ui', category.serverId);
           }
           

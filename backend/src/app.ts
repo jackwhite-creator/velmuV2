@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import path from 'path';
 import authRoutes from './routes/auth.routes';
-import chatRoutes from './routes/chat.routes';
 import userRoutes from './routes/user.routes';
 import serverRoutes from './routes/server.routes';
 import categoryRoutes from './routes/category.routes';
@@ -13,16 +12,15 @@ import conversationRoutes from './routes/conversation.routes';
 import friendRoutes from './routes/friend.routes';
 import messageRoutes from './routes/message.routes';
 
-
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     credentials: true
 }));
+
 app.use(express.json());
 
-// 👇 CORRECTION ICI : Utiliser process.cwd() pour un chemin absolu fiable
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Routes

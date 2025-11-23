@@ -18,7 +18,7 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'velmu-uploads', // Le nom du dossier qui sera créé dans ton Cloudinary
     allowed_formats: ['jpg', 'png', 'jpeg', 'gif', 'webp', 'pdf'], // Formats acceptés
-    public_id: (req, file) => {
+    public_id: (req: any, file: any) => {
       // On génère un nom unique pour éviter les doublons
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       // On nettoie le nom d'origine pour éviter les caractères bizarres
