@@ -9,12 +9,10 @@ export const updateMessage = async (req: Request, res: Response) => {
     const { messageId } = req.params;
     const { content } = req.body;
 
-    // 1. Vérifier propriété
     const message = await prisma.message.findUnique({ where: { id: messageId } });
     if (!message) return res.status(404).json({ error: "Message introuvable" });
     if (message.userId !== userId) return res.status(403).json({ error: "Non autorisé" });
 
-    // 2. Update
     const updatedMessage = await prisma.message.update({
       where: { id: messageId },
       data: { content },
@@ -25,9 +23,7 @@ export const updateMessage = async (req: Request, res: Response) => {
       }
     });
 
-    // 3. Socket Notify
     const io = req.app.get('io');
-    // Astuce : On notifie la room correspondante (Channel ou DM)
     const room = updatedMessage.channelId || `conversation_${updatedMessage.conversationId}`;
     io.to(room).emit('message_updated', updatedMessage);
 
@@ -44,15 +40,12 @@ export const deleteMessage = async (req: Request, res: Response) => {
     const userId = req.user!.userId;
     const { messageId } = req.params;
 
-    // 1. Vérifier propriété
     const message = await prisma.message.findUnique({ where: { id: messageId } });
     if (!message) return res.status(404).json({ error: "Message introuvable" });
     if (message.userId !== userId) return res.status(403).json({ error: "Non autorisé" });
 
-    // 2. Delete
     await prisma.message.delete({ where: { id: messageId } });
 
-    // 3. Socket Notify
     const io = req.app.get('io');
     const room = message.channelId || `conversation_${message.conversationId}`;
     io.to(room).emit('message_deleted', { 
@@ -68,26 +61,23 @@ export const deleteMessage = async (req: Request, res: Response) => {
   }
 };
 
-
+// ✅ CORRECTION MAJEURE ICI (Cloudinary)
 export const createMessage = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
-    // Multer met les champs texte dans req.body et le fichier dans req.file
     const { content, channelId, conversationId, replyToId } = req.body;
     const file = req.file;
 
-    // Validation
     if (!content && !file) {
         return res.status(400).json({ error: "Le message ne peut pas être vide" });
     }
     
-    // Préparation des métadonnées du fichier si présent
     let fileData = null;
     if (file) {
-        // L'URL d'accès public (statique)
-        const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+        // 👇 CORRECTION : On utilise l'URL fournie par Cloudinary (req.file.path)
+        // Au lieu de construire une URL locale qui ne marche pas en prod
+        const fileUrl = (file as any).path; 
         
-        // Détection basique du type pour le frontend
         const type = file.mimetype.startsWith('image/') ? 'IMAGE' : 'FILE';
         
         fileData = {
@@ -98,17 +88,15 @@ export const createMessage = async (req: Request, res: Response) => {
         };
     }
 
-    // Appel au service
     const newMessage = await ChatService.createMessage({
         userId,
-        content: content || '', // Peut être vide si c'est juste une image
+        content: content || '',
         fileData,
         channelId,
         conversationId,
         replyToId
     });
 
-    // Émission Socket
     const io = req.app.get('io');
     const room = channelId || `conversation_${conversationId}`;
     io.to(room).emit('new_message', newMessage);
@@ -121,7 +109,6 @@ export const createMessage = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ AJOUT : GET MESSAGES (Pagination)
 export const getMessages = async (req: Request, res: Response) => {
     try {
         const { channelId, conversationId, cursor } = req.query;
@@ -131,7 +118,7 @@ export const getMessages = async (req: Request, res: Response) => {
         }
 
         let messages;
-        const limit = 20; // Charge 20 messages par scroll
+        const limit = 20;
 
         if (channelId) {
             messages = await ChatService.getChannelMessages(
@@ -147,7 +134,6 @@ export const getMessages = async (req: Request, res: Response) => {
             );
         }
 
-        // Logique de "nextCursor" pour le scroll infini frontend
         let nextCursor = null;
         if (messages.length === limit) {
             nextCursor = messages[messages.length - 1].id;
