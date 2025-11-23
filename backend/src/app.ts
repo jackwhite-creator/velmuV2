@@ -14,8 +14,15 @@ import messageRoutes from './routes/message.routes';
 
 const app = express();
 
+// ✅ CORRECTION CORS : On autorise explicitement Vercel ET Localhost
+const allowedOrigins = [
+  "http://localhost:5173",             // Pour le dev local
+  "https://velmu.vercel.app",          // Pour la prod (Vercel)
+  process.env.CLIENT_URL               // Au cas où tu changes d'URL plus tard
+].filter(Boolean); // Filtre les valeurs vides (undefined)
+
 app.use(cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true
 }));
 

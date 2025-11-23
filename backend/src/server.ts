@@ -1,32 +1,20 @@
-import { createServer } from 'http';
-import { Server } from 'socket.io';
 import app from './app';
+import http from 'http';
+import { initSocket } from './socket'; // Attention à l'import (initSocket, pas initializeSocket)
 import dotenv from 'dotenv';
-import { initializeSocket } from './socket';
 
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 
-// 1. Création du serveur HTTP
-const httpServer = createServer(app);
+const httpServer = http.createServer(app);
 
-// 2. Configuration de Socket.IO
-const io = new Server(httpServer, {
-  cors: {
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST"]
-  }
-});
+// 👇 CHANGEMENT : On passe le httpServer à notre nouvelle fonction
+const io = initSocket(httpServer);
 
-// 3. IMPORTANT : On partage l'instance IO avec toute l'application Express
-// Cela permet d'utiliser req.app.get('io') dans les contrôleurs
+// On rend 'io' accessible partout dans l'app (pour tes controlleurs)
 app.set('io', io);
 
-// 4. Initialisation des événements Socket
-initializeSocket(io);
-
-// 5. Lancement
 httpServer.listen(PORT, () => {
-  console.log(`✅ Serveur Velmu lancé sur http://localhost:${PORT}`);
+  console.log(`✅ Serveur Velmu lancé sur le port ${PORT}`);
 });
