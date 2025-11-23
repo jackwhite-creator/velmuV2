@@ -17,72 +17,46 @@ const Icons = {
 };
 
 interface UserProfileModalProps { userId: string | null; onClose: () => void; onOpenSettings: () => void; }
-interface FullProfile { id: string; username: string; discriminator: string; avatarUrl: string | null; bannerUrl: string | null; bio: string | null; createdAt: string; }
+// On rend certains champs optionnels pour gérer le profil "Partiel" (juste nom/avatar)
+interface FullProfile { id: string; username: string; discriminator: string; avatarUrl: string | null; bannerUrl?: string | null; bio?: string | null; createdAt?: string; }
 
-// ✅ SKELETON PIXEL-PERFECT
-// Il utilise exactement les mêmes classes de layout que le composant réel pour éviter le "saut"
-const ProfileSkeleton = () => (
+// Skeleton complet (quand on ne connait RIEN de l'user)
+const FullSkeleton = () => (
   <div className="bg-slate-900 flex flex-col min-h-[500px] animate-pulse">
-     {/* Bannière : h-40 comme le vrai */}
      <div className="h-40 w-full bg-slate-800" />
-     
      <div className="px-8 relative">
-        {/* Ligne Avatar + Boutons : Margins identiques (-mt-16 mb-4) */}
         <div className="flex justify-between items-end -mt-16 mb-4">
-           {/* Avatar : w-32 h-32 p-[6px] */}
-           <div className="w-32 h-32 rounded-full bg-slate-900 p-[6px]">
-               <div className="w-full h-full rounded-full bg-slate-700"></div>
-           </div>
-           
-           {/* Boutons Actions */}
-           <div className="flex gap-3 mb-2">
-               <div className="h-10 w-32 bg-slate-700 rounded-md"></div> {/* Bouton principal */}
-               <div className="h-10 w-10 bg-slate-700 rounded-md"></div> {/* Bouton menu */}
-           </div>
+           <div className="w-32 h-32 rounded-full bg-slate-900 p-[6px]"><div className="w-full h-full rounded-full bg-slate-700"></div></div>
+           <div className="flex gap-3 mb-2"><div className="h-10 w-32 bg-slate-700 rounded-md"></div><div className="h-10 w-10 bg-slate-700 rounded-md"></div></div>
         </div>
-
-        {/* Info User : mb-6 */}
-        <div className="mb-6">
-            <div className="flex items-baseline gap-2">
-                <div className="h-9 w-48 bg-slate-700 rounded mb-2"></div> {/* Pseudo (taille approx text-3xl) */}
-            </div>
-            <div className="h-4 w-32 bg-slate-700/50 rounded mt-2"></div> {/* Date membre */}
-        </div>
+        <div className="mb-6"><div className="h-9 w-48 bg-slate-700 rounded mb-2"></div><div className="h-4 w-32 bg-slate-700/50 rounded mt-2"></div></div>
      </div>
+     <div className="px-8 border-b border-slate-800 flex gap-8"><div className="pb-3 w-24"><div className="h-4 bg-slate-700 rounded w-full"></div></div><div className="pb-3 w-32"><div className="h-4 bg-slate-700/50 rounded w-full"></div></div></div>
+     <div className="flex-1 p-8 bg-slate-900/50 min-h-[250px]"><div className="h-3 w-24 bg-slate-700/50 rounded mb-3"></div><div className="space-y-2"><div className="h-3 w-full bg-slate-700/30 rounded"></div><div className="h-3 w-[90%] bg-slate-700/30 rounded"></div></div></div>
+  </div>
+);
 
-     {/* Onglets : px-8 border-b */}
-     <div className="px-8 border-b border-slate-800 flex gap-8">
-         <div className="pb-3 w-24">
-            <div className="h-4 bg-slate-700 rounded w-full"></div>
-         </div>
-         <div className="pb-3 w-32">
-            <div className="h-4 bg-slate-700/50 rounded w-full"></div>
-         </div>
-         <div className="pb-3 w-28">
-            <div className="h-4 bg-slate-700/50 rounded w-full"></div>
-         </div>
-     </div>
-
-     {/* Contenu Bio : p-8 min-h-[250px] */}
-     <div className="flex-1 p-8 bg-slate-900/50 min-h-[250px]">
-         <div className="h-3 w-24 bg-slate-700/50 rounded mb-3"></div> {/* Titre "À PROPOS" */}
-         <div className="space-y-2">
-             <div className="h-3 w-full bg-slate-700/30 rounded"></div>
-             <div className="h-3 w-[90%] bg-slate-700/30 rounded"></div>
-             <div className="h-3 w-[95%] bg-slate-700/30 rounded"></div>
-         </div>
-     </div>
+// Skeleton Partiel (Juste pour la Bio et la Date quand le reste est déjà là)
+const BioSkeleton = () => (
+  <div className="animate-pulse space-y-4">
+      <div className="h-4 w-32 bg-slate-700/50 rounded"></div>
+      <div className="space-y-2">
+          <div className="h-3 w-full bg-slate-700/30 rounded"></div>
+          <div className="h-3 w-[90%] bg-slate-700/30 rounded"></div>
+          <div className="h-3 w-[60%] bg-slate-700/30 rounded"></div>
+      </div>
   </div>
 );
 
 export default function UserProfileModal({ userId, onClose, onOpenSettings }: UserProfileModalProps) {
   const navigate = useNavigate();
-  const { onlineUsers, addConversation, setActiveConversation, setActiveServer } = useServerStore();
+  // ✅ AJOUT : on récupère les members et conversations pour chercher l'user en cache
+  const { onlineUsers, addConversation, setActiveConversation, setActiveServer, activeServer, conversations } = useServerStore();
   const { requests, addRequest, updateRequest, removeRequest } = useFriendStore(); 
   const { user: currentUser } = useAuthStore();
 
   const [profile, setProfile] = useState<FullProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Loading = "Est-ce qu'on cherche encore des infos ?"
   const [actionLoading, setActionLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<'info' | 'mutual_servers' | 'mutual_friends'>('info');
   
@@ -95,10 +69,38 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
 
   useEffect(() => {
     if (userId) {
+      // 1. RECHERCHE OPTIMISTE (CACHE)
+      // On regarde si on connait déjà cet utilisateur via le serveur actif ou les DMs
+      const cachedMember = activeServer?.members?.find((m: any) => m.user.id === userId);
+      const cachedDMUser = conversations.flatMap(c => c.users).find(u => u.id === userId);
+      const cachedSelf = isMe ? currentUser : null;
+
+      const cachedUser = cachedMember?.user || cachedDMUser || cachedSelf;
+
+      if (cachedUser) {
+        // Si trouvé, on affiche immédiatement les infos de base !
+        setProfile({
+            id: cachedUser.id,
+            username: cachedUser.username,
+            discriminator: cachedUser.discriminator,
+            avatarUrl: cachedUser.avatarUrl,
+            // Les champs suivants resteront undefined le temps du fetch
+            bannerUrl: null, 
+            bio: null,
+            createdAt: undefined
+        });
+      } else {
+        setProfile(null);
+      }
+
       setLoading(true);
-      api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
+      // 2. RECHERCHE COMPLÈTE (API)
+      api.get(`/users/${userId}`)
+         .then(res => setProfile(res.data)) // Remplace le profil partiel par le complet
+         .catch(console.error)
+         .finally(() => setLoading(false));
     }
-  }, [userId]);
+  }, [userId, activeServer, conversations, currentUser, isMe]);
 
   const getFriendStatus = () => {
     if (isMe) return 'ME';
@@ -171,7 +173,8 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   };
 
   const renderActionButton = () => {
-    if (loading || !profile) return null;
+    // Si on a un profil partiel, on peut déjà afficher les boutons d'action !
+    if (!profile) return null;
     const btnBase = "px-6 py-2.5 rounded-md font-semibold text-sm transition shadow-md flex items-center justify-center gap-2";
 
     switch (friendStatus) {
@@ -188,10 +191,13 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
     }
   };
 
+  // Si loading est true MAIS qu'on n'a pas de profil du tout (même pas partiel), on affiche le FullSkeleton
+  const showFullSkeleton = loading && !profile;
+
   return (
     <Modal isOpen={!!userId} onClose={onClose} size="lg">
-      {loading ? ( 
-        <ProfileSkeleton />
+      {showFullSkeleton ? ( 
+        <FullSkeleton />
       ) : 
       profile ? (
         <div className="bg-slate-900 flex flex-col text-slate-100 min-h-[500px] animate-in fade-in duration-200">
@@ -218,7 +224,18 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
                     )}
                 </div>
              </div>
-             <div className="mb-6"><div className="flex items-baseline gap-2"><h2 className="text-3xl font-bold text-white">{profile.username}</h2><span className="text-xl text-slate-500 font-normal">#{profile.discriminator}</span></div><p className="text-sm text-slate-400 mt-2">Membre depuis le {new Date(profile.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p></div>
+             <div className="mb-6">
+                <div className="flex items-baseline gap-2">
+                    <h2 className="text-3xl font-bold text-white">{profile.username}</h2>
+                    <span className="text-xl text-slate-500 font-normal">#{profile.discriminator}</span>
+                </div>
+                {/* On affiche la date seulement si elle est chargée, sinon skeleton discret */}
+                {profile.createdAt ? (
+                    <p className="text-sm text-slate-400 mt-2">Membre depuis le {new Date(profile.createdAt).toLocaleDateString('fr-FR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                ) : (
+                    <div className="h-4 w-32 bg-slate-700/50 rounded mt-2 animate-pulse"></div>
+                )}
+             </div>
           </div>
           <div className="px-8 border-b border-slate-800 flex gap-8">
               <button onClick={() => setActiveTab('info')} className={`pb-3 text-sm font-medium transition-all relative ${activeTab === 'info' ? 'text-white' : 'text-slate-400 hover:text-slate-200'}`}>Info utilisateur{activeTab === 'info' && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-indigo-500 rounded-t-full"></div>}</button>
@@ -230,7 +247,20 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
               )}
           </div>
           <div className="flex-1 p-8 bg-slate-900/50 min-h-[250px]">
-             {activeTab === 'info' && ( <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200"><div><h3 className="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wide">À propos de moi</h3><p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{profile.bio || "Cet utilisateur préfère rester mystérieux..."}</p></div></div> )}
+             {activeTab === 'info' && ( 
+                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div>
+                        <h3 className="text-xs font-bold text-slate-400 uppercase mb-3 tracking-wide">À propos de moi</h3>
+                        {/* Si Bio chargée : Texte. Si loading et pas de bio : Skeleton. */}
+                        {profile.bio !== undefined ? (
+                             <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{profile.bio || "Cet utilisateur préfère rester mystérieux..."}</p>
+                        ) : (
+                             <BioSkeleton />
+                        )}
+                    </div>
+                 </div> 
+             )}
+             {/* Onglets secondaires inchangés */}
              {activeTab === 'mutual_servers' && ( <div className="grid grid-cols-1 gap-2 animate-in fade-in slide-in-from-bottom-2 duration-200"><div className="flex items-center gap-4 p-3 rounded-lg bg-slate-800/40 border border-slate-700/30 hover:bg-slate-800 transition cursor-pointer"><div className="w-10 h-10 rounded-[14px] bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">VL</div><div><div className="text-white font-medium">Velmu Serveur</div><div className="text-xs text-slate-400">Serveur Principal</div></div></div></div> )}
              {activeTab === 'mutual_friends' && ( <div className="flex flex-col items-center justify-center py-8 opacity-60 animate-in fade-in slide-in-from-bottom-2 duration-200"><svg className="w-12 h-12 text-slate-600 mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><div className="text-slate-400 text-sm font-medium">Aucun ami en commun</div></div> )}
           </div>
