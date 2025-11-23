@@ -67,21 +67,45 @@ export const useServerStore = create<ServerState>((set) => ({
   setActiveServer: (server) => set({ activeServer: server, activeConversation: null }),
   setActiveChannel: (channel) => set({ activeChannel: channel }),
 
-  setConversations: (conversations) => set({ conversations }),
+  // ✅ CORRECTION 1 : Au chargement, on exclut celles qui sont "fermées" dans le LocalStorage
+  setConversations: (conversations) => {
+    const hiddenIds = JSON.parse(localStorage.getItem('velmu_closed_dms') || '[]');
+    const visible = conversations.filter(c => !hiddenIds.includes(c.id));
+    set({ conversations: visible });
+  },
+
+  // ✅ CORRECTION 2 : Si on ajoute une conv (ex: clic sur "Message" d'un ami), on la dé-bannit
   addConversation: (conversation) => set((state) => {
+    // On retire l'ID de la liste noire pour qu'elle réapparaisse
+    const hiddenIds = JSON.parse(localStorage.getItem('velmu_closed_dms') || '[]');
+    if (hiddenIds.includes(conversation.id)) {
+        const newHidden = hiddenIds.filter((id: string) => id !== conversation.id);
+        localStorage.setItem('velmu_closed_dms', JSON.stringify(newHidden));
+    }
+
     if (state.conversations.find(c => c.id === conversation.id)) return state;
     return { conversations: [conversation, ...state.conversations] };
   }),
+
   setActiveConversation: (conversation) => set({ 
     activeConversation: conversation,
     activeServer: null, 
     activeChannel: null 
   }),
   
-  closeConversation: (conversationId) => set((state) => ({
-    conversations: state.conversations.filter(c => c.id !== conversationId),
-    activeConversation: state.activeConversation?.id === conversationId ? null : state.activeConversation
-  })),
+  // ✅ CORRECTION 3 : Quand on ferme, on sauvegarde l'ID dans le LocalStorage
+  closeConversation: (conversationId) => set((state) => {
+    const hiddenIds = JSON.parse(localStorage.getItem('velmu_closed_dms') || '[]');
+    if (!hiddenIds.includes(conversationId)) {
+        hiddenIds.push(conversationId);
+        localStorage.setItem('velmu_closed_dms', JSON.stringify(hiddenIds));
+    }
+
+    return {
+      conversations: state.conversations.filter(c => c.id !== conversationId),
+      activeConversation: state.activeConversation?.id === conversationId ? null : state.activeConversation
+    };
+  }),
 
   setOnlineUsers: (userIds) => set({ onlineUsers: new Set(userIds) }),
 }));
