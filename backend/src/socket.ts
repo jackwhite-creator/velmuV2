@@ -1,4 +1,4 @@
-import { Server as HttpServer } from 'http'; // Import nécessaire
+import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { SocketGuard } from './services/socket.guard';
@@ -6,31 +6,43 @@ import { SocketGuard } from './services/socket.guard';
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-dev-key';
 const onlineUsers = new Map<string, Set<string>>();
 
-// 👇 CHANGEMENT : On prend le HttpServer en entrée pour créer io nous-mêmes avec CORS
 export const initSocket = (httpServer: HttpServer) => {
-
-  // 1. Configuration CORS (Le correctif pour Vercel)
-  const allowedOrigins = [
-    "http://localhost:5173",             // Ton local frontend
-    "https://velmu.vercel.app",          // Ton Vercel frontend
-    process.env.CLIENT_URL               // Variable Render
-  ].filter(Boolean) as string[];
 
   const io = new Server(httpServer, {
     cors: {
-      origin: allowedOrigins,
+      // 👇 CORRECTION MAJEURE : On utilise une fonction pour être plus souple
+      origin: (requestOrigin, callback) => {
+        const allowedOrigins = [
+          "http://localhost:5173",
+          "https://velmu.vercel.app",
+          process.env.CLIENT_URL
+        ];
+
+        // 1. Si pas d'origine (ex: appel serveur à serveur), on autorise
+        if (!requestOrigin) return callback(null, true);
+
+        // 2. On vérifie si l'origine est dans la liste (en ignorant le slash de fin)
+        const isAllowed = allowedOrigins.some(origin => 
+          origin && requestOrigin.startsWith(origin.replace(/\/$/, "")) // On retire le slash final pour comparer
+        );
+
+        if (isAllowed) {
+          callback(null, true);
+        } else {
+          console.log("🔴 CORS Bloqué pour l'origine :", requestOrigin); // Utile pour les logs Render
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
       methods: ["GET", "POST"],
       credentials: true
     }
   });
 
-  // 2. Fonction utilitaire (Ton code)
   const broadcastOnlineUsers = () => {
     const onlineUserIds = Array.from(onlineUsers.keys());
     io.emit('online_users_update', onlineUserIds);
   };
 
-  // 3. Middleware d'auth (Ton code)
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error("Authentication error"));
@@ -41,20 +53,17 @@ export const initSocket = (httpServer: HttpServer) => {
     });
   });
 
-  // 4. Connexion et logique (Ton code intact)
   io.on('connection', (socket: Socket) => {
     const userId = (socket as any).userId;
     console.log(`🟢 User ${userId} connected`);
 
     socket.join(userId); 
     
-    // Ajout à la liste
     if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
     onlineUsers.get(userId)?.add(socket.id);
     
     broadcastOnlineUsers();
 
-    // --- EVENTS (Ton code) ---
     socket.on('join_channel', async (channelId) => {
         const canJoin = await SocketGuard.validateChannelAccess(userId, channelId);
         if (!canJoin) return socket.emit('error', { message: "Access Denied" });
@@ -83,7 +92,13 @@ export const initSocket = (httpServer: HttpServer) => {
         socket.to(room).emit('user_typing', { ...data, userId, isTyping: false });
     });
 
-    // --- DISCONNECT (Ton code) ---
+    socket.on('leave_channel', (channelId: string) => {
+        socket.leave(channelId);
+    });
+    socket.on('leave_conversation', (conversationId: string) => {
+        socket.leave(`conversation_${conversationId}`);
+    });
+
     socket.on('disconnect', () => {
       const userSockets = onlineUsers.get(userId);
       if (userSockets) {
@@ -96,6 +111,5 @@ export const initSocket = (httpServer: HttpServer) => {
     });
   });
 
-  // On retourne l'instance io pour server.ts
   return io;
 };
