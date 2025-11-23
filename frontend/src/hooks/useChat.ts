@@ -44,15 +44,12 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
 
     const params = isDm ? { conversationId: targetId } : { channelId: targetId };
 
-    console.log("🚀 [Chat] Chargement initial pour:", targetId);
-
     api.get('/messages', { params })
       .then((res) => {
-        console.log("📥 [Chat] Reçu initial:", res.data.items.length, "messages. NextCursor:", res.data.nextCursor);
         setMessages(res.data.items.reverse());
         setHasMore(!!res.data.nextCursor);
       })
-      .catch(err => console.error("❌ [Chat] Erreur load initial:", err))
+      .catch(err => console.error("Erreur load initial:", err))
       .finally(() => setLoading(false));
   }, [targetId, isDm]);
 
@@ -100,12 +97,8 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
 
   // Load More (Scroll Up)
   const loadMore = useCallback(async () => {
-    // Debugging conditions
-    if (messages.length === 0) return console.log("⚠️ [LoadMore] Bloqué: Pas de messages");
-    if (isLoadingMore) return console.log("⚠️ [LoadMore] Bloqué: Déjà en cours");
-    if (!hasMore) return console.log("⚠️ [LoadMore] Bloqué: Plus de messages (HasMore=false)");
+    if (messages.length === 0 || isLoadingMore || !hasMore) return;
 
-    console.log("🔄 [LoadMore] Lancement...");
     setIsLoadingMore(true);
     
     const oldestId = messages[0].id; 
@@ -116,10 +109,7 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     try {
       const res = await api.get('/messages', { params });
       
-      console.log("📥 [LoadMore] Reçu:", res.data.items.length, "anciens messages.");
-
       if (!res.data.nextCursor) {
-        console.log("🛑 [LoadMore] Fin de l'historique atteinte.");
         setHasMore(false);
       }
       
@@ -135,7 +125,7 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
         setHasMore(false);
       }
     } catch (err) { 
-      console.error('❌ [LoadMore] Erreur API:', err); 
+      console.error('Erreur LoadMore:', err); 
     } finally {
       setIsLoadingMore(false);
     }
