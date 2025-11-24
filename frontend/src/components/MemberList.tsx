@@ -20,7 +20,7 @@ export default function MemberList({ onUserClick }: Props) {
   const offlineMembers = sortedMembers.filter(m => !onlineUsers.has(m.userId));
 
   const getMemberColor = (member: any) => {
-    if (!member.roles || member.roles.length === 0) return '#9ca3af';
+    if (!member.roles || member.roles.length === 0) return '#a1a1aa'; // zinc-400 par défaut
     return member.roles[0].color;
   };
 
@@ -32,22 +32,22 @@ export default function MemberList({ onUserClick }: Props) {
     return (
       <div 
         onClick={(e) => onUserClick(e, member.userId)}
-        // 👇 AJOUT : select-none empêche le curseur texte partout dans la carte
-        className="flex items-center gap-3 p-2 mx-2 rounded-md border border-transparent hover:bg-slate-700 hover:border-slate-600 cursor-pointer group transition-all duration-150 select-none"
+        // ✅ STYLE BLOC : Padding aéré (px-2.5 py-1.5), rounded-sm, hover sombre
+        className="flex items-center gap-3 px-2.5 py-1.5 mx-2 rounded-sm hover:bg-zinc-700/40 cursor-pointer group transition-colors select-none mb-0.5"
       >
-        {/* AVATAR */}
+        {/* AVATAR (w-9 h-9) */}
         <div className="relative">
-          <div className="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden text-white font-bold text-xs">
+          <div className="w-9 h-9 rounded-full bg-zinc-700 flex items-center justify-center overflow-hidden text-zinc-300 font-bold text-xs shadow-sm">
             {member.user.avatarUrl ? (
               <img src={member.user.avatarUrl} alt={member.user.username} className="w-full h-full object-cover" />
             ) : (
               member.user.username[0].toUpperCase()
             )}
           </div>
+          
+          {/* Pastille Statut (Bordure adaptée au fond #2b2d31) */}
           {isOnline && (
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-slate-800 rounded-full flex items-center justify-center">
-                <div className="w-2.5 h-2.5 bg-green-500 rounded-full"></div>
-            </div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-[2.5px] border-[#2b2d31] rounded-full bg-emerald-500"></div>
           )}
         </div>
 
@@ -56,27 +56,25 @@ export default function MemberList({ onUserClick }: Props) {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 min-w-0">
                 <span 
-                    className="font-medium text-sm truncate opacity-90 group-hover:opacity-100"
+                    className="font-medium text-sm truncate opacity-90 group-hover:opacity-100 transition-opacity"
                     style={{ color: color }}
                 >
                     {member.user.username}
                 </span>
                 
-                {/* 👑 ICONE COURONNE */}
+                {/* 👑 ICONE COURONNE (Améliorée) */}
                 {isOwner && (
-                <Tooltip text="Propriétaire du serveur" side="top">
-                    {/* On garde cursor-default et on ajoute une div tampon pour faciliter le survol */}
-                    <div className="text-amber-400 flex-shrink-0 cursor-default flex items-center justify-center">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z" />
-                        </svg>
+                <Tooltip text="Propriétaire" side="top">
+                    <div className="text-amber-400 flex-shrink-0 cursor-default">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14v2H5z" /></svg>
                     </div>
                 </Tooltip>
             )}
             </div>
           </div>
           
-          <div className="text-xs text-slate-500 truncate group-hover:text-slate-400">
+          {/* Discriminator ou Bio en plus petit/sombre */}
+          <div className="text-[11px] text-zinc-500 truncate group-hover:text-zinc-400 transition-colors font-medium">
              {member.user.bio || `#${member.user.discriminator}`}
           </div>
         </div>
@@ -85,11 +83,12 @@ export default function MemberList({ onUserClick }: Props) {
   };
 
   return (
-    <div className="h-full w-full py-4 overflow-y-auto custom-scrollbar">
+    // Fond transparent (sera géré par le parent)
+    <div className="h-full w-full py-6 overflow-y-auto custom-scrollbar">
       
       {/* EN LIGNE */}
       <div className="mb-6">
-        <h3 className="text-xs font-bold text-slate-500 uppercase mb-2 px-4 tracking-wide select-none">
+        <h3 className="text-[11px] font-bold text-zinc-500 uppercase mb-2 px-4 tracking-wider select-none">
           En ligne — {onlineMembers.length}
         </h3>
         <div className="space-y-0.5">
@@ -101,16 +100,16 @@ export default function MemberList({ onUserClick }: Props) {
 
       {/* HORS LIGNE */}
       <div>
-        <h3 className="text-xs font-bold text-slate-500 uppercase mb-2 px-4 tracking-wide select-none">
+        <h3 className="text-[11px] font-bold text-zinc-500 uppercase mb-2 px-4 tracking-wider select-none">
           Hors ligne — {offlineMembers.length}
         </h3>
-        <div className="space-y-0.5 opacity-80">
+        <div className="space-y-0.5 opacity-70 hover:opacity-100 transition-opacity">
            {offlineMembers.length > 0 ? (
                offlineMembers.map((member) => (
                 <MemberItem key={member.id} member={member} />
                ))
            ) : (
-               <div className="px-4 text-xs text-slate-600 italic select-none">C'est bien calme par ici...</div>
+               <div className="px-4 text-xs text-zinc-600 italic select-none py-2">Personne ne se cache ici...</div>
            )}
         </div>
       </div>

@@ -47,10 +47,6 @@ export default function ChatPage() {
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
 
-  // 👇 CORRECTION : On retire les refs de scroll d'ici car elles sont gérées dans MessageList via le hook
-  // const scrollRef = useRef<HTMLDivElement>(null);
-  // const messagesEndRef = useRef<HTMLDivElement>(null);
-
   useEffect(() => {
     if (socket && activeServer?.id) {
       socket.emit('join_server', activeServer.id);
@@ -99,15 +95,6 @@ export default function ChatPage() {
   const isDmMode = !activeServer;
   const showFriendsDashboard = isDmMode && !activeConversation;
   const effectiveChannel = isDmMode && activeConversation ? { id: activeConversation.id, name: activeConversation.users.find(u => u.id !== user?.id)?.username || 'Ami', type: 'dm' } : activeChannel;
-  
-  // ❌ SUPPRESSION : On retire handleScroll qui faisait conflit avec le hook
-  /* const handleScroll = () => {
-    if (scrollRef.current && scrollRef.current.scrollTop === 0 && hasMore && !loading) {
-      const oldHeight = scrollRef.current.scrollHeight;
-      loadMore().then(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight - oldHeight; });
-    }
-  }; 
-  */
   
   const handleUserClick = (e: React.MouseEvent, userId: string) => {
     e.stopPropagation(); 
@@ -170,11 +157,11 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="flex h-screen w-full bg-slate-900 text-slate-100 overflow-hidden font-sans select-none">
+    <div className="flex h-screen w-full bg-[#1e1e20] text-zinc-100 overflow-hidden font-sans select-none">
       
       <ServerRail onOpenCreateServer={() => setIsCreateServerOpen(true)} onOpenJoinServer={() => setIsJoinServerOpen(true)} />
 
-      <div className="w-60 bg-slate-800 flex flex-col h-full border-r border-slate-900/50 flex-shrink-0">
+      <div className="w-[240px] bg-[#2b2d31] flex flex-col h-full flex-shrink-0 border-r border-[#1e1f22]">
         <div className="flex-1 overflow-y-auto custom-scrollbar">
             {activeServer ? (
               <ServerChannels 
@@ -183,12 +170,13 @@ export default function ChatPage() {
                 socket={socket}
                 onInvite={() => setIsInviteOpen(true)}
                 onChannelSelect={(c) => navigate(`/channels/${activeServer.id}/${c.id}`)} 
+                onOpenProfile={() => setIsSettingsOpen(true)}
               />
             ) : (
               <DMSidebar onUserContextMenu={handleUserContextMenu} /> 
             )}
         </div>
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 bg-[#232428]">
             <UserFooter />
         </div>
       </div>
@@ -196,24 +184,19 @@ export default function ChatPage() {
       {showFriendsDashboard ? (
         <FriendsDashboard onUserContextMenu={handleUserContextMenu} />
       ) : (
-        <main className="flex-1 flex min-w-0 bg-slate-700 relative shadow-lg z-0 overflow-hidden">
+        <main className="flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden">
           <ChatArea
             activeChannel={effectiveChannel || null} 
             messages={messages} isLoadingMore={loading} hasMore={hasMore}
             inputValue={inputValue} setInputValue={setInputValue}
             showMembers={showMembers} onToggleMembers={() => setShowMembers(!showMembers)}
             socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
-            
-            // 👇 CORRECTION : On passe directement loadMore ici !
             onScroll={loadMore} 
-            
-            // onScroll={handleScroll} <--- Ancien code
-            // scrollRef={scrollRef} messagesEndRef={messagesEndRef} <--- Plus besoin de passer les refs
-            
             onUserClick={handleUserClick} sendMessage={sendMessage}
           />
           {activeServer && showMembers && (
-            <div className="hidden lg:block w-60 bg-slate-800 border-l border-slate-900/50 h-full flex-shrink-0 overflow-y-auto custom-scrollbar">
+            // ✅ FOND MIS À JOUR : #2b2d31 (Zinc) + Border #26272d
+            <div className="hidden lg:block w-60 bg-[#2b2d31] border-l border-[#26272d] h-full flex-shrink-0 overflow-y-auto custom-scrollbar">
               <MemberList onUserClick={handleUserClick} />
             </div>
           )}
