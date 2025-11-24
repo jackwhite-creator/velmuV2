@@ -30,13 +30,24 @@ export default function ChatInput(props: Props) {
   const {
     fileInputRef, textInputRef, emojiPickerRef,
     previewUrl, showEmojiPicker, setShowEmojiPicker,
-    handleFileSelect, clearFile, triggerSend, handleTyping, addEmoji, canSend
+    handleFileSelect, clearFile, triggerSend, handleTyping, addEmoji
   } = useChatInput(props);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      triggerSend(e);
+      // On bloque l'envoi si déjà en cours pour éviter les doublons, mais sans désactiver l'input
+      if (!isSending) {
+        triggerSend(e);
+      }
+    }
+  };
+
+  const handleManualSend = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!isSending && (inputValue.trim() || previewUrl)) {
+        // On simule un event form pour réutiliser la logique existante
+        props.onSendMessage(e as any);
     }
   };
 
@@ -44,17 +55,17 @@ export default function ChatInput(props: Props) {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
-        const file = items[i].getAsFile();
-        // Logique gérée via le hook (input file)
+        // La logique est gérée dans le hook useChatInput normalement
+        // Si besoin, on peut forcer ici, mais le hook le fait déjà via l'input file
       }
     }
   };
 
   const remaining = MAX_LENGTH - inputValue.length;
   const showCounter = inputValue.length > 1500;
+  const canSend = (inputValue.trim().length > 0 || previewUrl) && !isSending;
 
   return (
-    // ✅ FOND ZINC (#313338)
     <div className="bg-[#313338] flex-shrink-0 px-4 pb-6 pt-2 relative">
         
         <TypingIndicator 
@@ -94,7 +105,6 @@ export default function ChatInput(props: Props) {
         {/* INPUT PRINCIPAL */}
         <div 
           onClick={() => textInputRef.current?.focus()}
-          // ✅ STYLE BLOC : bg-[#383a40], rounded-md (carré adouci)
           className={`bg-[#383a40] relative px-4 py-3 flex items-start gap-3 transition-all cursor-text ${replyingTo ? 'rounded-b-md' : 'rounded-md'}`}
         >
             
@@ -114,20 +124,21 @@ export default function ChatInput(props: Props) {
             <textarea 
                 ref={textInputRef}
                 rows={1}
-                className="flex-1 bg-transparent text-zinc-100 outline-none font-normal text-[15px] placeholder-zinc-500 resize-none py-0.5 pr-24 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed" 
+                // ✅ FIX : pr-32 pour laisser la place aux DEUX boutons (Emoji + Send)
+                // ✅ FIX : disabled retiré pour éviter le saut visuel
+                className="flex-1 bg-transparent text-zinc-100 outline-none font-normal text-[15px] placeholder-zinc-500 resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed" 
                 placeholder={`Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`} 
                 value={inputValue} 
                 onChange={(e) => { setInputValue(e.target.value); handleTyping(); }} 
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                disabled={isSending}
                 autoComplete="off"
                 maxLength={MAX_LENGTH}
             />
             
-            <div className="absolute right-3 top-2.5 flex items-center gap-3">
+            <div className="absolute right-3 top-2.5 flex items-center gap-2">
                 {showCounter && (
-                    <span className={`text-[10px] font-bold ${remaining < 0 ? 'text-red-500' : remaining < 200 ? 'text-yellow-500' : 'text-zinc-600'}`}>
+                    <span className={`text-[10px] font-bold mr-1 ${remaining < 0 ? 'text-red-500' : remaining < 200 ? 'text-yellow-500' : 'text-zinc-600'}`}>
                         {remaining}
                     </span>
                 )}
@@ -146,17 +157,37 @@ export default function ChatInput(props: Props) {
                     
                     <button 
                         onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(!showEmojiPicker); }}
-                        className={`transition p-1 text-zinc-400 hover:text-yellow-400 ${showEmojiPicker ? 'text-yellow-400' : ''}`}
+                        className={`transition p-1.5 text-zinc-400 hover:text-yellow-400 ${showEmojiPicker ? 'text-yellow-400' : ''}`}
                     >
-                       {/* Icone Smiley plus grasse */}
-                       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                       <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
                     </button>
                 </div>
+
+                {/* ✅ BOUTON ENVOYER (Style Bloc/Zinc) */}
+                <div className={`border-l border-zinc-700 pl-2 ml-1 ${canSend ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}>
+                    <button
+                        onClick={handleManualSend}
+                        disabled={!canSend}
+                        className={`p-1.5 rounded-sm transition-all duration-200 ${
+                            canSend 
+                            ? 'text-indigo-400 hover:text-white hover:bg-indigo-600' 
+                            : 'text-zinc-600'
+                        }`}
+                        title="Envoyer"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                    </button>
+                </div>
+
             </div>
         </div>
-        {/* Petit message d'info discret en bas */}
-        <div className="mt-1 text-right">
-             {isSending && <span className="text-[10px] text-zinc-500 animate-pulse">Envoi en cours...</span>}
+        
+        {/* Message de statut discret */}
+        <div className="mt-1 h-3 text-right">
+             {isSending && <span className="text-[10px] text-zinc-500 font-medium">Envoi...</span>}
         </div>
     </div>
   );
