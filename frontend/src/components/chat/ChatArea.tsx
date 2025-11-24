@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Channel } from '../../store/serverStore';
 import { Socket } from 'socket.io-client';
 import { Message } from '../../hooks/useChat'; 
@@ -27,7 +27,8 @@ interface Props {
   onToggleMembers: () => void;
 }
 
-export default function ChatArea({
+// ✅ OPTIMISATION : React.memo pour éviter les re-renders inutiles
+const ChatArea = React.memo(function ChatArea({
   activeChannel, messages, isLoadingMore, hasMore, 
   inputValue, showMembers, socket, replyingTo,
   sendMessage, setInputValue, setReplyingTo, 
@@ -38,7 +39,19 @@ export default function ChatArea({
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
   
+  const [showSkeleton, setShowSkeleton] = useState(false);
   const scrollToBottomRef = useRef<(() => void) | null>(null);
+
+  // Gestion du Skeleton intelligent
+  useEffect(() => {
+    let timeout: any;
+    if (isLoadingMore) {
+        timeout = setTimeout(() => setShowSkeleton(true), 150);
+    } else {
+        setShowSkeleton(false);
+    }
+    return () => clearTimeout(timeout);
+  }, [isLoadingMore]);
 
   const handleSendMessage = async (e: React.FormEvent, file?: File | null) => {
     e.preventDefault();
@@ -62,17 +75,17 @@ export default function ChatArea({
 
   if (!activeChannel) {
     return (
-      // ✅ FOND #1e1f22 (Très sombre)
-      <div className="flex-1 flex items-center justify-center text-text-muted flex-col bg-[#1e1f22] min-w-0 h-full select-none">
-        <div className="w-20 h-20 bg-[#2b2d31] rounded-full flex items-center justify-center mb-6 text-4xl grayscale opacity-50 shadow-inner">👋</div>
+      <div className="flex-1 flex items-center justify-center text-zinc-500 flex-col bg-[#313338] min-w-0 h-full select-none animate-in fade-in duration-300">
+        <div className="w-16 h-16 bg-[#2b2d31] rounded-full flex items-center justify-center mb-4 text-3xl grayscale opacity-50 shadow-inner">
+            👋
+        </div>
         <p className="text-sm font-medium">Sélectionnez un salon pour commencer.</p>
       </div>
     );
   }
 
   return (
-    // ✅ FOND #1e1f22 : Uniformité totale avec l'input container
-    <div className="flex-1 flex flex-col h-full min-w-0 bg-[#1e1f22] relative overflow-hidden transition-colors duration-200">
+    <div className="flex-1 flex flex-col h-full min-w-0 bg-[#313338] relative overflow-hidden transition-colors duration-200">
        <div className="flex-shrink-0 z-30">
          <ChatHeader channel={activeChannel} showMembers={showMembers} onToggleMembers={onToggleMembers} />
        </div>
@@ -82,7 +95,7 @@ export default function ChatArea({
             messages={messages}
             channel={activeChannel}
             hasMore={hasMore}
-            isLoadingMore={isLoadingMore}
+            isLoadingMore={showSkeleton}
             loadMore={onScroll} 
             onReply={setReplyingTo}
             onDelete={setMessageToDelete}
@@ -106,17 +119,24 @@ export default function ChatArea({
        </div>
 
        <ConfirmModal 
-          isOpen={!!messageToDelete}
-          onClose={() => setMessageToDelete(null)}
-          onConfirm={performDelete}
-          title="Supprimer le message"
-          message="Tu es sûr(e) de vouloir supprimer ce message ? Cette action est irréversible."
-          isDestructive={true}
-          confirmText="Supprimer"
-          messageData={messageToDelete}
+          isOpen={!!messageToDelete} onClose={() => setMessageToDelete(null)} onConfirm={performDelete}
+          title="Supprimer le message" message="Tu es sûr(e) de vouloir supprimer ce message ? Cette action est irréversible."
+          isDestructive={true} confirmText="Supprimer" messageData={messageToDelete}
        />
 
        <ImageViewerModal imageUrl={viewingImage} onClose={() => setViewingImage(null)} />
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+    return (
+        prevProps.activeChannel?.id === nextProps.activeChannel?.id &&
+        prevProps.messages === nextProps.messages &&
+        prevProps.isLoadingMore === nextProps.isLoadingMore &&
+        prevProps.showMembers === nextProps.showMembers &&
+        prevProps.inputValue === nextProps.inputValue &&
+        prevProps.replyingTo === nextProps.replyingTo
+    );
+});
+
+// ✅ L'EXPORT MANQUANT EST ICI
+export default ChatArea;

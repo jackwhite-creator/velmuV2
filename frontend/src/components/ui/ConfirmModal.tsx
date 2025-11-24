@@ -1,110 +1,132 @@
 import React from 'react';
 import Modal from './Modal';
+import { Message } from '../../hooks/useChat';
 
-export interface MessagePreviewData {
-  content: string;
-  createdAt: string;
-  user: {
-    username: string;
-    avatarUrl?: string | null;
-  };
-}
-
-interface Props {
+interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
   message: React.ReactNode;
-  isDestructive?: boolean;
   confirmText?: string;
-  messageData?: MessagePreviewData | null;
+  cancelText?: string;
+  isDestructive?: boolean;
+  messageData?: Message | null;
 }
 
-export default function ConfirmModal({ 
-  isOpen, onClose, onConfirm, 
-  title, message, isDestructive = false, confirmText = "Confirmer",
+export default function ConfirmModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmText = 'Confirmer',
+  cancelText = 'Annuler',
+  isDestructive = false,
   messageData
-}: Props) {
+}: ConfirmModalProps) {
 
-  const handleConfirm = () => {
-    onConfirm();
-    onClose();
+  const formatMessageDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const today = new Date();
+    const isToday = date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
+    
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return isToday ? `Aujourd'hui à ${timeStr}` : date.toLocaleDateString('fr-FR') + ` ${timeStr}`;
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return isNaN(date.getTime()) ? "Aujourd'hui" : `Aujourd'hui à ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-  };
+  const modalSize = messageData ? 'md' : 'sm';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm">
-        <div className="p-6 flex flex-col gap-4">
-            
-            {/* TITRE */}
-            <h2 className="text-xl font-bold text-slate-100">{title}</h2>
+    <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
+      <div className="bg-[#313338] text-zinc-200 font-sans flex flex-col shadow-2xl overflow-hidden">
+        
+        <div className="p-4 pb-2">
+          <h2 className="text-xl font-bold text-white mb-2 flex-shrink-0 uppercase tracking-wide text-[15px]">
+            {title}
+          </h2>
+          
+          <div className="text-zinc-400 text-[14px] mb-4 leading-snug">
+            {message}
+          </div>
 
-            {/* TEXTE EXPLICATIF */}
-            <div className="text-slate-400 text-sm leading-relaxed">
-                {message}
-            </div>
+          {messageData && (
+            <div className="mt-2 mb-4 border border-[#1e1f22] bg-[#2b2d31] rounded-[3px] shadow-inner overflow-hidden">
+              
+              {/* En-tête : Padding-bottom à 0 pour coller le texte */}
+              <div className="px-4 pt-3 pb-0 flex items-center gap-3">
+                 <div className="w-9 h-9 rounded-full bg-zinc-600 flex-shrink-0 overflow-hidden shadow-sm">
+                    {messageData.user.avatarUrl ? (
+                        <img src={messageData.user.avatarUrl} className="w-full h-full object-cover" alt="" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs font-bold text-white">
+                            {messageData.user.username[0].toUpperCase()}
+                        </div>
+                    )}
+                 </div>
+                 <div className="flex items-baseline gap-1.5">
+                    <span className="font-bold text-white text-[15px] hover:underline cursor-pointer">{messageData.user.username}</span>
+                    <span className="text-[11px] text-zinc-500 font-medium">{formatMessageDate(messageData.createdAt)}</span>
+                 </div>
+              </div>
 
-            {/* 👇 APERÇU DU MESSAGE (Style Amélioré) */}
-            {messageData && (
-                <div className="
-                    mt-2 mb-2 p-3 rounded-lg flex gap-3 select-none relative overflow-hidden
-                    bg-slate-950/30 border border-slate-800/60 
-                    shadow-lg shadow-black/20 
-                ">
-                    {/* Petite barre latérale rouge si c'est destructif, juste pour le style */}
-                    {isDestructive && <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-500/50"></div>}
+              {/* Contenu : Marge négative (-mt-1.5) pour remonter le texte sous le pseudo */}
+              <div className="pl-[64px] pr-4 pb-4 max-h-[320px] overflow-y-auto custom-scrollbar -mt-1.5">
+                 
+                 {/* Texte */}
+                 {messageData.content && (
+                    <div className="text-zinc-300 text-[15px] whitespace-pre-wrap leading-[1.375rem]">
+                        {messageData.content}
+                    </div>
+                 )}
 
-                    {/* Avatar */}
-                    <div className="relative flex-shrink-0 mt-0.5 ml-1">
-                        <div className="w-9 h-9 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden text-white font-bold text-xs ring-2 ring-black/20">
-                            {messageData.user.avatarUrl ? (
-                                <img src={messageData.user.avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+                 {/* Images */}
+                 {messageData.attachments && messageData.attachments.length > 0 && (
+                    <div className="mt-1 flex flex-col gap-2 items-start">
+                        {messageData.attachments.map((att) => (
+                            att.type === 'IMAGE' ? (
+                                <img 
+                                    key={att.id} 
+                                    src={att.url} 
+                                    alt="suppression" 
+                                    className="max-h-60 w-auto max-w-full rounded-[4px] cursor-default object-contain"
+                                />
                             ) : (
-                                messageData.user.username[0].toUpperCase()
-                            )}
-                        </div>
+                                <div key={att.id} className="flex items-center gap-2 bg-[#1e1f22] p-3 rounded-[4px] border border-zinc-700/50 w-fit max-w-full">
+                                    <div className="text-brand">📄</div>
+                                    <span className="text-sm text-zinc-300 truncate font-medium">{att.filename}</span>
+                                </div>
+                            )
+                        ))}
                     </div>
-
-                    {/* Contenu */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
-                            <span className="font-semibold text-slate-200 text-sm">{messageData.user.username}</span>
-                            <span className="text-[10px] text-slate-500">{formatTime(messageData.createdAt)}</span>
-                        </div>
-                        <p className="text-slate-300 text-sm leading-relaxed break-words opacity-90">
-                            {messageData.content}
-                        </p>
-                    </div>
-                </div>
-            )}
-
-            {/* ACTIONS */}
-            <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-slate-700/30">
-                <button 
-                    onClick={onClose}
-                    className="px-4 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-700/50 rounded-md transition-all"
-                >
-                    Annuler
-                </button>
-                
-                <button 
-                    onClick={handleConfirm}
-                    className={`
-                        px-6 py-2.5 text-sm font-bold text-white rounded-md transition-all shadow-lg
-                        ${isDestructive 
-                            ? 'bg-red-500 hover:bg-red-600 shadow-red-900/20' 
-                            : 'bg-indigo-500 hover:bg-indigo-600 shadow-indigo-900/20'}
-                    `}
-                >
-                    {confirmText}
-                </button>
+                 )}
+              </div>
             </div>
+          )}
         </div>
+
+        <div className="bg-[#2b2d31] p-3 flex justify-end gap-2 border-t border-[#1e1f22]">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 rounded-[3px] text-sm font-medium text-zinc-300 hover:underline transition-all"
+          >
+            {cancelText}
+          </button>
+          
+          <button
+            onClick={onConfirm}
+            className={`
+              px-6 py-2 rounded-[3px] text-sm font-bold text-white shadow-sm transition-colors
+              ${isDestructive 
+                ? 'bg-status-danger hover:bg-[#a1282c]' 
+                : 'bg-brand hover:bg-brand-hover'}
+            `}
+          >
+            {confirmText}
+          </button>
+        </div>
+
+      </div>
     </Modal>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import UserPopover from '../ui/UserPopover';
 import ProfileModal from '../ProfileModal';
-import UserProfileModal from '../UserProfileModal';
+import UserProfileModal from '../user-profile/UserProfileModal';
 import Tooltip from '../ui/Tooltip';
 
 export default function UserFooter() {

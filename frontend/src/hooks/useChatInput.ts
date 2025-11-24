@@ -1,158 +1,174 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
-import { useAuthStore } from '../store/authStore';
-import { Channel } from '../store/serverStore';
 
 interface UseChatInputProps {
-  socket: Socket | null;
-  activeChannel: Channel;
-  onSendMessage: (e: React.FormEvent, file?: File | null) => void;
-  setInputValue: (val: string) => void;
   inputValue: string;
-  isSending?: boolean;
+  setInputValue: (val: string | ((prev: string) => string)) => void; // Mise à jour du type pour accepter la fonction callback
+  onSendMessage: (e: React.FormEvent, file?: File | null) => void;
+  setReplyingTo: (msg: any) => void;
+  socket: Socket | null;
 }
 
-// Configuration "Discord-like"
-const TYPING_THROTTLE = 8000; // On renvoie "Start" max toutes les 8s
-const TYPING_TIMEOUT = 10000; // On considère qu'il a arrêté après 10s d'inactivité
-
-export const useChatInput = ({ 
-  socket, activeChannel, onSendMessage, setInputValue, inputValue, isSending 
+export const useChatInput = ({
+  inputValue,
+  setInputValue,
+  onSendMessage,
+  setReplyingTo,
+  socket
 }: UseChatInputProps) => {
-  const { user } = useAuthStore();
-  
-  // Refs pour les éléments DOM
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textInputRef = useRef<HTMLTextAreaElement>(null); 
+  const textInputRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  // Refs pour la logique interne
-  const lastTypingSentRef = useRef<number>(0);
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  // États
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
-  // --- GESTION DU TYPING (La correction est ici) ---
-  const handleTyping = () => {
-    if (!socket || !user) return;
-
-    const now = Date.now();
-    const payload = { 
-      channelId: activeChannel.type !== 'dm' ? activeChannel.id : undefined,
-      conversationId: activeChannel.type === 'dm' ? activeChannel.id : undefined,
-      username: user.username,
-      userId: user.id
-    };
-
-    // 1. Envoi immédiat si le délai de throttle est passé (ou si premier caractère)
-    if (now - lastTypingSentRef.current > TYPING_THROTTLE) {
-      socket.emit('typing_start', payload);
-      lastTypingSentRef.current = now;
-    }
-
-    // 2. Reset du timer d'arrêt automatique
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('typing_stop', payload);
-    }, TYPING_TIMEOUT);
-  };
-
-  const stopTypingImmediately = () => {
-    if (!socket || !user) return;
-    const payload = { 
-      channelId: activeChannel.type !== 'dm' ? activeChannel.id : undefined,
-      conversationId: activeChannel.type === 'dm' ? activeChannel.id : undefined,
-      userId: user.id
-    };
-    socket.emit('typing_stop', payload);
-    
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    
-    // ✅ CRUCIAL : On reset le throttle pour que le prochain caractère
-    // déclenche immédiatement un nouveau "typing_start"
-    lastTypingSentRef.current = 0; 
-  };
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef<any>(null);
 
   // --- GESTION DES FICHIERS ---
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      const file = e.target.files[0];
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      textInputRef.current?.focus();
+
+  const processFile = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+        alert("Seules les images sont supportées pour le moment.");
+        return;
     }
+    const url = URL.createObjectURL(file);
+    setSelectedFile(file);
+    setPreviewUrl(url);
+    textInputRef.current?.focus();
+  }, []);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      processFile(e.target.files[0]);
+    }
+    e.target.value = '';
   };
 
-  const clearFile = () => {
+  const handlePasteFile = useCallback((file: File) => {
+    processFile(file);
+  }, [processFile]);
+
+  const clearFile = useCallback(() => {
     setSelectedFile(null);
     if (previewUrl) URL.revokeObjectURL(previewUrl);
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  };
+  }, [previewUrl]);
 
-  // --- GESTION DE L'ENVOI ---
-  const canSend = (inputValue.trim().length > 0 || selectedFile !== null) && !isSending;
-
-  const triggerSend = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSend) return;
-    
-    onSendMessage(e, selectedFile);
-    stopTypingImmediately(); // ✅ On coupe le typing tout de suite
-    clearFile();
-    setShowEmojiPicker(false);
-    
-    // Reset hauteur textarea
-    if (textInputRef.current) textInputRef.current.style.height = 'auto';
-    
-    // Keep focus
-    setTimeout(() => textInputRef.current?.focus(), 10);
-  };
-
-  // --- HELPERS ---
-  const addEmoji = (emoji: any) => {
-    const cursor = textInputRef.current?.selectionStart || inputValue.length;
-    const text = inputValue.slice(0, cursor) + emoji.native + inputValue.slice(cursor);
-    setInputValue(text);
-    handleTyping(); // Ajouter un émoji compte comme taper
-    setTimeout(() => textInputRef.current?.focus(), 10);
-  };
-
-  // --- EFFECTS ---
-  // Focus global
+  // --- GESTION GLOBALE (FOCUS & PASTE) ---
+  
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey || e.altKey || e.metaKey || e.key.length > 1) return;
-      const active = document.activeElement as HTMLElement;
-      if (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable) return;
-      textInputRef.current?.focus();
-    };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
+      // Si on est déjà dans un input, textarea ou un élément éditable, on ne fait rien
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
 
-  // Auto-Resize
-  useEffect(() => {
-    const el = textInputRef.current;
-    if (el) {
-      el.style.height = 'auto'; 
-      el.style.height = `${Math.min(el.scrollHeight, 300)}px`;
-    }
-  }, [inputValue]);
-
-  // Click Outside Emoji
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
-        setShowEmojiPicker(false);
+      // Si c'est une touche "caractère" simple (pas Ctrl, Alt, etc.), on focus l'input
+      // Cela permet de commencer à taper n'importe où et que ça écrive dans la barre
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        textInputRef.current?.focus();
+        // Pas de preventDefault, on laisse le navigateur mettre la lettre dans l'input qui vient d'être focus
       }
     };
-    if (showEmojiPicker) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showEmojiPicker]);
+
+    const handleGlobalPaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement;
+      // Si on est déjà dans l'input du chat, React gère déjà le onPaste local, on évite le doublon
+      if (target === textInputRef.current) return;
+      
+      // Si on est dans un autre champ (ex: recherche), on ne touche pas
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      // Sinon, on intercepte le collage global
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      let handled = false;
+
+      // 1. Chercher une image
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf("image") !== -1) {
+          const file = items[i].getAsFile();
+          if (file) {
+            e.preventDefault();
+            handlePasteFile(file);
+            handled = true;
+            break;
+          }
+        }
+      }
+
+      // 2. Sinon, chercher du texte
+      if (!handled) {
+        const text = e.clipboardData?.getData('text');
+        if (text) {
+          e.preventDefault();
+          setInputValue((prev: string) => prev + text);
+          textInputRef.current?.focus();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    window.addEventListener('paste', handleGlobalPaste);
+
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown);
+      window.removeEventListener('paste', handleGlobalPaste);
+    };
+  }, [handlePasteFile, setInputValue]);
+
+
+  // --- FONCTIONS UTILITAIRES ---
+
+  const addEmoji = (emoji: any) => {
+    setInputValue((prev: string) => prev + emoji.native);
+    setShowEmojiPicker(false);
+    textInputRef.current?.focus();
+  };
+
+  const handleTyping = () => {
+    if (!socket) return;
+    if (!isTyping) {
+      setIsTyping(true);
+      socket.emit('typing', true);
+    }
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      socket.emit('typing', false);
+    }, 2000);
+  };
+
+  const triggerSend = (e: React.FormEvent | React.KeyboardEvent) => {
+    e.preventDefault();
+    // On vérifie juste s'il y a du contenu OU un fichier
+    if (!inputValue.trim() && !selectedFile) return;
+    
+    onSendMessage(e as any, selectedFile);
+    
+    // Reset
+    setInputValue('');
+    clearFile();
+    setReplyingTo(null);
+    setShowEmojiPicker(false);
+    setIsTyping(false);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    socket?.emit('typing', false);
+  };
+
+  // Fermeture picker emoji au clic extérieur
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+        if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target as Node)) {
+            setShowEmojiPicker(false);
+        }
+    };
+    window.addEventListener('click', handleClickOutside);
+    return () => window.removeEventListener('click', handleClickOutside);
+  }, []);
 
   return {
     fileInputRef,
@@ -163,11 +179,11 @@ export const useChatInput = ({
     showEmojiPicker,
     setShowEmojiPicker,
     handleFileSelect,
+    handlePasteFile,
     clearFile,
-    handlePaste: (e: React.ClipboardEvent) => { /* ... logique paste simplifiée ... */ },
     triggerSend,
     handleTyping,
     addEmoji,
-    canSend
+    canSend: inputValue.trim().length > 0 || !!selectedFile
   };
 };

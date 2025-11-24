@@ -13,11 +13,11 @@ import InviteModal from '../../components/InviteModal';
 
 const styles = `
   @keyframes tooltipPop {
-    0% { opacity: 0; transform: scale(0.95); }
-    100% { opacity: 1; transform: scale(1); }
+    0% { opacity: 0; transform: translateY(-50%) scale(0.9); }
+    100% { opacity: 1; transform: translateY(-50%) scale(1); }
   }
-  .animate-tooltip {
-    animation: tooltipPop 0.1s ease-out forwards;
+  .animate-tooltip-rail {
+    animation: tooltipPop 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
   }
 `;
 
@@ -36,9 +36,9 @@ const RailTooltip = ({ text, rect }: { text: string, rect: DOMRect }) => {
   return createPortal(
     <>
       <style>{styles}</style>
-      <div className="fixed z-[9999] flex items-center animate-tooltip origin-left" style={style}>
-        <div className="absolute -left-1.5 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-black" style={{ top: '50%', transform: 'translateY(-50%)' }} />
-        <div className="bg-black text-text-header text-xs font-bold px-3 py-1.5 rounded-sm shadow-xl whitespace-nowrap">
+      <div className="fixed z-[9999] flex items-center animate-tooltip-rail origin-left" style={style}>
+        <div className="absolute -left-1.5 w-0 h-0 border-y-[6px] border-y-transparent border-r-[6px] border-r-black" style={{ top: '50%', marginTop: '-6px' }} />
+        <div className="bg-black text-white text-[14px] font-bold px-3 py-2 rounded-md shadow-xl whitespace-nowrap leading-none">
           {text}
         </div>
       </div>
@@ -58,7 +58,7 @@ const RailItem = ({
   return (
     <div className="relative group flex items-center justify-center w-full mb-2">
       <div 
-        className={`absolute left-0 bg-text-header rounded-r-sm transition-all duration-200 ease-out
+        className={`absolute left-0 bg-white rounded-r-md transition-all duration-200 ease-out
           ${isActive 
             ? 'h-10 top-1 w-[4px]' 
             : isHovered 
@@ -75,10 +75,10 @@ const RailItem = ({
         onMouseLeave={() => setIsHovered(false)}
         className={`
           w-[48px] h-[48px] cursor-pointer transition-all duration-200 ease-out overflow-hidden flex items-center justify-center
-          ${isActive || isHovered ? 'rounded-md' : 'rounded-[24px]'} 
+          ${isActive || isHovered ? 'rounded-[16px]' : 'rounded-[24px]'} 
           ${isActive ? (colorClass || 'bg-brand') : isHovered ? (colorClass || 'bg-brand') : 'bg-background-secondary'} 
           ${isImage ? 'bg-transparent' : ''}
-          ${variant === 'action' ? 'text-status-green hover:text-text-header bg-background-secondary hover:bg-status-green' : ''}`}
+          ${variant === 'action' ? 'text-status-green hover:text-white bg-background-secondary hover:bg-status-green' : ''}`}
           >
         {icon}
       </div>
@@ -91,7 +91,7 @@ const RailItem = ({
 export default function ServerRail() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { servers, activeServer, setActiveServer, setActiveChannel, removeServer } = useServerStore();
+  const { servers, activeServer, setActiveServer, removeServer } = useServerStore();
   
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isJoinOpen, setIsJoinOpen] = useState(false);
@@ -100,18 +100,10 @@ export default function ServerRail() {
   const [serverToInvite, setServerToInvite] = useState<Server | null>(null);
 
   const handleServerClick = (server: any) => {
+    // ✅ SIMPLIFICATION : On change juste l'état et l'URL vers la racine du serveur
+    // C'est ChatPage.tsx qui s'occupera de rediriger vers le "Dernier Salon"
     setActiveServer(server);
     navigate(`/channels/${server.id}`);
-    const savedChannelId = localStorage.getItem('lastChannelId');
-    let targetChannel = null;
-    if (savedChannelId && server.categories) {
-        const allChannels = server.categories.flatMap((c: any) => c.channels) || [];
-        targetChannel = allChannels.find((c: any) => c.id === savedChannelId);
-    }
-    if (!targetChannel && server.categories?.[0]?.channels?.[0]) {
-      targetChannel = server.categories[0].channels[0];
-    }
-    setActiveChannel(targetChannel);
   };
 
   const handleDmClick = () => { setActiveServer(null); navigate('/channels/@me'); };
@@ -135,7 +127,11 @@ export default function ServerRail() {
         isActive={!activeServer}
         onClick={handleDmClick}
         colorClass="bg-brand"
-        icon={<img src="/logo.png" alt="Velmu" className="w-7 h-7 object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />}
+        icon={
+           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+             <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
+           </svg>
+        }
       />
 
       <div className="w-8 h-[2px] bg-background-secondary rounded-sm mx-auto mb-2" />
@@ -168,10 +164,10 @@ export default function ServerRail() {
       />
 
       <RailItem 
-        label="Rejoindre un serveur"
+        label="Explorer"
         variant="action"
         onClick={() => setIsJoinOpen(true)}
-        icon={<svg className="w-6 h-6 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>}
+        icon={<svg className="w-6 h-6 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><path d="M16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>}
       />
 
       {contextMenu && (
@@ -184,7 +180,7 @@ export default function ServerRail() {
       )}
 
       <CreateServerModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
-      <JoinServerModal isOpen={isJoinOpen} onClose={() => setIsJoinOpen(false)} />
+      <JoinServerModal isOpen={isJoinOpen} onClose={() => setIsJoinServerOpen(false)} />
       <InviteModal isOpen={!!serverToInvite} onClose={() => setServerToInvite(null)} server={serverToInvite} />
       <ConfirmModal 
         isOpen={!!serverToLeave} onClose={() => setServerToLeave(null)} onConfirm={handleLeaveServer}

@@ -5,7 +5,6 @@ import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/Contex
 import ConfirmModal from '../ui/ConfirmModal';
 import { Message } from '../../hooks/useChat';
 
-// Sous-composants
 import MessageReplyHeader from './MessageReplyHeader';
 import MessageAvatar from './MessageAvatar';
 import MessageContent from './MessageContent';
@@ -50,9 +49,6 @@ export default function MessageItem({
 
   const marginTopClass = shouldGroup ? 'mt-[2px]' : 'mt-[17px]';
   
-  // ✅ CORRECTION ICI : On utilise des valeurs RGBA explicites pour garantir la transparence
-  // bg-[rgba(240,178,50,0.1)] = Jaune avec 10% d'opacité (le fond)
-  // before:bg-status-warning = La barre latérale utilise toujours la variable du thème (solide)
   const backgroundClass = isMentioningMe 
     ? 'bg-[rgba(240,178,50,0.1)] hover:bg-[rgba(240,178,50,0.15)] before:bg-status-warning' 
     : 'hover:bg-background-modifier-hover transparent';
@@ -93,7 +89,7 @@ export default function MessageItem({
         id={`message-${msg.id}`} 
         onContextMenu={handleContextMenu}
         className={`
-          group relative pr-4 pl-4 py-0.5 transition-colors
+          group relative pr-4 pl-4 py-0.5 transition-colors w-full
           ${marginTopClass} ${backgroundClass}
           ${isMentioningMe ? 'before:content-[""] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px]' : ''}
         `}
@@ -102,7 +98,7 @@ export default function MessageItem({
           <MessageReplyHeader replyTo={msg.replyTo} onClick={() => onReplyClick(msg.replyTo.id)} />
         )}
 
-        <div className="flex gap-4">
+        <div className="flex gap-4 w-full">
           <MessageAvatar 
             user={msg.user} 
             createdAt={msg.createdAt} 
@@ -110,7 +106,7 @@ export default function MessageItem({
             onClick={(e) => onUserClick(e, msg.user.id)} 
           />
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             <MessageContent 
                 msg={msg}
                 shouldGroup={shouldGroup}

@@ -22,15 +22,13 @@ interface Props {
   onScrollToBottom?: (fn: () => void) => void;
 }
 
-// ✅ NOUVEAU SÉPARATEUR : Fin, épuré, intégré au fond
+// ✅ CORRECTION FOND : bg-[#313338] pour matcher exactement ChatArea
 const DateSeparator = ({ date }: { date: Date }) => (
-  <div className="relative flex items-center justify-center my-6 select-none group">
-    {/* La ligne */}
-    <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-zinc-800"></div>
+  <div className="relative flex items-center justify-center my-6 select-none group px-4">
+    <div className="absolute inset-0 flex items-center px-4">
+        <div className="w-full border-t border-zinc-700/70"></div>
     </div>
-    {/* Le texte */}
-    <span className="relative bg-[#313338] px-2 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">
+    <span className="relative bg-[#313338] px-2 text-[11px] font-semibold text-zinc-400">
         {date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
     </span>
   </div>
@@ -65,33 +63,32 @@ export default function MessageList({
       const el = document.getElementById(`message-${id}`);
       if (el) {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-          el.classList.add('bg-zinc-800/80');
-          setTimeout(() => el.classList.remove('bg-zinc-800/80'), 1000);
+          el.classList.add('bg-background-modifier-hover');
+          setTimeout(() => el.classList.remove('bg-background-modifier-hover'), 1000);
       }
   };
 
   return (
     <div 
         ref={scrollRef} 
-        // Fond Zinc hérité du parent (#313338)
-        className="absolute inset-0 overflow-y-auto custom-scrollbar flex flex-col"
+        className="absolute inset-0 overflow-y-auto custom-scrollbar flex flex-col scroll-smooth"
     >
         <div className="mt-auto pt-4" />
 
         {!hasMore && !isLoadingMore && (
-            <div className="mb-4">
+            <div className="mb-2">
                 <ChatWelcome channel={channel} />
             </div>
         )}
 
         {isLoadingMore && (
-            <div className="py-2 space-y-4 mb-2">
+            <div className="py-2 space-y-4 mb-2 px-4">
                 <ChatSkeleton />
                 <ChatSkeleton />
             </div>
         )}
 
-        <div className="flex flex-col pb-4">
+        <div className="flex flex-col pb-6">
             {messages.map((msg, index) => {
                if (!msg || !msg.user) return null;
                

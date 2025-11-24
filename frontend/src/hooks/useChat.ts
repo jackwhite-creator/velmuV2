@@ -28,6 +28,8 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  
+  // On garde une ref pour éviter les race conditions dans les sockets
   const targetIdRef = useRef(targetId);
 
   useEffect(() => {
@@ -36,21 +38,34 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
 
   // Initial Load
   useEffect(() => {
-    if (!targetId) return;
+    if (!targetId) {
+        setMessages([]);
+        return;
+    }
+
     setLoading(true);
-    setMessages([]);
-    setHasMore(true);
+    // ⚠️ FIX FLUIDITÉ : On ne vide PAS les messages ici (setMessages([])).
+    // On garde les anciens affichés le temps que les nouveaux arrivent.
+    // Ça supprime le flash blanc entre deux salons.
+    
     setIsLoadingMore(false);
 
     const params = isDm ? { conversationId: targetId } : { channelId: targetId };
 
     api.get('/messages', { params })
       .then((res) => {
-        setMessages(res.data.items.reverse());
-        setHasMore(!!res.data.nextCursor);
+        // On vérifie que l'ID n'a pas changé pendant la requête
+        if (targetIdRef.current === targetId) {
+            setMessages(res.data.items.reverse());
+            setHasMore(!!res.data.nextCursor);
+        }
       })
       .catch(err => console.error("Erreur load initial:", err))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (targetIdRef.current === targetId) {
+            setLoading(false);
+        }
+      });
   }, [targetId, isDm]);
 
   // Socket Events

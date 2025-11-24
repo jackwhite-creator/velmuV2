@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useServerStore } from '../store/serverStore';
 import { useAuthStore } from '../store/authStore';
@@ -19,7 +19,7 @@ import CreateServerModal from '../components/CreateServerModal';
 import InviteModal from '../components/InviteModal';
 import JoinServerModal from '../components/JoinServerModal';
 import ProfileModal from '../components/ProfileModal';
-import UserProfileModal from '../components/UserProfileModal';
+import UserProfileModal from '../components/user-profile/UserProfileModal';
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../components/ui/ContextMenu';
 import ConfirmModal from '../components/ui/ConfirmModal';
 
@@ -30,62 +30,109 @@ export default function ChatPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { socket } = useSocketStore();
-  const { activeServer, activeChannel, activeConversation, setActiveServer, setActiveChannel } = useServerStore();
+  
+  const { 
+    servers, activeServer, activeChannel, activeConversation, 
+    setActiveServer, updateServer, setActiveChannel, setActiveConversation,
+    conversations, getLastChannelId 
+  } = useServerStore();
+  
   const { requests, removeRequest, addRequest } = useFriendStore();
 
   const [showMembers, setShowMembers] = useState(true);
   const [inputValue, setInputValue] = useState('');
   const [replyingTo, setReplyingTo] = useState<any>(null);
 
+  // Modals
   const [isCreateServerOpen, setIsCreateServerOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isJoinServerOpen, setIsJoinServerOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [viewingUserProfile, setViewingUserProfile] = useState<string | null>(null);
-  
   const [userMenu, setUserMenu] = useState<UserContextMenuData | null>(null);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
 
+  // 1. SOCKET : Rejoindre la room
   useEffect(() => {
     if (socket && activeServer?.id) {
       socket.emit('join_server', activeServer.id);
     }
   }, [socket, activeServer?.id]);
 
+  // 2. SOCKET : Mise à jour UI (Renommage, Déplacement...)
   useEffect(() => {
     if (!socket) return;
-    const handleRefreshServer = (updatedServerId: string) => {
+    const handleRefreshServer = async (updatedServerId: string) => {
+      // On ne rafraîchit que si c'est le serveur actif ou si on en a besoin
       if (activeServer && activeServer.id === updatedServerId) {
-        api.get(`/servers/${updatedServerId}`).then(res => setActiveServer(res.data)).catch(console.error);
+        try {
+            const res = await api.get(`/servers/${updatedServerId}`);
+            // ✅ UTILISATION DE updateServer : Modifie les données sans tuer la navigation
+            updateServer(res.data);
+        } catch (e) { console.error("Erreur refresh", e); }
       }
     };
     socket.on('refresh_server_ui', handleRefreshServer);
     return () => { socket.off('refresh_server_ui', handleRefreshServer); };
-  }, [socket, activeServer, setActiveServer]);
+  }, [socket, activeServer, updateServer]); // Dépendance activeServer.id seulement serait mieux mais activeServer ok
 
+  // 3. NAVIGATION PRINCIPALE
   useEffect(() => {
+    // --- MODE SERVEUR ---
     if (serverId && serverId !== '@me') {
-      if (!activeServer || activeServer.id !== serverId || !activeServer.categories) {
-        api.get(`/servers/${serverId}`).then((res) => {
-            const serverData = res.data;
-            setActiveServer(serverData);
-            if (!channelId && serverData.categories?.[0]?.channels?.[0]) {
-               navigate(`/channels/${serverId}/${serverData.categories[0].channels[0].id}`);
-            }
-          }).catch(() => navigate('/channels/@me')); 
+      const targetServer = servers.find(s => s.id === serverId);
+      
+      // A. Chargement initial / Changement de serveur
+      if (targetServer) {
+          if (activeServer?.id !== targetServer.id) {
+              setActiveServer(targetServer);
+              // On ne reset pas la conv ici, setActiveServer le fait
+          }
+      } else {
+          // Cas rare : Serveur introuvable (ou pas encore chargé, mais App.tsx gère le loading)
+          // navigate('/channels/@me'); // Optionnel, peut causer des boucles si mal géré
       }
-    } else if (serverId === '@me') {
-        if (activeServer) setActiveServer(null);
-    }
-  }, [serverId, activeServer, setActiveServer, navigate, channelId]);
 
-  useEffect(() => {
-    if (activeServer && channelId) {
-        const channel = activeServer.categories?.flatMap(c => c.channels).find(c => c.id === channelId);
-        if (channel && activeChannel?.id !== channel.id) setActiveChannel(channel);
+      // B. Gestion du Salon
+      // Note : On attend que activeServer soit bien le bon avant de set le channel
+      if (activeServer?.id === serverId) {
+          if (channelId) {
+              // URL explicite
+              const channel = activeServer.categories?.flatMap(c => c.channels).find(c => c.id === channelId);
+              if (channel && activeChannel?.id !== channel.id) {
+                  setActiveChannel(channel);
+              }
+          } else {
+              // Redirection automatique (Persistance)
+              const lastId = getLastChannelId(activeServer.id);
+              const allChannels = activeServer.categories?.flatMap(c => c.channels || []) || [];
+              const targetChannel = allChannels.find(c => c.id === lastId) || allChannels[0];
+              
+              if (targetChannel) {
+                  navigate(`/channels/${serverId}/${targetChannel.id}`, { replace: true });
+              }
+          }
+      }
+    } 
+    // --- MODE DMs ---
+    else if (serverId === '@me') {
+        if (activeServer) setActiveServer(null);
+        // On ne force pas activeChannel à null ici pour éviter les flashs si on navigue vite
+
+        if (channelId) {
+            const existing = conversations.find(c => c.id === channelId);
+            if (existing) {
+                if (activeConversation?.id !== existing.id) setActiveConversation(existing);
+            } else {
+                api.get(`/conversations/${channelId}`).then(res => setActiveConversation(res.data)).catch(() => navigate('/channels/@me'));
+            }
+        } else {
+            if (activeConversation) setActiveConversation(null);
+        }
     }
-  }, [channelId, activeServer, setActiveChannel, activeChannel]);
+  }, [serverId, channelId, servers, activeServer, navigate, conversations, setActiveServer, setActiveChannel, setActiveConversation, getLastChannelId]);
+
 
   const { messages, loading, hasMore, loadMore, sendMessage } = useChat(
     !activeServer ? activeConversation?.id : activeChannel?.id, 
@@ -94,7 +141,9 @@ export default function ChatPage() {
 
   const isDmMode = !activeServer;
   const showFriendsDashboard = isDmMode && !activeConversation;
-  const effectiveChannel = isDmMode && activeConversation ? { id: activeConversation.id, name: activeConversation.users.find(u => u.id !== user?.id)?.username || 'Ami', type: 'dm' } : activeChannel;
+  const effectiveChannel = isDmMode && activeConversation 
+    ? { id: activeConversation.id, name: activeConversation.users.find(u => u.id !== user?.id)?.username || 'Ami', type: 'dm' } 
+    : activeChannel;
   
   const handleUserClick = (e: React.MouseEvent, userId: string) => {
     e.stopPropagation(); 
@@ -106,7 +155,7 @@ export default function ChatPage() {
     setIsSettingsOpen(true);
   };
 
- const handleSendRequest = async () => {
+  const handleSendRequest = async () => {
     if (!userMenu) return;
     try {
       const res = await api.post('/friends/request', { 
@@ -137,11 +186,9 @@ export default function ChatPage() {
     if (!friendToDelete) return;
     const request = requests.find(r => (r.senderId === user?.id && r.receiverId === friendToDelete.id) || (r.senderId === friendToDelete.id && r.receiverId === user?.id));
     if (!request) return;
-    
     removeRequest(request.id);
     try { await api.delete(`/friends/${request.id}`); } 
     catch(err) { console.error(err); }
-    
     setFriendToDelete(null);
   };
 
@@ -187,7 +234,9 @@ export default function ChatPage() {
         <main className="flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden">
           <ChatArea
             activeChannel={effectiveChannel || null} 
-            messages={messages} isLoadingMore={loading} hasMore={hasMore}
+            messages={messages} 
+            isLoadingMore={loading} 
+            hasMore={hasMore}
             inputValue={inputValue} setInputValue={setInputValue}
             showMembers={showMembers} onToggleMembers={() => setShowMembers(!showMembers)}
             socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
@@ -195,7 +244,6 @@ export default function ChatPage() {
             onUserClick={handleUserClick} sendMessage={sendMessage}
           />
           {activeServer && showMembers && (
-            // ✅ FOND MIS À JOUR : #2b2d31 (Zinc) + Border #26272d
             <div className="hidden lg:block w-60 bg-[#2b2d31] border-l border-[#26272d] h-full flex-shrink-0 overflow-y-auto custom-scrollbar">
               <MemberList onUserClick={handleUserClick} />
             </div>
