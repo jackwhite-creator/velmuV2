@@ -30,13 +30,15 @@ export default function ChatInput(props: Props) {
   const {
     fileInputRef, textInputRef, emojiPickerRef,
     previewUrl, showEmojiPicker, setShowEmojiPicker,
-    handleFileSelect, clearFile, triggerSend, handleTyping, addEmoji
+    handleFileSelect, clearFile, triggerSend, handleTyping, addEmoji, canSend
   } = useChatInput(props);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!isSending) triggerSend(e);
+      if (!isSending) {
+        triggerSend(e);
+      }
     }
   };
 
@@ -51,18 +53,18 @@ export default function ChatInput(props: Props) {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       if (items[i].type.indexOf("image") !== -1) {
-        // Géré par le hook
+        // Logique gérée par le hook
       }
     }
   };
 
   const remaining = MAX_LENGTH - inputValue.length;
   const showCounter = inputValue.length > 1500;
-  const canSend = (inputValue.trim().length > 0 || previewUrl) && !isSending;
 
   return (
-    // ✅ MIGRATION : Fond principal
-    <div className="bg-background-primary flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
+    // ✅ FOND #1e1f22 : On applique la même couleur sombre que le fond du chat
+    // L'input au milieu ressortira grâce à sa couleur plus claire
+    <div className="bg-[#1e1f22] flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
         
         <TypingIndicator 
             socket={socket} 
@@ -70,11 +72,10 @@ export default function ChatInput(props: Props) {
             conversationId={activeChannel.type === 'dm' ? activeChannel.id : undefined}
         />
 
-        {/* PREVIEW IMAGE */}
         {previewUrl && (
-            <div className="flex items-start mb-2 p-4 bg-background-secondary rounded-md border border-background-tertiary relative w-fit">
+            <div className="flex items-start mb-2 p-4 bg-[#2b2d31] rounded-md border border-[#383a40] relative w-fit">
                 <div className="relative group">
-                    <img src={previewUrl} alt="Preview" className="h-40 rounded-sm object-cover border border-background-tertiary" />
+                    <img src={previewUrl} alt="Preview" className="h-40 rounded-sm object-cover border border-[#383a40]" />
                     <button 
                         onClick={clearFile}
                         className="absolute -top-2 -right-2 bg-status-danger text-text-header rounded-full p-1 shadow-md hover:brightness-110 transition transform hover:scale-110"
@@ -85,9 +86,8 @@ export default function ChatInput(props: Props) {
             </div>
         )}
 
-        {/* BARRE DE RÉPONSE */}
         {replyingTo && (
-            <div className="flex items-center justify-between bg-background-secondary px-4 py-2 rounded-t-md border-t border-x border-background-tertiary text-xs font-bold text-text-muted uppercase tracking-wide">
+            <div className="flex items-center justify-between bg-[#2b2d31] px-4 py-2 rounded-t-md border-t border-x border-[#383a40] text-xs font-bold text-text-muted uppercase tracking-wide">
                 <div className="flex items-center gap-2">
                     <span className="text-brand">Replying to</span>
                     <span className="text-text-normal">@{replyingTo.user.username}</span>
@@ -98,18 +98,18 @@ export default function ChatInput(props: Props) {
             </div>
         )}
 
-        {/* INPUT PRINCIPAL */}
+        {/* INPUT PRINCIPAL : Reste clair (#383a40) pour le contraste */}
         <div 
           onClick={() => textInputRef.current?.focus()}
-          // ✅ MIGRATION : L'input utilise une couleur "secondaire" ou "modifier" pour se démarquer
-          className={`bg-background-tertiary relative px-4 py-3 flex items-start gap-3 transition-all cursor-text ${replyingTo ? 'rounded-b-md' : 'rounded-md'}`}
+          className={`bg-[#383a40] relative px-4 py-3 flex items-start gap-3 transition-all cursor-text ${replyingTo ? 'rounded-b-md' : 'rounded-md'}`}
         >
+            
             <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept="image/*" />
 
             <Tooltip text="Envoyer un fichier" side="top">
                 <button 
                     onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    className="text-text-muted hover:text-text-header transition p-1 rounded-full bg-background-primary hover:bg-background-modifier-hover mt-0.5 flex-shrink-0"
+                    className="text-text-muted hover:text-text-header transition p-1 rounded-full hover:bg-background-primary mt-0.5 flex-shrink-0"
                     type="button"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -155,7 +155,7 @@ export default function ChatInput(props: Props) {
                     </button>
                 </div>
 
-                <div className={`border-l border-background-secondary pl-2 ml-1 ${canSend ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}>
+                <div className={`border-l border-zinc-600 pl-2 ml-1 ${canSend ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}>
                     <button
                         onClick={handleManualSend}
                         disabled={!canSend}

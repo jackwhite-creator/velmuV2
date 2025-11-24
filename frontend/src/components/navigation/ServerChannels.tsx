@@ -5,7 +5,7 @@ import api from '../../lib/api';
 import { Socket } from 'socket.io-client';
 
 // UI
-import EditServerModal from '../ui/EditServerModal';
+import EditServerModal from '../server-settings/ServerSettingsModal';
 import ConfirmModal from '../ui/ConfirmModal';
 import CreateCategoryModal from '../ui/CreateCategoryModal';
 import EditCategoryModal from '../ui/EditCategoryModal';

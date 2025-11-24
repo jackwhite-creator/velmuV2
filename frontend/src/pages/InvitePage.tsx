@@ -3,83 +3,134 @@ import { useParams, useNavigate } from 'react-router-dom';
 import api from '../lib/api';
 import { useServerStore } from '../store/serverStore';
 
+interface InviteInfo {
+  code: string;
+  server: {
+    id: string;
+    name: string;
+    iconUrl: string | null;
+    memberCount: number;
+  };
+  inviter: {
+    id: string;
+    username: string;
+    avatarUrl: string | null;
+  };
+}
+
 export default function InvitePage() {
   const { code } = useParams();
   const navigate = useNavigate();
-  const { addServer, setActiveServer, setActiveChannel, setActiveConversation } = useServerStore();
   
-  const [isLoading, setIsLoading] = useState(false);
+  // ✅ AJOUT : On récupère setServers pour mettre à jour la liste globale
+  const { setServers } = useServerStore();
+  
+  const [info, setInfo] = useState<InviteInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchInfo = async () => {
+      if (!code) return;
+      try {
+        const res = await api.get(`/invites/${code}`);
+        setInfo(res.data);
+      } catch (err: any) {
+        setError(err.response?.data?.error || "Invitation invalide ou expirée.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchInfo();
+  }, [code]);
 
   const handleJoin = async () => {
     if (!code) return;
-    setIsLoading(true);
+    setIsJoining(true);
     setError('');
 
     try {
-      // 1. Appel API pour rejoindre
       const res = await api.post(`/invites/${code}/join`);
-      const server = res.data;
+      const serverId = res.data.serverId;
 
-      // 2. Mise à jour du store (Comme dans JoinServerModal)
-      addServer(server);
-      setActiveServer(server);
-      setActiveConversation(null);
+      // ✅ CORRECTION CRUCIALE : On recharge la liste des serveurs pour que la sidebar se mette à jour
+      // Sinon le nouveau serveur n'apparaît pas sans refresh (F5)
+      const serversRes = await api.get('/servers');
+      setServers(serversRes.data);
 
-      // 3. Persistance pour que ChatPage charge le bon serveur
-      localStorage.setItem('lastServerId', server.id);
-      localStorage.setItem('lastConversationId', 'null');
-      
-      // 4. Redirection vers l'interface de chat
-      navigate('/channels/' + server.id);
+      if (serverId) {
+        navigate(`/channels/${serverId}`);
+      } else {
+        navigate('/channels/@me');
+      }
       
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.error || "Impossible de rejoindre ce serveur.");
     } finally {
-      setIsLoading(false);
+      setIsJoining(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-background-quaternary items-center justify-center font-sans">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+            <div className="w-20 h-20 bg-background-secondary rounded-2xl"></div>
+            <div className="h-6 w-48 bg-background-secondary rounded-sm"></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen bg-slate-900 items-center justify-center bg-[url('https://assets-global.website-files.com/6257adef93867e56f84d3092/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png')] bg-no-repeat bg-center bg-[length:100px]">
-       <div className="bg-slate-800 p-8 rounded-lg shadow-2xl max-w-sm w-full text-center border border-slate-700 relative overflow-hidden">
-          {/* Effet de fond */}
-          <div className="absolute top-0 left-0 w-full h-2 bg-indigo-500"></div>
-
-          <div className="w-24 h-24 bg-slate-700 rounded-full mx-auto mb-4 flex items-center justify-center text-4xl shadow-inner">
-            ✉️
-          </div>
-
-          <h1 className="text-xl font-bold text-white mb-2">Invitation reçue !</h1>
-          <p className="text-slate-400 text-sm mb-6">
-             Vous avez été invité à rejoindre un serveur sur Velmu.
-          </p>
-
-          {error && (
-            <div className="bg-red-500/10 text-red-400 text-xs p-2 rounded mb-4 border border-red-500/20">
-              {error}
+    <div className="flex h-screen bg-background-quaternary items-center justify-center font-sans select-none p-4">
+       
+       <div className="w-full max-w-md bg-background-primary rounded-md shadow-xl border border-background-tertiary p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+          
+            <div className="w-24 h-24 bg-background-secondary rounded-2xl flex items-center justify-center overflow-hidden mx-auto mb-6 border border-background-tertiary shadow-sm">
+                {info?.server.iconUrl ? (
+                    <img src={info.server.iconUrl} alt={info.server.name} className="w-full h-full object-cover" />
+                ) : (
+                    <span className="text-text-header font-bold text-3xl">
+                        {info?.server.name.substring(0, 2).toUpperCase()}
+                    </span>
+                )}
             </div>
-          )}
 
-          <button 
-            onClick={handleJoin}
-            disabled={isLoading}
-            className="w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-3 rounded transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                Connexion...
-              </>
-            ) : (
-              "Accepter l'invitation"
-            )}
-          </button>
+            <div>
+                <p className="text-text-muted text-sm font-medium mb-2">
+                    <strong className="text-text-normal">{info?.inviter.username}</strong> t'a invité à rejoindre
+                </p>
 
-          <div className="mt-4 text-xs text-slate-500">
-            Code: <span className="font-mono bg-slate-900 px-1 rounded">{code}</span>
-          </div>
+                <h1 className="text-2xl font-bold text-text-header mb-4 truncate leading-tight">
+                    {info?.server.name}
+                </h1>
+
+                <div className="flex justify-center gap-4 mb-8 bg-background-secondary py-2 px-4 rounded-sm inline-flex mx-auto border border-background-tertiary">
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-status-green"></div>
+                        <span className="text-xs text-text-muted font-bold uppercase tracking-wide">{info?.server.memberCount} Membres</span>
+                    </div>
+                </div>
+
+                {error && (
+                    <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-sm mb-6 border border-status-danger/20 font-medium">
+                    {error}
+                    </div>
+                )}
+
+                {!error && (
+                    <button 
+                        onClick={handleJoin}
+                        disabled={isJoining}
+                        className="w-full bg-brand hover:bg-brand-hover text-white font-bold py-3 rounded-sm transition-all shadow-md active:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
+                    >
+                        {isJoining ? 'Entrée en cours...' : "Accepter l'invitation"}
+                    </button>
+                )}
+            </div>
        </div>
     </div>
   );
