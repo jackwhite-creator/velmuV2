@@ -88,22 +88,31 @@ const RailItem = ({
   );
 };
 
-export default function ServerRail() {
+interface ServerRailProps {
+  onOpenCreateServer?: () => void;
+  onOpenJoinServer?: () => void;
+}
+
+export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: ServerRailProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const { servers, activeServer, setActiveServer, removeServer } = useServerStore();
   
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [isJoinOpen, setIsJoinOpen] = useState(false);
+  const [localCreateOpen, setLocalCreateOpen] = useState(false);
+  const [localJoinOpen, setLocalJoinOpen] = useState(false);
+  
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; server: Server } | null>(null);
   const [serverToLeave, setServerToLeave] = useState<Server | null>(null);
   const [serverToInvite, setServerToInvite] = useState<Server | null>(null);
 
   const handleServerClick = (server: any) => {
-    // ✅ SIMPLIFICATION : On change juste l'état et l'URL vers la racine du serveur
-    // C'est ChatPage.tsx qui s'occupera de rediriger vers le "Dernier Salon"
     setActiveServer(server);
-    navigate(`/channels/${server.id}`);
+    const lastChannelId = localStorage.getItem(`velmu_last_channel_${server.id}`);
+    if (lastChannelId) {
+        navigate(`/channels/${server.id}/${lastChannelId}`);
+    } else {
+        navigate(`/channels/${server.id}`);
+    }
   };
 
   const handleDmClick = () => { setActiveServer(null); navigate('/channels/@me'); };
@@ -119,8 +128,11 @@ export default function ServerRail() {
     finally { setServerToLeave(null); }
   };
 
+  const openCreate = onOpenCreateServer || (() => setLocalCreateOpen(true));
+  const openJoin = onOpenJoinServer || (() => setLocalJoinOpen(true));
+
   return (
-    <div className="w-[72px] bg-background-quaternary flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none">
+    <div className="w-[72px] bg-background-quaternary flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none border-r border-[#1e1f22]/50">
       
       <RailItem 
         label="Messages Privés"
@@ -148,7 +160,7 @@ export default function ServerRail() {
             server.iconUrl ? (
               <img src={server.iconUrl} className="w-full h-full object-cover" alt={server.name} />
             ) : (
-              <span className="text-text-normal font-medium text-xs group-hover:text-text-header">
+              <span className="text-text-normal font-medium text-xs group-hover:text-text-header transition-colors">
                 {server.name.substring(0, 2).toUpperCase()}
               </span>
             )
@@ -159,15 +171,15 @@ export default function ServerRail() {
       <RailItem 
         label="Créer un serveur"
         variant="action"
-        onClick={() => setIsCreateOpen(true)}
+        onClick={openCreate}
         icon={<svg className="w-6 h-6 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}
       />
 
       <RailItem 
-        label="Explorer"
+        label="Rejoindre un serveur"
         variant="action"
-        onClick={() => setIsJoinOpen(true)}
-        icon={<svg className="w-6 h-6 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><path d="M16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>}
+        onClick={openJoin}
+        icon={<svg className="w-6 h-6 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>}
       />
 
       {contextMenu && (
@@ -179,8 +191,11 @@ export default function ServerRail() {
         </ContextMenu>
       )}
 
-      <CreateServerModal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} />
-      <JoinServerModal isOpen={isJoinOpen} onClose={() => setIsJoinServerOpen(false)} />
+      <CreateServerModal isOpen={localCreateOpen} onClose={() => setLocalCreateOpen(false)} />
+      
+      {/* ✅ CORRECTION DU CRASH ICI : setLocalJoinOpen au lieu de l'ancienne variable */}
+      <JoinServerModal isOpen={localJoinOpen} onClose={() => setLocalJoinOpen(false)} />
+      
       <InviteModal isOpen={!!serverToInvite} onClose={() => setServerToInvite(null)} server={serverToInvite} />
       <ConfirmModal 
         isOpen={!!serverToLeave} onClose={() => setServerToLeave(null)} onConfirm={handleLeaveServer}
