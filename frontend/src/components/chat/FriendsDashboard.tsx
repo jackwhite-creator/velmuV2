@@ -166,8 +166,8 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
                   </div>
 
                   {displayedList().length === 0 ? (
-                     // ✅ EMPTY STATE ORIGINAL : Plus de Wumpus ! Design abstrait "Radar"
-                     <div className="flex flex-col items-center justify-center mt-24 opacity-60 select-none">
+                     // ✅ FIX : mt-24 -> mt-40 pour descendre le bloc au centre
+                     <div className="flex flex-col items-center justify-center mt-40 opacity-60 select-none">
                         <div className="relative w-48 h-48 mb-6 flex items-center justify-center">
                            <div className="absolute inset-0 border-2 border-slate-800 rounded-full animate-[ping_3s_linear_infinite]"></div>
                            <div className="absolute inset-4 border-2 border-slate-800 rounded-full animate-[ping_3s_linear_infinite_1s]"></div>
