@@ -5,10 +5,9 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl'; // 👈 AJOUT DE LA TAILLE 'xl'
+  size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-// ... (animations CSS inchangées) ...
 const styles = `
   @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
   @keyframes modalSlideUp { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -30,7 +29,7 @@ export default function Modal({ isOpen, onClose, children, size = 'md' }: ModalP
     sm: 'max-w-md',
     md: 'max-w-lg',
     lg: 'max-w-2xl',
-    xl: 'max-w-4xl', // 👈 NOUVELLE TAILLE LARGE
+    xl: 'max-w-4xl',
   };
 
   return createPortal(
@@ -38,13 +37,13 @@ export default function Modal({ isOpen, onClose, children, size = 'md' }: ModalP
       <style>{styles}</style>
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div 
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-modal-fade" 
+          className="absolute inset-0 bg-black/80 backdrop-blur-[2px] animate-modal-fade" 
           onClick={onClose}
         />
         <div 
           className={`
             relative w-full ${sizeClasses[size]} 
-            bg-[#1E293B] border border-slate-700/50 rounded-xl shadow-2xl 
+            bg-background-floating border border-background-tertiary rounded-md shadow-2xl 
             animate-modal-slide overflow-hidden
           `}
           onClick={(e) => e.stopPropagation()}

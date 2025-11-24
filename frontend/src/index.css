@@ -2,29 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
-/* On force le mode sombre par défaut */
+:root {
+  --bg-primary: #36393f;
+  --bg-secondary: #2f3136;
+  --bg-tertiary: #202225;
+  --bg-quaternary: #111214;
+  --bg-floating: #18191c;
+  
+  --bg-modifier-hover: rgba(79, 84, 92, 0.16);
+  --bg-modifier-selected: rgba(79, 84, 92, 0.32);
+
+  --text-header: #f2f3f5;
+  --text-normal: #dbdee1;
+  --text-muted: #949ba4;
+
+  --brand: #5865F2;
+  --brand-hover: #4752C4;
+  
+  --green: #23a559;
+  --red: #da373c;
+  --yellow: #f0b232;
+}
+
 body {
-  @apply bg-slate-900 text-slate-100;
+  background-color: var(--bg-primary);
+  color: var(--text-normal);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
 }
 
 @layer utilities {
-  /* Style Scrollbar Discord */
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background-color: #2b2d31; 
+    background-color: var(--bg-secondary); 
     border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #1a1b1e; 
+    background-color: var(--bg-quaternary); 
     border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #404249; 
+    background-color: #000000; 
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
   }
 }

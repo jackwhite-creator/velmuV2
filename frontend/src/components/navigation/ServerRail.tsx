@@ -11,7 +11,6 @@ import CreateServerModal from '../CreateServerModal';
 import JoinServerModal from '../JoinServerModal';
 import InviteModal from '../../components/InviteModal';
 
-// --- STYLE TOOLTIP (Simple & Carré) ---
 const styles = `
   @keyframes tooltipPop {
     0% { opacity: 0; transform: scale(0.95); }
@@ -27,7 +26,6 @@ const Icons = {
   Leave: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
 };
 
-// --- TOOLTIP COMPACT ---
 const RailTooltip = ({ text, rect }: { text: string, rect: DOMRect }) => {
   if (!rect) return null;
   const style: React.CSSProperties = {
@@ -40,8 +38,7 @@ const RailTooltip = ({ text, rect }: { text: string, rect: DOMRect }) => {
       <style>{styles}</style>
       <div className="fixed z-[9999] flex items-center animate-tooltip origin-left" style={style}>
         <div className="absolute -left-1.5 w-0 h-0 border-y-[5px] border-y-transparent border-r-[6px] border-r-black" style={{ top: '50%', transform: 'translateY(-50%)' }} />
-        {/* Tooltip noir, carré, police petite */}
-        <div className="bg-black text-zinc-100 text-xs font-bold px-3 py-1.5 rounded-sm shadow-xl whitespace-nowrap">
+        <div className="bg-black text-text-header text-xs font-bold px-3 py-1.5 rounded-sm shadow-xl whitespace-nowrap">
           {text}
         </div>
       </div>
@@ -50,7 +47,6 @@ const RailTooltip = ({ text, rect }: { text: string, rect: DOMRect }) => {
   );
 };
 
-// --- ITEMS (Style Bloc) ---
 const RailItem = ({ 
   onClick, isActive, colorClass, icon, label, isImage = false, onContextMenu, variant = 'default'
 }: { 
@@ -61,9 +57,8 @@ const RailItem = ({
 
   return (
     <div className="relative group flex items-center justify-center w-full mb-2">
-      {/* INDICATEUR (Barre latérale) */}
       <div 
-        className={`absolute left-0 bg-white rounded-r-sm transition-all duration-200 ease-out
+        className={`absolute left-0 bg-text-header rounded-r-sm transition-all duration-200 ease-out
           ${isActive 
             ? 'h-10 top-1 w-[4px]' 
             : isHovered 
@@ -81,11 +76,10 @@ const RailItem = ({
         className={`
           w-[48px] h-[48px] cursor-pointer transition-all duration-200 ease-out overflow-hidden flex items-center justify-center
           ${isActive || isHovered ? 'rounded-md' : 'rounded-[24px]'} 
-          ${isActive ? (colorClass || 'bg-indigo-600') : isHovered ? (colorClass || 'bg-indigo-600') : 'bg-[#313338]'}
+          ${isActive ? (colorClass || 'bg-brand') : isHovered ? (colorClass || 'bg-brand') : 'bg-background-secondary'} 
           ${isImage ? 'bg-transparent' : ''}
-          ${variant === 'action' ? 'text-emerald-500 hover:text-white bg-[#313338] hover:bg-emerald-600' : ''}
-        `}
-      >
+          ${variant === 'action' ? 'text-status-green hover:text-text-header bg-background-secondary hover:bg-status-green' : ''}`}
+          >
         {icon}
       </div>
 
@@ -134,21 +128,18 @@ export default function ServerRail() {
   };
 
   return (
-    // ✅ FOND NOIR PROFOND (#111214) + Largeur standard 72px
-    <div className="w-[72px] bg-[#111214] flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none">
+    <div className="w-[72px] bg-background-quaternary flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none">
       
-      {/* ACCUEIL */}
       <RailItem 
         label="Messages Privés"
         isActive={!activeServer}
         onClick={handleDmClick}
-        colorClass="bg-[#5865F2]"
+        colorClass="bg-brand"
         icon={<img src="/logo.png" alt="Velmu" className="w-7 h-7 object-contain" onError={(e) => e.currentTarget.style.display = 'none'} />}
       />
 
-      <div className="w-8 h-[2px] bg-[#35363C] rounded-sm mx-auto mb-2" />
+      <div className="w-8 h-[2px] bg-background-secondary rounded-sm mx-auto mb-2" />
 
-      {/* LISTE */}
       {servers.map((server) => (
         <RailItem
           key={server.id}
@@ -161,7 +152,7 @@ export default function ServerRail() {
             server.iconUrl ? (
               <img src={server.iconUrl} className="w-full h-full object-cover" alt={server.name} />
             ) : (
-              <span className="text-zinc-300 font-medium text-xs group-hover:text-white">
+              <span className="text-text-normal font-medium text-xs group-hover:text-text-header">
                 {server.name.substring(0, 2).toUpperCase()}
               </span>
             )
@@ -169,7 +160,6 @@ export default function ServerRail() {
         />
       ))}
 
-      {/* ACTIONS */}
       <RailItem 
         label="Créer un serveur"
         variant="action"

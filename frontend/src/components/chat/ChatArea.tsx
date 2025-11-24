@@ -62,16 +62,16 @@ export default function ChatArea({
 
   if (!activeChannel) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-500 flex-col bg-[#313338] min-w-0 h-full select-none">
-        <div className="w-20 h-20 bg-[#2b2d31] rounded-full flex items-center justify-center mb-6 text-4xl grayscale opacity-50">👋</div>
+      <div className="flex-1 flex items-center justify-center text-text-muted flex-col bg-background-primary min-w-0 h-full select-none">
+        <div className="w-20 h-20 bg-background-secondary rounded-full flex items-center justify-center mb-6 text-4xl grayscale opacity-50">👋</div>
         <p className="text-sm font-medium">Sélectionnez un salon pour commencer.</p>
       </div>
     );
   }
 
   return (
-    // ✅ FOND #313338 PARTOUT
-    <div className="flex-1 flex flex-col h-full min-w-0 bg-[#313338] relative overflow-hidden">
+    // ✅ MIGRATION : bg-background-primary
+    <div className="flex-1 flex flex-col h-full min-w-0 bg-background-primary relative overflow-hidden transition-colors duration-200">
        <div className="flex-shrink-0 z-30">
          <ChatHeader channel={activeChannel} showMembers={showMembers} onToggleMembers={onToggleMembers} />
        </div>
@@ -91,7 +91,7 @@ export default function ChatArea({
          />
        </div>
 
-       <div className="flex-shrink-0 z-20 bg-[#313338]">
+       <div className="flex-shrink-0 z-20 bg-background-primary">
          <ChatInput 
             inputValue={inputValue}
             setInputValue={setInputValue}

@@ -23,7 +23,7 @@ interface Props {
   isOwner?: boolean;
   serverId?: string;
   onImageClick: (url: string) => void;
-  onImageLoad: () => void; // On garde la prop pour compatibilité mais on peut simplifier
+  onImageLoad: () => void;
 }
 
 const Icons = {
@@ -48,10 +48,14 @@ export default function MessageItem({
   const isModified = msg.updatedAt && (new Date(msg.updatedAt).getTime() - new Date(msg.createdAt).getTime() > 2000);
   const isMentioningMe = msg.replyTo?.user?.id === currentUser?.id;
 
-  const marginTopClass = shouldGroup ? 'mt-0' : 'mt-4';
+  const marginTopClass = shouldGroup ? 'mt-[2px]' : 'mt-[17px]';
+  
+  // ✅ CORRECTION ICI : On utilise des valeurs RGBA explicites pour garantir la transparence
+  // bg-[rgba(240,178,50,0.1)] = Jaune avec 10% d'opacité (le fond)
+  // before:bg-status-warning = La barre latérale utilise toujours la variable du thème (solide)
   const backgroundClass = isMentioningMe 
-    ? 'bg-[#F0B232]/10 hover:bg-[#F0B232]/15 before:bg-[#F0B232]' 
-    : 'hover:bg-slate-800/40 transparent';
+    ? 'bg-[rgba(240,178,50,0.1)] hover:bg-[rgba(240,178,50,0.15)] before:bg-status-warning' 
+    : 'hover:bg-background-modifier-hover transparent';
 
   const saveEdit = async () => {
     if (!editContent.trim()) return;
@@ -89,7 +93,7 @@ export default function MessageItem({
         id={`message-${msg.id}`} 
         onContextMenu={handleContextMenu}
         className={`
-          group relative pr-4 pl-2 py-0.5 transition-colors
+          group relative pr-4 pl-4 py-0.5 transition-colors
           ${marginTopClass} ${backgroundClass}
           ${isMentioningMe ? 'before:content-[""] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px]' : ''}
         `}
@@ -130,14 +134,14 @@ export default function MessageItem({
                                 <img 
                                     src={att.url} 
                                     alt={att.filename} 
-                                    onLoad={onImageLoad} // On notifie quand l'image est chargée
+                                    onLoad={onImageLoad}
                                     onClick={() => onImageClick(att.url)}
-                                    className="max-w-md max-h-80 rounded-lg border border-slate-700/50 hover:border-indigo-500/50 transition object-contain bg-slate-950/50"
+                                    className="max-w-md max-h-80 rounded-md border border-background-secondary hover:border-brand/50 transition object-contain bg-background-tertiary"
                                 />
                             ) : (
-                                <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-slate-800 p-3 rounded-md border border-slate-700 hover:bg-slate-700 transition">
-                                    <div className="text-indigo-400">📄</div>
-                                    <span className="text-sm text-slate-200 underline">{att.filename}</span>
+                                <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-background-secondary p-3 rounded-md border border-background-tertiary hover:bg-background-tertiary transition">
+                                    <div className="text-brand">📄</div>
+                                    <span className="text-sm text-text-normal underline">{att.filename}</span>
                                 </a>
                             )}
                         </div>
