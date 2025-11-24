@@ -166,16 +166,20 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
                   </div>
 
                   {displayedList().length === 0 ? (
-                     // ✅ FIX : mt-24 -> mt-40 pour descendre le bloc au centre
-                     <div className="flex flex-col items-center justify-center mt-40 opacity-60 select-none">
-                        <div className="relative w-48 h-48 mb-6 flex items-center justify-center">
-                           <div className="absolute inset-0 border-2 border-slate-800 rounded-full animate-[ping_3s_linear_infinite]"></div>
-                           <div className="absolute inset-4 border-2 border-slate-800 rounded-full animate-[ping_3s_linear_infinite_1s]"></div>
-                           <div className="absolute inset-8 border-2 border-slate-800 rounded-full"></div>
-                           <div className="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center relative z-10 shadow-xl">
-                               <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                           </div>
+                     // ✅ FIX : h-full + justify-center pour un centrage vertical parfait
+                     // pb-20 permet de remonter visuellement le bloc pour qu'il ne soit pas "trop" bas
+                     <div className="flex flex-col items-center justify-center h-full pb-20 opacity-60 select-none">
+                        
+                        {/* Cercle Statique (Plus d'animation) */}
+                        <div className="w-24 h-24 bg-slate-800/50 rounded-full flex items-center justify-center mb-6 border border-slate-700/50 shadow-sm">
+                           {/* Icone Radar Statique */}
+                           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400">
+                              <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+                              <path d="M8.5 8.5A4 4 0 0 0 12 12a4 4 0 0 1 4 4" />
+                              <circle cx="12" cy="12" r="1" />
+                           </svg>
                         </div>
+
                         <h3 className="text-slate-300 text-lg font-semibold mb-2">C'est calme... trop calme.</h3>
                         <p className="text-slate-500 text-sm">Aucun signal détecté pour le moment.</p>
                      </div>
