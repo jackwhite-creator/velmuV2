@@ -48,7 +48,6 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
       style={style} 
       className="bg-[#111214] border border-zinc-900 rounded-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 font-sans"
     >
-      {/* BANNIÈRE (Zinc 800 uni) */}
       <div className="h-20 w-full bg-zinc-800"></div>
 
       <div className="px-4 relative pb-3">
@@ -56,7 +55,8 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
         {/* AVATAR CLIQUABLE */}
         <div className="absolute -top-12 left-4">
             <div 
-                onClick={onOpenProfile}
+                // ✅ CORRECTION : On ferme le popover AVANT d'ouvrir le profil
+                onClick={() => { onClose(); onOpenProfile(); }}
                 className="relative group cursor-pointer"
             >
                 <div className="w-20 h-20 rounded-full bg-zinc-700 flex items-center justify-center text-white font-bold text-2xl overflow-hidden ring-6 ring-[#111214] transition-opacity group-hover:opacity-90">
@@ -66,17 +66,14 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
                         user.username[0].toUpperCase()
                     )}
                 </div>
-                {/* Statut */}
                 <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 border-[5px] border-[#111214] rounded-full"></div>
                 
-                {/* Hint visuel au survol */}
                 <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] text-white font-bold uppercase tracking-wider pointer-events-none">
                     Voir
                 </div>
             </div>
         </div>
 
-        {/* INFO USER & COPY */}
         <div className="mt-10 mb-4 pl-1">
             <div 
                 onClick={handleCopyUsername}
@@ -87,7 +84,6 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
                     <span className="text-xs text-zinc-400 font-medium">#{user.discriminator}</span>
                 </div>
                 
-                {/* Icône Copier (apparaît au survol) */}
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity ml-auto mr-2">
                     {copySuccess ? (
                         <span className="text-xs text-green-500 font-bold bg-green-500/10 px-2 py-1 rounded">Copié !</span>
@@ -98,7 +94,6 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
             </div>
         </div>
 
-        {/* MENU ACTIONS */}
         <div className="space-y-1 border-t border-zinc-800 pt-3 mt-2">
             <button 
                 onClick={() => { onOpenSettings(); onClose(); }}
