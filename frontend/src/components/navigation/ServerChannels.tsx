@@ -29,7 +29,7 @@ interface Props {
 
 type MenuType = 'GLOBAL' | 'CHANNEL' | 'CATEGORY';
 
-// --- ICONES SVG POUR LE MENU ---
+// Icônes standards (16px)
 const Icons = {
   Add: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
   Folder: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>,
@@ -44,7 +44,6 @@ export default function ServerChannels({
   const { user } = useAuthStore();
   const { setActiveServer } = useServerStore();
   
-  // États
   const [isEditServerOpen, setIsEditServerOpen] = useState(false);
   const [isCreateCategoryOpen, setIsCreateCategoryOpen] = useState(false);
   
@@ -77,11 +76,9 @@ export default function ServerChannels({
     return () => window.removeEventListener('click', handleClick);
   }, []);
 
-  if (!activeServer) return <div />;
+  if (!activeServer) return <div className="w-60 bg-[#2b2d31] h-full" />;
 
   const isOwner = activeServer.ownerId === user?.id;
-
-  // --- ACTIONS ---
 
   const handleGlobalCreateChannel = () => {
       const firstCat = activeServer.categories?.[0];
@@ -113,7 +110,6 @@ export default function ServerChannels({
       setContextMenu({ x: e.clientX, y: e.clientY, type: 'CATEGORY', data: category });
   };
 
-  // --- DELETE LOGIC ---
   const handleDeleteChannelContext = () => {
       const channel = contextMenu?.data; 
       if (!channel) return;
@@ -147,7 +143,8 @@ export default function ServerChannels({
   };
 
   return (
-    <div className="flex flex-col h-full" onContextMenu={handleContextMenuGlobal}>
+    // ✅ FOND ZINC FONCÉ (#2b2d31) - Style compact et uni
+    <div className="flex flex-col h-full bg-[#2b2d31] select-none" onContextMenu={handleContextMenuGlobal}>
         
         <ServerHeader 
             server={activeServer} 
@@ -158,7 +155,6 @@ export default function ServerChannels({
             onCreateChannel={handleGlobalCreateChannel}
         />
         
-        {/* Correction ici : on passe flex-1 pour que la liste prenne l'espace, mais c'est ChannelList qui gère le scroll */}
         <div className="flex-1 min-h-0">
             <ChannelList 
                 server={activeServer}
@@ -202,7 +198,6 @@ export default function ServerChannels({
             </ContextMenu>
         )}
 
-        {/* MODALES */}
         <EditServerModal isOpen={isEditServerOpen} server={activeServer} onClose={() => setIsEditServerOpen(false)} />
         <ConfirmModal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={confirmConfig.action} title={confirmConfig.title} message={confirmConfig.message} isDestructive={confirmConfig.isDestructive} confirmText={confirmConfig.confirmText} />
         <CreateCategoryModal isOpen={isCreateCategoryOpen} onClose={() => setIsCreateCategoryOpen(false)} serverId={activeServer.id} />
