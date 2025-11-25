@@ -39,13 +39,10 @@ export default function ChatPage() {
   
   const { requests, removeRequest, addRequest } = useFriendStore();
 
-  const [showMembers, setShowMembers] = useState(false);
-  const [showMobileSidebar, setShowMobileSidebar] = useState(true);
-  
+  const [showMembers, setShowMembers] = useState(true);
   const [inputValue, setInputValue] = useState('');
   const [replyingTo, setReplyingTo] = useState<any>(null);
 
-  // Modals
   const [isCreateServerOpen, setIsCreateServerOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isJoinServerOpen, setIsJoinServerOpen] = useState(false);
@@ -54,24 +51,6 @@ export default function ChatPage() {
   const [userMenu, setUserMenu] = useState<UserContextMenuData | null>(null);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
-
-  useEffect(() => {
-    if (channelId || (serverId === '@me' && !channelId)) { // Si on est dans un DM ou sur la page Amis
-        setShowMobileSidebar(false);
-    } else {
-        setShowMobileSidebar(true);
-    }
-  }, [channelId, serverId]);
-
-  useEffect(() => {
-      const handleResize = () => {
-          if (window.innerWidth >= 1024) setShowMembers(true);
-          else setShowMembers(false);
-      };
-      window.addEventListener('resize', handleResize);
-      handleResize();
-      return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   useEffect(() => {
     if (socket && activeServer?.id) {
@@ -110,14 +89,12 @@ export default function ChatPage() {
                   setActiveChannel(channel);
               }
           } else {
-              if (window.innerWidth >= 768) {
-                  const lastId = getLastChannelId(activeServer.id);
-                  const allChannels = activeServer.categories?.flatMap(c => c.channels || []) || [];
-                  const targetChannel = allChannels.find(c => c.id === lastId) || allChannels[0];
-                  
-                  if (targetChannel) {
-                      navigate(`/channels/${serverId}/${targetChannel.id}`, { replace: true });
-                  }
+              const lastId = getLastChannelId(activeServer.id);
+              const allChannels = activeServer.categories?.flatMap(c => c.channels || []) || [];
+              const targetChannel = allChannels.find(c => c.id === lastId) || allChannels[0];
+              
+              if (targetChannel) {
+                  navigate(`/channels/${serverId}/${targetChannel.id}`, { replace: true });
               }
           }
       }
@@ -207,20 +184,9 @@ export default function ChatPage() {
             (req.receiverId === user?.id && req.senderId === userMenu.user.id))
   );
 
-  const handleMobileBack = () => {
-      setShowMobileSidebar(true);
-      navigate(activeServer ? `/channels/${activeServer.id}` : '/channels/@me');
-  };
-
   const renderMainContent = () => {
     if (showFriendsDashboard) {
-        return (
-            <FriendsDashboard 
-                onUserContextMenu={handleUserContextMenu} 
-                onMobileBack={handleMobileBack}
-                showMobileSidebar={showMobileSidebar}
-            />
-        );
+        return <FriendsDashboard onUserContextMenu={handleUserContextMenu} />;
     }
 
     return (
@@ -234,39 +200,36 @@ export default function ChatPage() {
           socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
           onScroll={loadMore} 
           onUserClick={handleUserClick} sendMessage={sendMessage}
-          onMobileBack={handleMobileBack}
         />
     );
   };
 
   return (
-    <div className="flex h-screen w-full bg-[#1e1e20] text-zinc-100 overflow-hidden font-sans select-none fixed inset-0">
+    <div className="flex h-screen w-full bg-[#1e1e20] text-zinc-100 overflow-hidden font-sans select-none">
       
-      <div className={`flex h-full flex-shrink-0 transition-transform duration-300 absolute md:relative z-40 md:translate-x-0 ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} w-full md:w-auto bg-[#1e1e20]`}>
-          <ServerRail onOpenCreateServer={() => setIsCreateServerOpen(true)} onOpenJoinServer={() => setIsJoinServerOpen(true)} />
+      <ServerRail onOpenCreateServer={() => setIsCreateServerOpen(true)} onOpenJoinServer={() => setIsJoinServerOpen(true)} />
 
-          <div className="w-full md:w-[240px] bg-[#2b2d31] flex flex-col h-full border-r border-[#1e1f22]">
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-                {activeServer ? (
-                  <ServerChannels 
-                    activeServer={activeServer}
-                    activeChannel={activeChannel}
-                    socket={socket}
-                    onInvite={() => setIsInviteOpen(true)}
-                    onChannelSelect={(c) => navigate(`/channels/${activeServer.id}/${c.id}`)} 
-                    onOpenProfile={() => setIsSettingsOpen(true)}
-                  />
-                ) : (
-                  <DMSidebar onUserContextMenu={handleUserContextMenu} /> 
-                )}
-            </div>
-            <div className="flex-shrink-0 bg-[#232428]">
-                <UserFooter />
-            </div>
-          </div>
+      <div className="w-[240px] bg-[#2b2d31] flex flex-col h-full flex-shrink-0 border-r border-[#1e1f22]">
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+            {activeServer ? (
+              <ServerChannels 
+                activeServer={activeServer}
+                activeChannel={activeChannel}
+                socket={socket}
+                onInvite={() => setIsInviteOpen(true)}
+                onChannelSelect={(c) => navigate(`/channels/${activeServer.id}/${c.id}`)} 
+                onOpenProfile={() => setIsSettingsOpen(true)}
+              />
+            ) : (
+              <DMSidebar onUserContextMenu={handleUserContextMenu} /> 
+            )}
+        </div>
+        <div className="flex-shrink-0 bg-[#232428]">
+            <UserFooter />
+        </div>
       </div>
 
-      <main className={`flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden w-full h-full ${!showMobileSidebar ? 'block' : 'hidden md:flex'}`}>
+      <main className="flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden">
           {renderMainContent()}
 
           {activeServer && showMembers && !showFriendsDashboard && activeChannel?.type === 'TEXT' && (
@@ -286,6 +249,7 @@ export default function ChatPage() {
         <ContextMenu position={userMenu} onClose={() => setUserMenu(null)}>
             <ContextMenuItem label="Profil" onClick={() => { setViewingUserProfile(userMenu.user.id); setUserMenu(null); }} />
             <ContextMenuItem label="Copier Pseudo" onClick={() => { navigator.clipboard.writeText(`${userMenu.user.username}#${userMenu.user.discriminator}`); setUserMenu(null); }} />
+            
             {user?.id !== userMenu.user.id && (
               <>
                 <ContextMenuSeparator />

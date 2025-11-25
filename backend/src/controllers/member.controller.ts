@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 
 export const MemberController = {
-  // 1. LISTER LES MEMBRES
   async getByServerId(req: Request, res: Response) {
     try {
       const { serverId } = req.params;
@@ -18,9 +17,8 @@ export const MemberController = {
               avatarUrl: true,
             }
           },
-          roles: true // On inclut les rôles pour l'affichage frontend si besoin
+          roles: true
         },
-        // CORRECTION : On trie par date d'arrivée car le tri par 'role' est impossible directement ici
         orderBy: { joinedAt: 'asc' } 
       });
 
@@ -30,7 +28,6 @@ export const MemberController = {
     }
   },
 
-  // 2. EXCLURE UN MEMBRE
   async kick(req: Request, res: Response) {
     try {
       const requesterId = req.user?.userId;

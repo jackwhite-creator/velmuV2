@@ -4,22 +4,12 @@ interface Props {
   channel: Channel;
   showMembers: boolean;
   onToggleMembers: () => void;
-  onMobileBack?: () => void; // Nouvelle prop
 }
 
-export default function ChatHeader({ channel, showMembers, onToggleMembers, onMobileBack }: Props) {
+export default function ChatHeader({ channel, showMembers, onToggleMembers }: Props) {
   return (
     <div className="h-12 border-b border-background-tertiary flex items-center px-4 shadow-sm bg-background-primary z-10 flex-shrink-0 justify-between select-none transition-colors duration-200 font-sans">
-      
       <div className="flex items-center overflow-hidden">
-        {/* BOUTON RETOUR MOBILE */}
-        <button 
-            onClick={onMobileBack}
-            className="mr-3 md:hidden text-text-muted hover:text-text-normal p-1 -ml-2"
-        >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        </button>
-
         {channel.type === 'dm' ? (
            <span className="text-text-muted text-2xl mr-3 font-medium">@</span>
         ) : (
