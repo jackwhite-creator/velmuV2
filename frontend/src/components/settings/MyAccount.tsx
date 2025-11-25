@@ -163,7 +163,7 @@ export default function MyAccount() {
                             value={bio}
                             onChange={(e) => setBio(e.target.value)}
                             maxLength={190}
-                            placeholder="Cet utilisateur n'a pas encore de biographie."
+                            placeholder="Clique ici pour modifier ta biographie !"
                             rows={3}
                         />
                     </div>
