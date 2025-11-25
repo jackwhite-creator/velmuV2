@@ -39,8 +39,8 @@ export default function ChatPage() {
   
   const { requests, removeRequest, addRequest } = useFriendStore();
 
-  const [showMembers, setShowMembers] = useState(false); // Caché par défaut sur mobile/tablette
-  const [showMobileSidebar, setShowMobileSidebar] = useState(true); // Gère la vue liste/chat sur mobile
+  const [showMembers, setShowMembers] = useState(false);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(true);
   
   const [inputValue, setInputValue] = useState('');
   const [replyingTo, setReplyingTo] = useState<any>(null);
@@ -55,23 +55,21 @@ export default function ChatPage() {
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
 
-  // Gestion Responsive : Si on est sur un channel, on cache la sidebar sur mobile
   useEffect(() => {
-    if (channelId || (activeServer && !channelId)) {
+    if (channelId || (serverId === '@me' && !channelId)) { // Si on est dans un DM ou sur la page Amis
         setShowMobileSidebar(false);
     } else {
         setShowMobileSidebar(true);
     }
-  }, [channelId, activeServer]);
+  }, [channelId, serverId]);
 
-  // Reset membres sur large screens
   useEffect(() => {
       const handleResize = () => {
           if (window.innerWidth >= 1024) setShowMembers(true);
           else setShowMembers(false);
       };
       window.addEventListener('resize', handleResize);
-      handleResize(); // Init
+      handleResize();
       return () => window.removeEventListener('resize', handleResize);
   }, []);
 
@@ -98,23 +96,35 @@ export default function ChatPage() {
   useEffect(() => {
     if (serverId && serverId !== '@me') {
       const targetServer = servers.find(s => s.id === serverId);
+      
       if (targetServer) {
-          if (activeServer?.id !== targetServer.id) setActiveServer(targetServer);
+          if (activeServer?.id !== targetServer.id) {
+              setActiveServer(targetServer);
+          }
       }
+
       if (activeServer?.id === serverId) {
           if (channelId) {
               const channel = activeServer.categories?.flatMap(c => c.channels).find(c => c.id === channelId);
-              if (channel && activeChannel?.id !== channel.id) setActiveChannel(channel);
+              if (channel && activeChannel?.id !== channel.id) {
+                  setActiveChannel(channel);
+              }
           } else {
-              const lastId = getLastChannelId(activeServer.id);
-              const allChannels = activeServer.categories?.flatMap(c => c.channels || []) || [];
-              const targetChannel = allChannels.find(c => c.id === lastId) || allChannels[0];
-              if (targetChannel) navigate(`/channels/${serverId}/${targetChannel.id}`, { replace: true });
+              if (window.innerWidth >= 768) {
+                  const lastId = getLastChannelId(activeServer.id);
+                  const allChannels = activeServer.categories?.flatMap(c => c.channels || []) || [];
+                  const targetChannel = allChannels.find(c => c.id === lastId) || allChannels[0];
+                  
+                  if (targetChannel) {
+                      navigate(`/channels/${serverId}/${targetChannel.id}`, { replace: true });
+                  }
+              }
           }
       }
     } 
     else if (serverId === '@me') {
         if (activeServer) setActiveServer(null);
+
         if (channelId) {
             const existing = conversations.find(c => c.id === channelId);
             if (existing) {
@@ -197,10 +207,9 @@ export default function ChatPage() {
             (req.receiverId === user?.id && req.senderId === userMenu.user.id))
   );
 
-  // Fonction pour revenir à la liste (mobile)
   const handleMobileBack = () => {
-      navigate(activeServer ? `/channels/${activeServer.id}` : '/channels/@me');
       setShowMobileSidebar(true);
+      navigate(activeServer ? `/channels/${activeServer.id}` : '/channels/@me');
   };
 
   const renderMainContent = () => {
@@ -208,7 +217,7 @@ export default function ChatPage() {
         return (
             <FriendsDashboard 
                 onUserContextMenu={handleUserContextMenu} 
-                onMobileBack={handleMobileBack} // Prop pour le bouton hamburger
+                onMobileBack={handleMobileBack}
                 showMobileSidebar={showMobileSidebar}
             />
         );
@@ -225,7 +234,7 @@ export default function ChatPage() {
           socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
           onScroll={loadMore} 
           onUserClick={handleUserClick} sendMessage={sendMessage}
-          onMobileBack={handleMobileBack} // Prop pour le bouton retour
+          onMobileBack={handleMobileBack}
         />
     );
   };
@@ -233,7 +242,6 @@ export default function ChatPage() {
   return (
     <div className="flex h-screen w-full bg-[#1e1e20] text-zinc-100 overflow-hidden font-sans select-none fixed inset-0">
       
-      {/* SIDEBAR GAUCHE (Rail + Channels) - Caché sur mobile si chat ouvert */}
       <div className={`flex h-full flex-shrink-0 transition-transform duration-300 absolute md:relative z-40 md:translate-x-0 ${showMobileSidebar ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} w-full md:w-auto bg-[#1e1e20]`}>
           <ServerRail onOpenCreateServer={() => setIsCreateServerOpen(true)} onOpenJoinServer={() => setIsJoinServerOpen(true)} />
 
@@ -258,11 +266,9 @@ export default function ChatPage() {
           </div>
       </div>
 
-      {/* ZONE PRINCIPALE (Chat) - Plein écran sur mobile */}
       <main className={`flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden w-full h-full ${!showMobileSidebar ? 'block' : 'hidden md:flex'}`}>
           {renderMainContent()}
 
-          {/* MemberList : Caché sur mobile, visible sur grand écran */}
           {activeServer && showMembers && !showFriendsDashboard && activeChannel?.type === 'TEXT' && (
             <div className="hidden lg:block w-60 bg-[#2b2d31] border-l border-[#26272d] h-full flex-shrink-0 overflow-y-auto custom-scrollbar">
               <MemberList onUserClick={handleUserClick} />
@@ -270,7 +276,6 @@ export default function ChatPage() {
           )}
       </main>
 
-      {/* Overlay Mobile pour les modales */}
       <CreateServerModal isOpen={isCreateServerOpen} onClose={() => setIsCreateServerOpen(false)} />
       <JoinServerModal isOpen={isJoinServerOpen} onClose={() => setIsJoinServerOpen(false)} />
       <InviteModal isOpen={isInviteOpen} onClose={() => setIsInviteOpen(false)} server={activeServer} />
