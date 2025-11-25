@@ -26,13 +26,14 @@ interface Props {
   onScroll: () => Promise<any>; 
   onUserClick: (e: React.MouseEvent, userId: string) => void;
   onToggleMembers: () => void;
+  onMobileBack?: () => void; // AJOUT
 }
 
 const ChatArea = React.memo(function ChatArea({
   activeChannel, messages, isLoadingMore, hasMore, 
   inputValue, showMembers, socket, replyingTo,
   sendMessage, setInputValue, setReplyingTo, 
-  onScroll, onUserClick, onToggleMembers
+  onScroll, onUserClick, onToggleMembers, onMobileBack
 }: Props) {
   
   const { user } = useAuthStore();
@@ -40,7 +41,6 @@ const ChatArea = React.memo(function ChatArea({
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   
-  // File d'attente locale pour l'affichage optimiste
   const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   
   const [showSkeleton, setShowSkeleton] = useState(false);
@@ -63,26 +63,17 @@ const ChatArea = React.memo(function ChatArea({
       }
   }, [activeChannel?.id, messages.length]);
 
-  // ✅ CORRECTION MAJEURE : FUSION INTELLIGENTE (DEDUPLICATION)
-  // On utilise useMemo pour calculer la liste à afficher À CHAQUE RENDU.
-  // Si un message "réel" (messages) correspond à un message "en attente" (pending), on cache le pending.
-  // Cela évite le "saut" visuel où les deux messages coexistent pendant 10ms.
   const combinedMessages = useMemo(() => {
-    // On filtre les messages en attente qui ont DÉJÀ été reçus via le socket
     const filteredPending = pendingMessages.filter(pending => {
-        // On cherche s'il existe un message réel identique reçu récemment
         const isAlreadyReceived = messages.slice(-10).some(real => 
             real.content === pending.content &&
             real.user.id === pending.user.id &&
-            // On vérifie que c'est bien le même message (créé dans un intervalle de 5s)
             Math.abs(new Date(real.createdAt).getTime() - new Date(pending.createdAt).getTime()) < 5000
         );
         return !isAlreadyReceived;
     });
-
     return [...messages, ...filteredPending];
   }, [messages, pendingMessages]);
-
 
   const handleSendMessage = async (e: React.FormEvent, file?: File | null) => {
     e.preventDefault();
@@ -124,8 +115,6 @@ const ChatArea = React.memo(function ChatArea({
         console.error("Erreur envoi:", err);
     } finally { 
         if (tempMsg) {
-            // On retire le pending message de la liste d'attente
-            // Grâce au useMemo ci-dessus, la transition se fera sans saut visuel
             setPendingMessages(prev => prev.filter(m => m.id !== tempId));
         }
     }
@@ -139,7 +128,13 @@ const ChatArea = React.memo(function ChatArea({
 
   if (!activeChannel) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-500 flex-col bg-[#313338] min-w-0 h-full select-none animate-in fade-in duration-300">
+      <div className="flex-1 flex items-center justify-center text-zinc-500 flex-col bg-[#313338] min-w-0 h-full select-none animate-in fade-in duration-300 relative">
+        {/* Bouton Menu Mobile si pas de channel */}
+        <div className="absolute top-4 left-4 md:hidden">
+            <button onClick={onMobileBack} className="text-text-muted hover:text-white p-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+        </div>
         <div className="w-16 h-16 bg-[#2b2d31] rounded-full flex items-center justify-center mb-4 text-3xl grayscale opacity-50 shadow-inner">
             👋
         </div>
@@ -151,12 +146,16 @@ const ChatArea = React.memo(function ChatArea({
   return (
     <div className="flex-1 flex flex-col h-full min-w-0 bg-[#313338] relative overflow-hidden transition-colors duration-200">
        <div className="flex-shrink-0 z-30">
-         <ChatHeader channel={activeChannel} showMembers={showMembers} onToggleMembers={onToggleMembers} />
+         <ChatHeader 
+            channel={activeChannel} 
+            showMembers={showMembers} 
+            onToggleMembers={onToggleMembers} 
+            onMobileBack={onMobileBack} // PASSER LA PROP
+         />
        </div>
 
        <div className="flex-1 min-h-0 relative">
          <MessageList 
-            // ✅ On utilise la liste fusionnée et nettoyée
             messages={combinedMessages}
             channel={activeChannel}
             hasMore={hasMore}

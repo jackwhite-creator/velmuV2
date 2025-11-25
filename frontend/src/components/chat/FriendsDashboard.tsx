@@ -9,9 +9,11 @@ import ConfirmModal from '../ui/ConfirmModal';
 
 interface FriendsDashboardProps {
   onUserContextMenu: (e: React.MouseEvent, user: any) => void;
+  onMobileBack: () => void; // AJOUT
+  showMobileSidebar: boolean; // AJOUT
 }
 
-export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboardProps) {
+export default function FriendsDashboard({ onUserContextMenu, onMobileBack, showMobileSidebar }: FriendsDashboardProps) {
   const navigate = useNavigate(); 
   const { user } = useAuthStore();
   const { requests, updateRequest, removeRequest, addRequest } = useFriendStore();
@@ -67,7 +69,6 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
     
     const idToDelete = friendToDelete.id;
     
-    // Reset immédiat pour éviter les doubles clics
     setConfirmOpen(false);
     setFriendToDelete(null);
     removeRequest(idToDelete);
@@ -111,7 +112,7 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
   };
 
   const tabClass = (isActive: boolean) => `
-    px-3 py-1.5 mx-1 rounded-sm transition font-medium text-sm cursor-pointer select-none
+    px-3 py-1.5 mx-1 rounded-sm transition font-medium text-sm cursor-pointer select-none whitespace-nowrap
     ${isActive 
       ? 'bg-background-modifier-selected text-text-header' 
       : 'text-text-muted hover:bg-background-modifier-hover hover:text-text-normal'}
@@ -120,10 +121,16 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
   return (
     <div className="flex-1 flex flex-col bg-background-primary min-w-0 font-sans h-full">
       
-      <div className="h-12 border-b border-background-tertiary flex items-center px-4 shadow-sm flex-shrink-0 bg-background-primary z-10 select-none">
+      {/* HEADER AMIS MOBILE-FRIENDLY */}
+      <div className="h-12 border-b border-background-tertiary flex items-center px-4 shadow-sm flex-shrink-0 bg-background-primary z-10 select-none overflow-x-auto scrollbar-none">
         
-        <div className="flex items-center gap-2 mr-4 text-text-header font-bold text-base">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted">
+        {/* Bouton Hamburger Mobile */}
+        <button onClick={onMobileBack} className="mr-3 md:hidden text-text-muted hover:text-text-normal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+
+        <div className="flex items-center gap-2 mr-4 text-text-header font-bold text-base whitespace-nowrap">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted hidden sm:block">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
               <circle cx="9" cy="7" r="4"></circle>
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
@@ -132,7 +139,7 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
            <span>Amis</span>
         </div>
 
-        <div className="w-[1px] h-6 bg-background-tertiary mx-2"></div>
+        <div className="w-[1px] h-6 bg-background-tertiary mx-2 hidden sm:block"></div>
 
         <div className="flex items-center">
            <button onClick={() => setActiveTab('online')} className={tabClass(activeTab === 'online')}>En ligne</button>
@@ -140,7 +147,7 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
            <button onClick={() => setActiveTab('pending')} className={tabClass(activeTab === 'pending')}>
              En attente {pending.length > 0 && <span className="bg-status-danger text-white text-[10px] font-bold px-1.5 rounded-sm ml-1.5 align-middle">{pending.length}</span>}
            </button>
-           <button onClick={() => setActiveTab('add')} className={`ml-2 px-4 py-1.5 rounded-sm transition font-medium text-sm ${activeTab === 'add' ? 'text-status-green bg-transparent' : 'bg-status-green text-white hover:bg-opacity-80'}`}>Ajouter un ami</button>
+           <button onClick={() => setActiveTab('add')} className={`ml-2 px-4 py-1.5 rounded-sm transition font-medium text-sm whitespace-nowrap ${activeTab === 'add' ? 'text-status-green bg-transparent' : 'bg-status-green text-white hover:bg-opacity-80'}`}>Ajouter un ami</button>
         </div>
       </div>
 
