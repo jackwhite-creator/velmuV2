@@ -4,14 +4,15 @@ import { useAuthStore } from './store/authStore';
 import { useSocketStore } from './store/socketStore';
 import { useServerStore } from './store/serverStore';
 import { useFriendStore } from './store/friendStore';
+import { useTitleNotifications } from './hooks/useTitleNotifications';
 import api from './lib/api';
-import { PATCH_NOTE_DATA } from './config/patchNotes';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ChatPage from './pages/ChatPage';
 import InvitePage from './pages/InvitePage';
 import PatchNotesModal from './components/PatchNotesModal';
+import { PATCH_NOTE_DATA } from './config/patchNotes';
 
 function App() {
   const location = useLocation();
@@ -22,6 +23,8 @@ function App() {
   const { addRequest, updateRequest, removeRequest, setRequests } = useFriendStore(); 
 
   const [showPatchNotes, setShowPatchNotes] = useState(false);
+
+  useTitleNotifications();
 
   useEffect(() => {
     if (token) connect();
