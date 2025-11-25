@@ -173,7 +173,7 @@ export default function MyAccount() {
                             Membre depuis le <span className="text-zinc-400 normal-case ml-0.5">
                                 {user.createdAt 
                                     ? new Date(user.createdAt).toLocaleDateString('fr-FR') 
-                                    : "Date inconnue"}
+                                    : "XX/XX/XX"}
                             </span>
                         </p>
                     </div>
