@@ -14,6 +14,7 @@ import ChatArea from '../components/chat/ChatArea';
 import MemberList from '../components/MemberList';
 import UserFooter from '../components/chat/UserFooter';
 import FriendsDashboard from '../components/chat/FriendsDashboard';
+import VideoRoom from '../components/chat/VideoRoom';
 
 import CreateServerModal from '../components/CreateServerModal';
 import InviteModal from '../components/InviteModal';
@@ -43,7 +44,6 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState('');
   const [replyingTo, setReplyingTo] = useState<any>(null);
 
-  // Modals
   const [isCreateServerOpen, setIsCreateServerOpen] = useState(false);
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isJoinServerOpen, setIsJoinServerOpen] = useState(false);
@@ -53,58 +53,43 @@ export default function ChatPage() {
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
 
-  // 1. SOCKET : Rejoindre la room
   useEffect(() => {
     if (socket && activeServer?.id) {
       socket.emit('join_server', activeServer.id);
     }
   }, [socket, activeServer?.id]);
 
-  // 2. SOCKET : Mise à jour UI (Renommage, Déplacement...)
   useEffect(() => {
     if (!socket) return;
     const handleRefreshServer = async (updatedServerId: string) => {
-      // On ne rafraîchit que si c'est le serveur actif ou si on en a besoin
       if (activeServer && activeServer.id === updatedServerId) {
         try {
             const res = await api.get(`/servers/${updatedServerId}`);
-            // ✅ UTILISATION DE updateServer : Modifie les données sans tuer la navigation
             updateServer(res.data);
         } catch (e) { console.error("Erreur refresh", e); }
       }
     };
     socket.on('refresh_server_ui', handleRefreshServer);
     return () => { socket.off('refresh_server_ui', handleRefreshServer); };
-  }, [socket, activeServer, updateServer]); // Dépendance activeServer.id seulement serait mieux mais activeServer ok
+  }, [socket, activeServer, updateServer]);
 
-  // 3. NAVIGATION PRINCIPALE
   useEffect(() => {
-    // --- MODE SERVEUR ---
     if (serverId && serverId !== '@me') {
       const targetServer = servers.find(s => s.id === serverId);
       
-      // A. Chargement initial / Changement de serveur
       if (targetServer) {
           if (activeServer?.id !== targetServer.id) {
               setActiveServer(targetServer);
-              // On ne reset pas la conv ici, setActiveServer le fait
           }
-      } else {
-          // Cas rare : Serveur introuvable (ou pas encore chargé, mais App.tsx gère le loading)
-          // navigate('/channels/@me'); // Optionnel, peut causer des boucles si mal géré
       }
 
-      // B. Gestion du Salon
-      // Note : On attend que activeServer soit bien le bon avant de set le channel
       if (activeServer?.id === serverId) {
           if (channelId) {
-              // URL explicite
               const channel = activeServer.categories?.flatMap(c => c.channels).find(c => c.id === channelId);
               if (channel && activeChannel?.id !== channel.id) {
                   setActiveChannel(channel);
               }
           } else {
-              // Redirection automatique (Persistance)
               const lastId = getLastChannelId(activeServer.id);
               const allChannels = activeServer.categories?.flatMap(c => c.channels || []) || [];
               const targetChannel = allChannels.find(c => c.id === lastId) || allChannels[0];
@@ -115,10 +100,8 @@ export default function ChatPage() {
           }
       }
     } 
-    // --- MODE DMs ---
     else if (serverId === '@me') {
         if (activeServer) setActiveServer(null);
-        // On ne force pas activeChannel à null ici pour éviter les flashs si on navigue vite
 
         if (channelId) {
             const existing = conversations.find(c => c.id === channelId);
@@ -132,7 +115,6 @@ export default function ChatPage() {
         }
     }
   }, [serverId, channelId, servers, activeServer, navigate, conversations, setActiveServer, setActiveChannel, setActiveConversation, getLastChannelId]);
-
 
   const { messages, loading, hasMore, loadMore, sendMessage } = useChat(
     !activeServer ? activeConversation?.id : activeChannel?.id, 
@@ -203,6 +185,30 @@ export default function ChatPage() {
             (req.receiverId === user?.id && req.senderId === userMenu.user.id))
   );
 
+  const renderMainContent = () => {
+    if (showFriendsDashboard) {
+        return <FriendsDashboard onUserContextMenu={handleUserContextMenu} />;
+    }
+
+    if (activeServer && activeChannel && (activeChannel.type === 'AUDIO' || activeChannel.type === 'VIDEO')) {
+        return <VideoRoom channel={activeChannel} />;
+    }
+
+    return (
+        <ChatArea
+          activeChannel={effectiveChannel || null} 
+          messages={messages} 
+          isLoadingMore={loading} 
+          hasMore={hasMore}
+          inputValue={inputValue} setInputValue={setInputValue}
+          showMembers={showMembers} onToggleMembers={() => setShowMembers(!showMembers)}
+          socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
+          onScroll={loadMore} 
+          onUserClick={handleUserClick} sendMessage={sendMessage}
+        />
+    );
+  };
+
   return (
     <div className="flex h-screen w-full bg-[#1e1e20] text-zinc-100 overflow-hidden font-sans select-none">
       
@@ -228,28 +234,15 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {showFriendsDashboard ? (
-        <FriendsDashboard onUserContextMenu={handleUserContextMenu} />
-      ) : (
-        <main className="flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden">
-          <ChatArea
-            activeChannel={effectiveChannel || null} 
-            messages={messages} 
-            isLoadingMore={loading} 
-            hasMore={hasMore}
-            inputValue={inputValue} setInputValue={setInputValue}
-            showMembers={showMembers} onToggleMembers={() => setShowMembers(!showMembers)}
-            socket={socket} replyingTo={replyingTo} setReplyingTo={setReplyingTo}
-            onScroll={loadMore} 
-            onUserClick={handleUserClick} sendMessage={sendMessage}
-          />
-          {activeServer && showMembers && (
+      <main className="flex-1 flex min-w-0 bg-[#313338] relative shadow-lg z-0 overflow-hidden">
+          {renderMainContent()}
+
+          {activeServer && showMembers && !showFriendsDashboard && activeChannel?.type === 'TEXT' && (
             <div className="hidden lg:block w-60 bg-[#2b2d31] border-l border-[#26272d] h-full flex-shrink-0 overflow-y-auto custom-scrollbar">
               <MemberList onUserClick={handleUserClick} />
             </div>
           )}
-        </main>
-      )}
+      </main>
 
       <CreateServerModal isOpen={isCreateServerOpen} onClose={() => setIsCreateServerOpen(false)} />
       <JoinServerModal isOpen={isJoinServerOpen} onClose={() => setIsJoinServerOpen(false)} />

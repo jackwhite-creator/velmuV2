@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
 import authRoutes from './routes/auth.routes';
@@ -14,23 +14,16 @@ import messageRoutes from './routes/message.routes';
 
 const app = express();
 
-// ✅ CORRECTION TYPESCRIPT : Ajout de "as string[]" pour rassurer le compilateur
 const allowedOrigins = [
   "http://localhost:5173",
   "https://velmu.vercel.app",
   process.env.CLIENT_URL
-].filter(Boolean) as string[]; // <--- C'est ici que ça bloquait
+].filter(Boolean) as string[];
 
-app.use(cors({
-    origin: allowedOrigins,
-    credentials: true
-}));
-
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json());
-
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/servers', serverRoutes);
@@ -42,9 +35,12 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/messages', messageRoutes);
 
-// Health Check
-app.get('/', (req, res) => {
-  res.send('API Velmu is running 🚀');
+app.get('/', (req, res) => { res.send('API Velmu is running 🚀'); });
+
+// Middleware Gestion Erreur Global
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error("❌ Global Error:", err.stack);
+  res.status(500).json({ error: "Une erreur interne est survenue" });
 });
 
 export default app;

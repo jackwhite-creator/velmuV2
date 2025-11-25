@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ✅ ENUMS : Pour éviter les fautes de frappe et sécuriser la logique
+
 enum ChannelType {
   TEXT
   AUDIO
@@ -38,7 +38,7 @@ model User {
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
   
-  conversations    Conversation[]  @relation("UserConversations") // Nom de relation explicite pour clarté
+  conversations    Conversation[]  @relation("UserConversations")
   
   @@unique([username, discriminator])
   @@index([email])
@@ -104,7 +104,7 @@ model Category {
 model Channel {
   id         String      @id @default(uuid())
   name       String
-  type       ChannelType @default(TEXT) // 👈 Utilisation de l'Enum ici
+  type       ChannelType @default(TEXT)
   order      Int         @default(0)
   
   categoryId String?
@@ -181,7 +181,7 @@ model Attachment {
 model FriendRequest {
   id        String        @id @default(uuid())
   createdAt DateTime      @default(now())
-  status    RequestStatus @default(PENDING) // 👈 Utilisation de l'Enum ici
+  status    RequestStatus @default(PENDING)
 
   senderId  String
   sender    User          @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)

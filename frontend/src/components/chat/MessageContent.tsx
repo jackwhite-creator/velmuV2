@@ -3,7 +3,6 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { formatDiscordDate } from '../../lib/dateUtils';
-// ✅ IMPORT DU TOOLTIP
 import Tooltip from '../ui/Tooltip';
 
 interface Props {
@@ -53,7 +52,6 @@ export default function MessageContent({
 
   return (
     <div className="flex-1 min-w-0 z-10 relative pr-2">
-      {/* Header: username + date */}
       {!shouldGroup && (
         <div className="flex items-baseline gap-2 mb-0.5 select-none">
           <span className="font-medium text-indigo-100 hover:underline cursor-pointer" onClick={onUserClick}>
@@ -65,7 +63,6 @@ export default function MessageContent({
         </div>
       )}
 
-      {/* Contenu */}
       {isEditing ? (
         <div className="w-full mt-1">
           <div className="bg-[#2b2d31] p-2.5 rounded-sm w-full">
@@ -95,12 +92,9 @@ export default function MessageContent({
           </div>
         </div>
       ) : (
-        // Mode Lecture
         <div className={`leading-relaxed break-words -mt-1 select-text cursor-default ${isMentioningMe ? 'text-zinc-100' : 'text-zinc-300'}`}>
           
-          {/* ✅ CONTENEUR FLEX-WRAP : Permet d'aligner le texte et le "(modifié)" sur la même ligne */}
           <div className="flex flex-wrap items-baseline gap-x-1">
-              
               {msg.content && (
                 <div className="markdown-body text-[15px]">
                     <ReactMarkdown 
@@ -110,8 +104,6 @@ export default function MessageContent({
                                 <a target="_blank" rel="noopener noreferrer" className="text-brand hover:underline cursor-pointer cursor-text" {...props} />
                             ),
                             p: ({node, ...props}) => (
-                                // `inline` ou `inline-block` ici pourrait casser le markdown multi-paragraphe.
-                                // On garde un block standard, le flex-wrap du parent gérera le positionnement global.
                                 <div className="mb-1 last:mb-0 min-h-[1.25rem] cursor-text w-fit max-w-full" {...props} />
                             ),
                             ul: ({node, ...props}) => (
@@ -143,7 +135,6 @@ export default function MessageContent({
                 </div>
               )}
               
-              {/* ✅ LE TAG "(modifié)" : Aligné, petit, avec Tooltip custom */}
               {isModified && (
                   <Tooltip text={new Date(msg.updatedAt).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })} side="top">
                     <span className="text-[10px] text-zinc-500 select-none cursor-default hover:text-zinc-400 transition-colors self-end pb-[2px]">
@@ -151,10 +142,8 @@ export default function MessageContent({
                     </span>
                   </Tooltip>
               )}
-
           </div>
           
-          {/* IMAGE */}
           {msg.fileUrl && (
             <div className="mt-2 group/image select-none cursor-default"> 
               <img 

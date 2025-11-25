@@ -21,7 +21,11 @@ const HashIcon = () => (
 );
 
 const SpeakerIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+);
+
+const CameraIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
 );
 
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -177,7 +181,7 @@ export default function ChannelList({
                                                                             `}
                                                                         >
                                                                             <div className="flex-shrink-0 opacity-70 group-hover:opacity-100">
-                                                                                {channel.type === 'voice' ? <SpeakerIcon /> : <HashIcon />}
+                                                                                {channel.type === 'VIDEO' ? <CameraIcon /> : channel.type === 'AUDIO' ? <SpeakerIcon /> : <HashIcon />}
                                                                             </div>
                                                                             
                                                                             <span className={`font-medium text-[15px] truncate flex-1 leading-normal select-none ${isActive ? 'text-white font-semibold' : ''}`}>
