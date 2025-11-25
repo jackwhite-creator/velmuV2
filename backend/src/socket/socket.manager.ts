@@ -2,7 +2,6 @@ import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { registerChatHandlers } from './handlers/chat.handler';
 import { registerRoomHandlers } from './handlers/room.handler';
-import { registerRtcHandlers } from './handlers/rtc.handler'; // <--- AJOUT
 import { AuthenticatedSocket } from '../types';
 
 export const typingUsers = new Map<string, Map<string, string>>();
@@ -25,8 +24,6 @@ export const initializeSocket = (io: Server) => {
     const socket = rawSocket as AuthenticatedSocket;
     const { userId } = socket;
 
-    console.log(`🟢 User ${userId} connected [${socket.id}]`);
-
     if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
         io.emit('user_status_change', { userId, status: 'online' }); 
@@ -37,7 +34,6 @@ export const initializeSocket = (io: Server) => {
 
     registerRoomHandlers(io, socket);
     registerChatHandlers(io, socket);
-    registerRtcHandlers(io, socket); // <--- AJOUT
 
     socket.on('disconnect', () => {
       const userSockets = onlineUsers.get(userId);

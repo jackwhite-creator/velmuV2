@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { prisma } from '../lib/prisma';
 import { ChatService } from '../services/chat.service';
 
-// UPDATE MESSAGE
 export const updateMessage = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
@@ -34,7 +33,6 @@ export const updateMessage = async (req: Request, res: Response) => {
   }
 };
 
-// DELETE MESSAGE
 export const deleteMessage = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
@@ -61,7 +59,6 @@ export const deleteMessage = async (req: Request, res: Response) => {
   }
 };
 
-// ✅ CORRECTION MAJEURE ICI (Cloudinary)
 export const createMessage = async (req: Request, res: Response) => {
   try {
     const userId = req.user!.userId;
@@ -74,10 +71,7 @@ export const createMessage = async (req: Request, res: Response) => {
     
     let fileData = null;
     if (file) {
-        // 👇 CORRECTION : On utilise l'URL fournie par Cloudinary (req.file.path)
-        // Au lieu de construire une URL locale qui ne marche pas en prod
         const fileUrl = (file as any).path; 
-        
         const type = file.mimetype.startsWith('image/') ? 'IMAGE' : 'FILE';
         
         fileData = {
@@ -99,6 +93,39 @@ export const createMessage = async (req: Request, res: Response) => {
 
     const io = req.app.get('io');
     const room = channelId || `conversation_${conversationId}`;
+    
+    if (conversationId) {
+      const now = new Date();
+      
+      const conversation = await prisma.conversation.update({
+        where: { id: conversationId },
+        data: { lastMessageAt: now },
+        include: { members: { include: { user: true } } }
+      });
+
+      await prisma.conversationMember.update({
+        where: { userId_conversationId: { userId, conversationId } },
+        data: { lastReadAt: now, closed: false }
+      });
+
+      await prisma.conversationMember.updateMany({
+        where: { conversationId, userId: { not: userId } },
+        data: { closed: false }
+      });
+
+      const formattedConv = {
+          ...conversation,
+          users: conversation.members.map(m => m.user),
+          unreadCount: 1 
+      };
+      
+      conversation.members.forEach(member => {
+          if (member.userId !== userId) {
+              io.to(member.userId).emit('conversation_bump', formattedConv);
+          }
+      });
+    }
+
     io.to(room).emit('new_message', newMessage);
 
     return res.status(201).json(newMessage);

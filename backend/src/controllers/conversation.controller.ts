@@ -1,10 +1,7 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
 import { prisma } from '../lib/prisma';
 
 export const ConversationController = {
-  // 1. Initier un MP
   async getOrCreate(req: Request, res: Response) {
     try {
       const currentUserId = req.user?.userId;
@@ -15,68 +12,153 @@ export const ConversationController = {
       let conversation = await prisma.conversation.findFirst({
         where: {
           AND: [
-            { users: { some: { id: currentUserId } } },
-            { users: { some: { id: targetUserId } } }
+            { members: { some: { userId: currentUserId } } },
+            { members: { some: { userId: targetUserId } } }
           ]
         },
         include: {
-          users: { select: { id: true, username: true, discriminator: true, avatarUrl: true } }
+          members: {
+            include: { user: { select: { id: true, username: true, discriminator: true, avatarUrl: true } } }
+          }
         }
       });
 
-      // Création si n'existe pas
       if (!conversation) {
         conversation = await prisma.conversation.create({
           data: {
-            users: {
-              connect: [
-                { id: currentUserId },
-                { id: targetUserId }
+            members: {
+              create: [
+                { userId: currentUserId, closed: false }, // Ouvert pour le créateur
+                { userId: targetUserId, closed: true }    // Fermé par défaut pour le destinataire (tant qu'il n'y a pas de message)
               ]
             }
           },
           include: {
-            users: { select: { id: true, username: true, discriminator: true, avatarUrl: true } }
+            members: {
+              include: { user: { select: { id: true, username: true, discriminator: true, avatarUrl: true } } }
+            }
           }
         });
-
-        // --- NOTIFICATION TEMPS RÉEL ---
-        // On prévient l'autre utilisateur qu'une nouvelle conv est là !
-        const io = req.app.get('io');
-        // On envoie l'event "new_conversation" dans la room personnelle du targetUser
-        io.to(targetUserId).emit('new_conversation', conversation);
+      } else {
+        // Si la conversation existe mais était fermée pour moi, je la rouvre
+        const member = conversation.members.find(m => m.userId === currentUserId);
+        if (member && member.closed) {
+            await prisma.conversationMember.update({
+                where: { id: member.id },
+                data: { closed: false }
+            });
+        }
       }
 
-      res.json(conversation);
+      const formattedResult = {
+          ...conversation,
+          users: conversation.members.map(m => m.user),
+          unreadCount: 0
+      };
+
+      // Note : On n'émet PAS de socket ici. Le DM n'apparaîtra chez l'autre que lors du premier message.
+      res.json(formattedResult);
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Erreur conversation" });
     }
   },
 
-  // 2. Lister mes conversations
   async getMyConversations(req: Request, res: Response) {
     try {
       const userId = req.user?.userId;
       if (!userId) return res.status(401).json({ error: "Non auth" });
 
+      // On ne récupère que les conversations qui ne sont PAS fermées pour cet utilisateur
       const conversations = await prisma.conversation.findMany({
         where: {
-          users: { some: { id: userId } }
+          members: { 
+            some: { 
+                userId,
+                closed: false // <--- FILTRE IMPORTANT
+            } 
+          }
         },
         include: {
-          users: { select: { id: true, username: true, discriminator: true, avatarUrl: true, bio: true } },
+          members: {
+            include: {
+                user: { select: { id: true, username: true, discriminator: true, avatarUrl: true, bio: true } }
+            }
+          },
           messages: {
             orderBy: { createdAt: 'desc' },
             take: 1
           }
         },
-        orderBy: { createdAt: 'desc' }
+        orderBy: { lastMessageAt: 'desc' }
       });
 
-      res.json(conversations);
+      const conversationsWithUnread = await Promise.all(conversations.map(async (conv) => {
+          const currentUserMember = conv.members.find(m => m.userId === userId);
+          let unreadCount = 0;
+
+          if (currentUserMember) {
+              unreadCount = await prisma.message.count({
+                  where: {
+                      conversationId: conv.id,
+                      createdAt: { gt: currentUserMember.lastReadAt },
+                      userId: { not: userId } 
+                  }
+              });
+          }
+
+          return {
+              ...conv,
+              users: conv.members.map(m => m.user), 
+              unreadCount 
+          };
+      }));
+
+      res.json(conversationsWithUnread);
     } catch (error) {
+      console.error("Erreur get convs:", error);
       res.status(500).json({ error: "Erreur chargement conversations" });
     }
+  },
+
+  async markAsRead(req: Request, res: Response) {
+      try {
+          const userId = req.user?.userId;
+          const { conversationId } = req.params;
+
+          await prisma.conversationMember.update({
+              where: {
+                  userId_conversationId: {
+                      userId: userId!,
+                      conversationId
+                  }
+              },
+              data: { lastReadAt: new Date() }
+          });
+
+          res.json({ success: true });
+      } catch (error) {
+          console.error("Erreur mark as read:", error);
+          res.status(500).json({ error: "Erreur serveur" });
+      }
+  },
+
+  async closeConversation(req: Request, res: Response) {
+      try {
+          const userId = req.user?.userId;
+          const { conversationId } = req.params;
+
+          await prisma.conversationMember.update({
+              where: {
+                  userId_conversationId: { userId: userId!, conversationId }
+              },
+              data: { closed: true }
+          });
+
+          res.json({ success: true });
+      } catch (error) {
+          console.error("Erreur close conversation:", error);
+          res.status(500).json({ error: "Impossible de fermer la conversation" });
+      }
   }
 };

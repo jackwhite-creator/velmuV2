@@ -7,7 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 enum ChannelType {
   TEXT
   AUDIO
@@ -38,7 +37,7 @@ model User {
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
   
-  conversations    Conversation[]  @relation("UserConversations")
+  conversations    ConversationMember[] // Relation mise à jour
   
   @@unique([username, discriminator])
   @@index([email])
@@ -132,12 +131,29 @@ model Invite {
 }
 
 model Conversation {
-  id        String    @id @default(uuid())
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
+  id            String    @id @default(uuid())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  lastMessageAt DateTime  @default(now()) // NOUVEAU : Pour le tri
   
-  users     User[]    @relation("UserConversations")
-  messages  Message[]
+  members       ConversationMember[] // NOUVEAU : Relation explicite
+  messages      Message[]
+}
+
+// NOUVEAU MODÈLE pour gérer les statuts de lecture et de visibilité par utilisateur
+model ConversationMember {
+  id             String       @id @default(uuid())
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime     @default(now())
+  closed         Boolean      @default(false) // <--- NOUVEAU CHAMP
+  
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, conversationId])
 }
 
 model Message {

@@ -1,30 +1,36 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
 import { prisma } from '../lib/prisma';
 
-// Mettre à jour son propre profil
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.userId;
-    const { bio, avatarUrl, bannerUrl } = req.body; // On récupère bannerUrl
-
+    const { bio } = req.body;
+    
     if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+
+    const updates: any = { bio };
+
+    // Gestion des fichiers (Avatar & Bannière)
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+    if (files?.avatar?.[0]) {
+      updates.avatarUrl = files.avatar[0].path; // URL Cloudinary
+    }
+
+    if (files?.banner?.[0]) {
+      updates.bannerUrl = files.banner[0].path; // URL Cloudinary
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: {
-        bio,
-        avatarUrl,
-        bannerUrl // On sauvegarde
-      },
+      data: updates,
       select: {
         id: true,
         email: true,
         username: true,
         discriminator: true,
         avatarUrl: true,
-        bannerUrl: true, // On renvoie la nouvelle bannière
+        bannerUrl: true,
         bio: true
       }
     });
@@ -36,7 +42,6 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-// Récupérer le profil public d'un autre utilisateur
 export const getUserProfile = async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
@@ -48,7 +53,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
         username: true,
         discriminator: true,
         avatarUrl: true,
-        bannerUrl: true, // On renvoie la bannière
+        bannerUrl: true,
         bio: true,
         createdAt: true
       }

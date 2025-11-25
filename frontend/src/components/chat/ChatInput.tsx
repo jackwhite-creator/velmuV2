@@ -30,38 +30,35 @@ export default function ChatInput(props: Props) {
   const {
     fileInputRef, textInputRef, emojiPickerRef,
     previewUrl, showEmojiPicker, setShowEmojiPicker,
-    handleFileSelect, handlePasteFile, clearFile, // ✅ On récupère handlePasteFile
+    handleFileSelect, handlePasteFile, clearFile,
     triggerSend, handleTyping, addEmoji, canSend
   } = useChatInput(props);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (!isSending) {
-        triggerSend(e);
-      }
+      // On autorise l'envoi même si un autre est en cours (gestion file d'attente côté parent)
+      triggerSend(e);
     }
   };
 
   const handleManualSend = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isSending && (inputValue.trim() || previewUrl)) {
+    if (inputValue.trim() || previewUrl) {
         triggerSend(e);
     }
   };
 
-  // ✅ GESTION DU COLLAGE D'IMAGE
   const handlePaste = (e: React.ClipboardEvent) => {
     const items = e.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
-      // Si l'élément collé est une image
       if (items[i].type.indexOf("image") !== -1) {
-        e.preventDefault(); // On empêche de coller le "code binaire" dans le texte
+        e.preventDefault();
         const file = items[i].getAsFile();
         if (file) {
-            handlePasteFile(file); // On l'envoie au hook
+            handlePasteFile(file);
         }
-        return; // On s'arrête à la première image trouvée
+        return;
       }
     }
   };
@@ -179,10 +176,6 @@ export default function ChatInput(props: Props) {
                 </div>
 
             </div>
-        </div>
-        
-        <div className="mt-1 h-3 text-right">
-             {isSending && <span className="text-[10px] text-zinc-500 font-medium animate-pulse">Envoi en cours...</span>}
         </div>
     </div>
   );

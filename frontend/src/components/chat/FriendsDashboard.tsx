@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom'; 
 import { useAuthStore } from '../../store/authStore';
 import { useFriendStore, FriendRequest } from '../../store/friendStore';
 import { useServerStore } from '../../store/serverStore';
@@ -11,6 +12,7 @@ interface FriendsDashboardProps {
 }
 
 export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboardProps) {
+  const navigate = useNavigate(); 
   const { user } = useAuthStore();
   const { requests, updateRequest, removeRequest, addRequest } = useFriendStore();
   const { onlineUsers, setActiveConversation, setActiveServer, addConversation } = useServerStore();
@@ -62,10 +64,16 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
 
   const handleDeleteFriend = async () => {
     if (!friendToDelete) return;
-    removeRequest(friendToDelete.id);
+    
+    const idToDelete = friendToDelete.id;
+    
+    // Reset immédiat pour éviter les doubles clics
     setConfirmOpen(false);
+    setFriendToDelete(null);
+    removeRequest(idToDelete);
+
     try {
-      await api.delete(`/friends/${friendToDelete.id}`);
+      await api.delete(`/friends/${idToDelete}`);
     } catch (e) { console.error(e); }
   };
 
@@ -75,7 +83,16 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
       addConversation(res.data);
       setActiveServer(null);
       setActiveConversation(res.data);
+      navigate(`/channels/@me/${res.data.id}`);
     } catch (e) { console.error(e); }
+  };
+
+  const handleItemClick = (friendId: string) => {
+      if (activeTab === 'pending') {
+          setViewProfileId(friendId);
+      } else {
+          startDM(friendId);
+      }
   };
 
   const friends = requests.filter(r => r.status === 'ACCEPTED');
@@ -181,7 +198,7 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
                               <div 
                                  key={req.id} 
                                  className="group flex items-center justify-between p-2.5 rounded-sm border-t border-white/10 hover:border-transparent hover:bg-background-modifier-hover transition-colors cursor-pointer select-none -mx-2 px-4" 
-                                 onClick={() => startDM(friend.id)}
+                                 onClick={() => handleItemClick(friend.id)} 
                                  onContextMenu={(e) => onUserContextMenu(e, friend)}
                               >
                                  <div className="flex items-center gap-3 flex-1 overflow-hidden">
@@ -189,9 +206,11 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
                                        <div className="w-8 h-8 rounded-full bg-background-secondary flex items-center justify-center text-text-header font-bold text-xs overflow-hidden">
                                           {friend.avatarUrl ? <img src={friend.avatarUrl} className="w-full h-full object-cover" alt={friend.username} /> : friend.username[0].toUpperCase()}
                                        </div>
-                                       <div className="absolute -bottom-0.5 -right-0.5 bg-background-primary rounded-full p-[2px]">
-                                            <div className={`w-2.5 h-2.5 rounded-full ${isOnline && activeTab !== 'pending' ? 'bg-status-green' : 'bg-background-tertiary border-2 border-text-muted'}`}></div>
-                                       </div>
+                                       {activeTab !== 'pending' && (
+                                            <div className="absolute -bottom-0.5 -right-0.5 bg-background-primary rounded-full p-[2px]">
+                                                <div className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-status-green' : 'bg-background-tertiary border-2 border-text-muted'}`}></div>
+                                            </div>
+                                       )}
                                     </div>
                                     <div className="flex flex-col min-w-0">
                                        <div className="flex items-center gap-1.5">

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useNavigate } from 'react-router-dom'; // <--- AJOUT
 import { useAuthStore } from '../../store/authStore';
 
 interface Props {
@@ -11,24 +12,21 @@ interface Props {
 }
 
 export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenProfile, triggerRect }: Props) {
+  const navigate = useNavigate(); // <--- HOOK
   const { user, logout } = useAuthStore();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [copySuccess, setCopySuccess] = useState(false);
 
-  // ✅ CORRECTION : Gestion robuste du clic extérieur
   useEffect(() => {
     if (!isOpen) return;
 
     const handleClickOutside = (event: PointerEvent | MouseEvent) => {
-      // Si le clic est DANS le popover, on ne fait rien
       if (popoverRef.current && popoverRef.current.contains(event.target as Node)) {
         return;
       }
-      // Sinon (clic ailleurs), on ferme
       onClose();
     };
 
-    // On utilise 'pointerdown' pour une meilleure réactivité (souris + tactile)
     document.addEventListener('pointerdown', handleClickOutside);
     
     return () => {
@@ -45,22 +43,28 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
+  // ✅ NOUVELLE FONCTION DÉCONNEXION
+  const handleLogout = () => {
+      logout();
+      onClose();
+      navigate('/login'); // Redirection explicite
+  };
+
   const style: React.CSSProperties = {
     position: 'absolute',
     left: triggerRect.left + 12,
     bottom: window.innerHeight - triggerRect.top + 12,
     width: '300px',
-    zIndex: 9999, // Z-Index très élevé pour passer au-dessus de tout
+    zIndex: 9999,
   };
 
   return createPortal(
     <div 
       ref={popoverRef} 
       style={style} 
-      // ✅ COULEUR PLUS CLAIRE : bg-[#2b2d31] (Gris Anthracite) au lieu de noir
       className="bg-[#2b2d31] border border-[#1e1f22] rounded-md shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150 font-sans select-none"
     >
-      {/* BANNIÈRE (Légèrement plus claire aussi) */}
+      {/* BANNIÈRE */}
       <div className="h-20 w-full bg-[#1e1f22]"></div>
 
       <div className="px-4 relative pb-3">
@@ -71,7 +75,6 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
                 onClick={() => { onClose(); onOpenProfile(); }}
                 className="relative group cursor-pointer"
             >
-                {/* Anneau de couleur adapté au fond (#2b2d31) */}
                 <div className="w-20 h-20 rounded-full bg-zinc-700 flex items-center justify-center text-white font-bold text-2xl overflow-hidden ring-[6px] ring-[#2b2d31] transition-opacity group-hover:opacity-90">
                     {user.avatarUrl ? (
                         <img src={user.avatarUrl} className="w-full h-full object-cover" alt="Avatar" />
@@ -79,7 +82,6 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
                         user.username[0].toUpperCase()
                     )}
                 </div>
-                {/* Statut */}
                 <div className="absolute bottom-1 right-1 w-6 h-6 bg-emerald-500 border-[5px] border-[#2b2d31] rounded-full"></div>
                 
                 <div className="absolute inset-0 rounded-full bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-[10px] text-white font-bold uppercase tracking-wider pointer-events-none">
@@ -122,7 +124,7 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
             <div className="h-px bg-[#1e1f22] my-1 mx-2"></div>
 
             <button 
-                onClick={() => { logout(); onClose(); }}
+                onClick={handleLogout} // ✅ Utilisation du handler
                 className="w-full text-left px-3 py-2 rounded-sm hover:bg-red-600 text-red-400 hover:text-white text-sm font-medium transition-colors flex items-center gap-3 group"
             >
                 <svg className="w-4 h-4 text-red-400 group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>

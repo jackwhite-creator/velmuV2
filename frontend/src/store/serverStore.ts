@@ -1,9 +1,11 @@
 import { create } from 'zustand';
+import api from '../lib/api';
 
 export interface Channel {
   id: string;
   name: string;
   type: string;
+  serverId?: string;
 }
 
 export interface Category {
@@ -23,6 +25,8 @@ export interface Server {
 
 export interface Conversation {
   id: string;
+  lastMessageAt: string;
+  unreadCount: number;
   users: {
     id: string;
     username: string;
@@ -45,16 +49,15 @@ interface ServerState {
   addServer: (server: Server) => void;
   removeServer: (serverId: string) => void;
   
-  // Actions de Navigation (Reset le contexte)
   setActiveServer: (server: Server | null) => void;
-  
-  // ✅ NOUVEAU : Action de Mise à jour (Garde le contexte)
   updateServer: (server: Server) => void;
 
   setActiveChannel: (channel: Channel | null) => void;
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   setActiveConversation: (conversation: Conversation | null) => void;
+  markConversationAsRead: (conversationId: string) => void;
+  touchConversation: (conversationId: string) => void; // <--- NOUVEAU
   closeConversation: (conversationId: string) => void;
   
   setOnlineUsers: (userIds: string[]) => void;
@@ -76,46 +79,28 @@ export const useServerStore = create<ServerState>((set, get) => ({
   addServer: (server) => set((state) => ({ servers: [...state.servers, server] })),
   removeServer: (serverId) => set((state) => ({ servers: state.servers.filter((s) => s.id !== serverId) })),
   
-  // Navigation : On change de serveur, donc on reset le salon
   setActiveServer: (server) => set({ 
     activeServer: server, 
     activeConversation: null,
     activeChannel: null 
   }),
 
-  // ✅ MISE À JOUR SILENCIEUSE : On met à jour les données sans casser la vue
   updateServer: (updatedServer) => set((state) => {
-    // 1. Mettre à jour la liste des serveurs
     const newServers = state.servers.map(s => s.id === updatedServer.id ? updatedServer : s);
-    
-    // 2. Si c'est le serveur actif, on le met à jour MAIS...
     let newActiveServer = state.activeServer;
     let newActiveChannel = state.activeChannel;
 
     if (state.activeServer?.id === updatedServer.id) {
         newActiveServer = updatedServer;
-        
-        // 3. ...On s'assure que le salon actif est toujours valide (mis à jour)
         if (state.activeChannel) {
             const foundChannel = updatedServer.categories
                 ?.flatMap(c => c.channels)
                 .find(c => c.id === state.activeChannel!.id);
-            
-            // Si le salon existe toujours (ex: juste renommé), on met à jour l'objet
-            if (foundChannel) {
-                newActiveChannel = foundChannel;
-            } else {
-                // Si le salon a été supprimé, alors là oui, on le retire
-                newActiveChannel = null;
-            }
+            if (foundChannel) newActiveChannel = foundChannel;
+            else newActiveChannel = null;
         }
     }
-
-    return {
-        servers: newServers,
-        activeServer: newActiveServer,
-        activeChannel: newActiveChannel
-    };
+    return { servers: newServers, activeServer: newActiveServer, activeChannel: newActiveChannel };
   }),
   
   setActiveChannel: (channel) => {
@@ -127,38 +112,58 @@ export const useServerStore = create<ServerState>((set, get) => ({
   },
 
   setConversations: (conversations) => {
-    const hiddenIds = JSON.parse(localStorage.getItem('velmu_closed_dms') || '[]');
-    const visible = conversations.filter(c => !hiddenIds.includes(c.id));
-    set({ conversations: visible });
+    conversations.sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
+    set({ conversations });
   },
 
   addConversation: (conversation) => set((state) => {
-    const hiddenIds = JSON.parse(localStorage.getItem('velmu_closed_dms') || '[]');
-    if (hiddenIds.includes(conversation.id)) {
-        const newHidden = hiddenIds.filter((id: string) => id !== conversation.id);
-        localStorage.setItem('velmu_closed_dms', JSON.stringify(newHidden));
+    const exists = state.conversations.some(c => c.id === conversation.id);
+    if (exists) {
+        const others = state.conversations.filter(c => c.id !== conversation.id);
+        return { conversations: [conversation, ...others] };
     }
-    if (state.conversations.find(c => c.id === conversation.id)) return state;
     return { conversations: [conversation, ...state.conversations] };
   }),
 
-  setActiveConversation: (conversation) => set({ 
-    activeConversation: conversation,
-    activeServer: null, 
-    activeChannel: null 
+  setActiveConversation: (conversation) => {
+      if (conversation) {
+          get().markConversationAsRead(conversation.id);
+      }
+      set({ 
+        activeConversation: conversation,
+        activeServer: null, 
+        activeChannel: null 
+      });
+  },
+
+  markConversationAsRead: (conversationId) => set((state) => ({
+      conversations: state.conversations.map(c => 
+          c.id === conversationId ? { ...c, unreadCount: 0 } : c
+      )
+  })),
+
+  // ✅ NOUVELLE FONCTION : Remonte la conversation en haut de liste
+  touchConversation: (conversationId) => set((state) => {
+      const conversation = state.conversations.find(c => c.id === conversationId);
+      if (!conversation) return state; // Si elle n'est pas dans la liste (ex: fermée), on ne fait rien (ou on pourrait reload)
+
+      // On met à jour la date
+      const updatedConv = { ...conversation, lastMessageAt: new Date().toISOString() };
+      
+      // On la sort de la liste
+      const others = state.conversations.filter(c => c.id !== conversationId);
+      
+      // On la remet tout en haut
+      return { conversations: [updatedConv, ...others] };
   }),
   
-  closeConversation: (conversationId) => set((state) => {
-    const hiddenIds = JSON.parse(localStorage.getItem('velmu_closed_dms') || '[]');
-    if (!hiddenIds.includes(conversationId)) {
-        hiddenIds.push(conversationId);
-        localStorage.setItem('velmu_closed_dms', JSON.stringify(hiddenIds));
-    }
-    return {
+  closeConversation: (conversationId) => {
+    api.post(`/conversations/${conversationId}/close`).catch(console.error);
+    set((state) => ({
       conversations: state.conversations.filter(c => c.id !== conversationId),
       activeConversation: state.activeConversation?.id === conversationId ? null : state.activeConversation
-    };
-  }),
+    }));
+  },
 
   setOnlineUsers: (userIds) => set({ onlineUsers: new Set(userIds) }),
 

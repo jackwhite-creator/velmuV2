@@ -53,6 +53,9 @@ export default function MessageItem({
     ? 'bg-[rgba(240,178,50,0.1)] hover:bg-[rgba(240,178,50,0.15)] before:bg-status-warning' 
     : 'hover:bg-background-modifier-hover transparent';
 
+  // ✅ STYLE OPACITÉ SI PENDING
+  const pendingClass = msg.isPending ? 'opacity-60' : 'opacity-100';
+
   const saveEdit = async () => {
     if (!editContent.trim()) return;
     try {
@@ -66,6 +69,7 @@ export default function MessageItem({
 
   const handleContextMenu = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (msg.isPending) return; // Pas de clic droit si pas encore envoyé
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
   };
@@ -90,12 +94,12 @@ export default function MessageItem({
         onContextMenu={handleContextMenu}
         className={`
           group relative pr-4 pl-4 py-0.5 transition-colors w-full
-          ${marginTopClass} ${backgroundClass}
+          ${marginTopClass} ${backgroundClass} ${pendingClass}
           ${isMentioningMe ? 'before:content-[""] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px]' : ''}
         `}
       >
         {msg.replyTo && !shouldGroup && (
-          <MessageReplyHeader replyTo={msg.replyTo} onClick={() => onReplyClick(msg.replyTo.id)} />
+          <MessageReplyHeader replyTo={msg.replyTo} onClick={() => onReplyClick(msg.replyTo!.id)} />
         )}
 
         <div className="flex gap-4 w-full">
@@ -112,7 +116,7 @@ export default function MessageItem({
                 shouldGroup={shouldGroup}
                 isEditing={isEditing}
                 editContent={editContent}
-                isMentioningMe={isMentioningMe}
+                isMentioningMe={isMentioningMe || false}
                 isModified={isModified || false}
                 onUserClick={(e) => onUserClick(e, msg.user.id)}
                 setEditContent={setEditContent}
@@ -147,7 +151,8 @@ export default function MessageItem({
           </div>
         </div>
         
-        {!isEditing && (
+        {/* Pas d'actions si le message est en cours d'envoi */}
+        {!isEditing && !msg.isPending && (
           <MessageHoverActions 
             isMe={isMe}
             onReply={() => onReply(msg)}

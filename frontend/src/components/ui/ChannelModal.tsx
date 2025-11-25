@@ -16,15 +16,12 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
   const isEditMode = !!channel;
   
   const [name, setName] = useState('');
-  const [type, setType] = useState<'TEXT' | 'AUDIO' | 'VIDEO'>('TEXT');
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setName(channel ? channel.name : '');
-      // On conserve le type existant si on édite, sinon par défaut TEXT
-      setType(channel ? (channel.type as any) : 'TEXT');
     }
   }, [isOpen, channel]);
 
@@ -39,12 +36,12 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
       if (isEditMode && channel) {
         await api.put(`/channels/${channel.id}`, { name });
       } else if (categoryId) {
-        await api.post('/channels', { name, categoryId, type });
+        await api.post('/channels', { name, categoryId, type: 'TEXT' });
         if (onSuccess) onSuccess();
       }
       onClose();
     } catch (error) {
-      console.error("Erreur sauvegarde salon", error);
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
@@ -55,9 +52,10 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
     setIsLoading(true);
     try {
       await api.delete(`/channels/${channel.id}`);
+      setShowDeleteConfirm(false);
       onClose();
     } catch (error) {
-      console.error("Erreur suppression salon", error);
+      console.error(error);
     } finally {
       setIsLoading(false);
       setShowDeleteConfirm(false);
@@ -65,53 +63,8 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
   };
 
   const handleNameChange = (val: string) => {
-    // Pour les salons textuels, on force le kebab-case
-    // Pour vocal/vidéo, on peut être plus souple, mais gardons la cohérence pour l'instant
-    setName(val.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''));
+    setName(val.toLowerCase().replace(/\s+/g, '-'));
   };
-
-  const RadioOption = ({ 
-    value, 
-    label, 
-    description, 
-    icon 
-  }: { 
-    value: 'TEXT' | 'AUDIO' | 'VIDEO', 
-    label: string, 
-    description: string, 
-    icon: React.ReactNode 
-  }) => (
-    <div 
-        onClick={() => !isEditMode && setType(value)}
-        className={`
-            relative flex items-center p-3 rounded-md cursor-pointer border mb-2 transition-all
-            ${type === value 
-                ? 'bg-background-modifier-selected border-brand/50' 
-                : 'bg-background-secondary border-transparent hover:bg-background-modifier-hover'}
-            ${isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
-        `}
-    >
-        <div className="mr-4 text-text-muted">
-            {icon}
-        </div>
-        <div className="flex-1">
-            <div className={`font-bold text-sm ${type === value ? 'text-text-header' : 'text-text-normal'}`}>
-                {label}
-            </div>
-            <div className="text-xs text-text-muted mt-0.5">
-                {description}
-            </div>
-        </div>
-        <div className="ml-2">
-            <div className={`
-                w-5 h-5 rounded-full border-2 flex items-center justify-center
-                ${type === value ? 'border-brand' : 'border-text-muted'}
-            `}>
-                {type === value && <div className="w-2.5 h-2.5 rounded-full bg-brand" />}
-            </div>
-        </div>
-    </div>
-  );
 
   return (
     <>
@@ -137,39 +90,8 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
                 </button>
             </div>
 
-            <div className="px-6 py-4 overflow-y-auto custom-scrollbar max-h-[400px]">
+            <div className="px-6 py-4">
                 <form id="channel-form" onSubmit={handleSubmit}>
-                    
-                    {/* TYPE SELECTOR (Visible uniquement en création) */}
-                    {!isEditMode && (
-                        <div className="mb-6">
-                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wide mb-2">
-                                Type de salon
-                            </label>
-                            
-                            <RadioOption 
-                                value="TEXT" 
-                                label="Textuel" 
-                                description="Envoyer des messages, images, avis." 
-                                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>}
-                            />
-                            
-                            <RadioOption 
-                                value="AUDIO" 
-                                label="Vocal" 
-                                description="Discuter ensemble par la voix." 
-                                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>}
-                            />
-
-                            <RadioOption 
-                                value="VIDEO" 
-                                label="Vidéo" 
-                                description="Se voir et partager son écran." 
-                                icon={<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>}
-                            />
-                        </div>
-                    )}
-
                     <div className="space-y-3">
                         <label className="block text-xs font-bold text-text-muted uppercase tracking-wide ml-1">
                             Nom du salon
@@ -177,7 +99,7 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
                         
                         <div className="relative group">
                             <div className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center text-text-muted pointer-events-none text-lg font-medium transition-colors group-focus-within:text-text-normal">
-                                {type === 'TEXT' ? '#' : (type === 'AUDIO' ? '🔊' : '📹')}
+                                #
                             </div>
 
                             <input 
@@ -190,10 +112,6 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
                                 autoComplete="off"
                             />
                         </div>
-                        
-                        <p className="text-[11px] text-text-muted ml-1">
-                            Uniquement des lettres minuscules, chiffres et tirets.
-                        </p>
                     </div>
                 </form>
             </div>
@@ -238,10 +156,10 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
           isOpen={showDeleteConfirm}
           onClose={() => setShowDeleteConfirm(false)}
           onConfirm={handleDelete}
-          title={`Supprimer ${channel.name}`}
+          title={`Supprimer #${channel.name}`}
           message={
             <div className="space-y-2">
-                <p>Êtes-vous sûr de vouloir supprimer le salon <strong className="text-text-header">{channel.name}</strong> ?</p>
+                <p>Êtes-vous sûr de vouloir supprimer le salon <strong className="text-text-header">#{channel.name}</strong> ?</p>
                 <p className="text-xs text-status-danger bg-status-danger/10 p-2 rounded border border-status-danger/20 font-medium">
                     ⚠️ Cette action est irréversible.
                 </p>

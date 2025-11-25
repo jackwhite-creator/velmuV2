@@ -1,8 +1,9 @@
-import { useAuthStore } from '../../store/authStore';
 import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useServerStore, Server } from '../../store/serverStore';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../../store/authStore';
+import { useServerStore, Server, Conversation } from '../../store/serverStore';
+import { useFriendStore } from '../../store/friendStore';
 import api from '../../lib/api';
 
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
@@ -48,9 +49,9 @@ const RailTooltip = ({ text, rect }: { text: string, rect: DOMRect }) => {
 };
 
 const RailItem = ({ 
-  onClick, isActive, colorClass, icon, label, isImage = false, onContextMenu, variant = 'default'
+  onClick, isActive, colorClass, icon, label, isImage = false, onContextMenu, variant = 'default', badgeCount
 }: { 
-  onClick: () => void, isActive?: boolean, colorClass?: string, icon: React.ReactNode, label: string, isImage?: boolean, onContextMenu?: (e: React.MouseEvent) => void, variant?: 'default' | 'action'
+  onClick: () => void, isActive?: boolean, colorClass?: string, icon: React.ReactNode, label: string, isImage?: boolean, onContextMenu?: (e: React.MouseEvent) => void, variant?: 'default' | 'action', badgeCount?: number
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -67,20 +68,28 @@ const RailItem = ({
         `} 
       />
 
-      <div 
-        ref={ref}
-        onClick={onClick}
-        onContextMenu={onContextMenu}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        className={`
-          w-[48px] h-[48px] cursor-pointer transition-all duration-200 ease-out overflow-hidden flex items-center justify-center
-          ${isActive || isHovered ? 'rounded-[16px]' : 'rounded-[24px]'} 
-          ${isActive ? (colorClass || 'bg-brand') : isHovered ? (colorClass || 'bg-brand') : 'bg-background-secondary'} 
-          ${isImage ? 'bg-transparent' : ''}
-          ${variant === 'action' ? 'text-status-green hover:text-white bg-background-secondary hover:bg-status-green' : ''}`}
-          >
-        {icon}
+      <div className="relative w-[48px] h-[48px]">
+        <div 
+          ref={ref}
+          onClick={onClick}
+          onContextMenu={onContextMenu}
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className={`
+            w-full h-full cursor-pointer transition-all duration-200 ease-out overflow-hidden flex items-center justify-center
+            ${isActive || isHovered ? 'rounded-[16px]' : 'rounded-[24px]'} 
+            ${isActive ? (colorClass || 'bg-brand') : isHovered ? (colorClass || 'bg-brand') : 'bg-background-secondary'} 
+            ${isImage ? 'bg-transparent' : ''}
+            ${variant === 'action' ? 'text-status-green hover:text-white bg-background-secondary hover:bg-status-green' : ''}`}
+            >
+          {icon}
+        </div>
+
+        {badgeCount !== undefined && badgeCount > 0 && (
+            <div className="absolute -bottom-1 -right-1 bg-status-danger text-white text-[11px] font-bold px-1.5 h-[22px] min-w-[22px] flex items-center justify-center rounded-full border-[3px] border-background-quaternary shadow-sm z-10 pointer-events-none animate-in zoom-in duration-200">
+                {badgeCount > 9 ? '9+' : badgeCount}
+            </div>
+        )}
       </div>
 
       {isHovered && ref.current && <RailTooltip text={label} rect={ref.current.getBoundingClientRect()} />}
@@ -96,7 +105,8 @@ interface ServerRailProps {
 export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: ServerRailProps) {
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const { servers, activeServer, setActiveServer, removeServer } = useServerStore();
+  const { servers, activeServer, setActiveServer, removeServer, conversations, setActiveConversation } = useServerStore();
+  const { requests } = useFriendStore();
   
   const [localCreateOpen, setLocalCreateOpen] = useState(false);
   const [localJoinOpen, setLocalJoinOpen] = useState(false);
@@ -104,6 +114,10 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; server: Server } | null>(null);
   const [serverToLeave, setServerToLeave] = useState<Server | null>(null);
   const [serverToInvite, setServerToInvite] = useState<Server | null>(null);
+
+  const unreadDMs = conversations.filter(c => c.unreadCount > 0);
+  
+  const pendingFriendsCount = requests.filter(r => r.status === 'PENDING' && r.receiverId === user?.id).length;
 
   const handleServerClick = (server: any) => {
     setActiveServer(server);
@@ -116,6 +130,13 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
   };
 
   const handleDmClick = () => { setActiveServer(null); navigate('/channels/@me'); };
+  
+  const handleUnreadBubbleClick = (conv: Conversation) => {
+      setActiveServer(null);
+      setActiveConversation(conv);
+      navigate(`/channels/@me/${conv.id}`);
+  };
+
   const handleContextMenu = (e: React.MouseEvent, server: Server) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, server }); };
 
   const handleLeaveServer = async () => {
@@ -131,6 +152,10 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
   const openCreate = onOpenCreateServer || (() => setLocalCreateOpen(true));
   const openJoin = onOpenJoinServer || (() => setLocalJoinOpen(true));
 
+  const getOtherUser = (conversation: Conversation) => {
+    return conversation.users.find(u => u.id !== user?.id) || conversation.users[0];
+  };
+
   return (
     <div className="w-[72px] bg-background-quaternary flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none border-r border-[#1e1f22]/50">
       
@@ -139,6 +164,7 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
         isActive={!activeServer}
         onClick={handleDmClick}
         colorClass="bg-brand"
+        badgeCount={pendingFriendsCount}
         icon={
            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
              <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
@@ -147,6 +173,30 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
       />
 
       <div className="w-8 h-[2px] bg-background-secondary rounded-sm mx-auto mb-2" />
+
+      {unreadDMs.map(conv => {
+          const otherUser = getOtherUser(conv);
+          return (
+            <RailItem
+                key={conv.id}
+                label={`${otherUser.username}`}
+                onClick={() => handleUnreadBubbleClick(conv)}
+                isImage={!!otherUser.avatarUrl}
+                badgeCount={conv.unreadCount}
+                icon={
+                    otherUser.avatarUrl ? (
+                      <img src={otherUser.avatarUrl} className="w-full h-full object-cover" alt={otherUser.username} />
+                    ) : (
+                      <div className="w-full h-full bg-background-secondary flex items-center justify-center text-text-normal font-bold text-xs">
+                        {otherUser.username[0].toUpperCase()}
+                      </div>
+                    )
+                }
+            />
+          );
+      })}
+
+      {unreadDMs.length > 0 && <div className="w-8 h-[2px] bg-background-secondary rounded-sm mx-auto mb-2 opacity-50" />}
 
       {servers.map((server) => (
         <RailItem
@@ -192,10 +242,7 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
       )}
 
       <CreateServerModal isOpen={localCreateOpen} onClose={() => setLocalCreateOpen(false)} />
-      
-      {/* ✅ CORRECTION DU CRASH ICI : setLocalJoinOpen au lieu de l'ancienne variable */}
       <JoinServerModal isOpen={localJoinOpen} onClose={() => setLocalJoinOpen(false)} />
-      
       <InviteModal isOpen={!!serverToInvite} onClose={() => setServerToInvite(null)} server={serverToInvite} />
       <ConfirmModal 
         isOpen={!!serverToLeave} onClose={() => setServerToLeave(null)} onConfirm={handleLeaveServer}

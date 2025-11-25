@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSocketStore } from '../store/socketStore';
+import { useServerStore } from '../store/serverStore'; 
 import api from '../lib/api';
 
 export interface Attachment {
@@ -19,24 +20,24 @@ export interface Message {
   replyTo?: { id: string; content: string; user: { username: string } } | null;
   channelId?: string | null;
   conversationId?: string | null;
+  isPending?: boolean; // <--- AJOUT : Pour gérer l'état visuel
 }
 
 export const useChat = (targetId: string | undefined, isDm: boolean) => {
   const { socket } = useSocketStore();
+  const { touchConversation } = useServerStore();
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   
-  // On garde une ref pour éviter les race conditions dans les sockets
   const targetIdRef = useRef(targetId);
 
   useEffect(() => {
     targetIdRef.current = targetId;
   }, [targetId]);
 
-  // Initial Load
   useEffect(() => {
     if (!targetId) {
         setMessages([]);
@@ -44,17 +45,12 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     }
 
     setLoading(true);
-    // ⚠️ FIX FLUIDITÉ : On ne vide PAS les messages ici (setMessages([])).
-    // On garde les anciens affichés le temps que les nouveaux arrivent.
-    // Ça supprime le flash blanc entre deux salons.
-    
     setIsLoadingMore(false);
 
     const params = isDm ? { conversationId: targetId } : { channelId: targetId };
 
     api.get('/messages', { params })
       .then((res) => {
-        // On vérifie que l'ID n'a pas changé pendant la requête
         if (targetIdRef.current === targetId) {
             setMessages(res.data.items.reverse());
             setHasMore(!!res.data.nextCursor);
@@ -68,7 +64,6 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
       });
   }, [targetId, isDm]);
 
-  // Socket Events
   useEffect(() => {
     if (!socket || !targetId) return;
     
@@ -110,7 +105,6 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     };
   }, [socket, targetId, isDm]);
 
-  // Load More (Scroll Up)
   const loadMore = useCallback(async () => {
     if (messages.length === 0 || isLoadingMore || !hasMore) return;
 
@@ -149,26 +143,33 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
   const sendMessage = useCallback(async (content: string, file?: File, replyToId?: string) => {
     if (!targetId) return;
 
+    let res;
     if (!file) {
       const payload: any = {
         content,
         replyToId,
         ...(isDm ? { conversationId: targetId } : { channelId: targetId })
       };
-      return api.post('/messages', payload);
+      res = await api.post('/messages', payload);
+    } else {
+      const formData = new FormData();
+      formData.append('file', file); 
+      if (content) formData.append('content', content);
+      if (replyToId) formData.append('replyToId', replyToId);
+      if (isDm) formData.append('conversationId', targetId);
+      else formData.append('channelId', targetId);
+
+      res = await api.post('/messages', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
     }
 
-    const formData = new FormData();
-    formData.append('file', file); 
-    if (content) formData.append('content', content);
-    if (replyToId) formData.append('replyToId', replyToId);
-    if (isDm) formData.append('conversationId', targetId);
-    else formData.append('channelId', targetId);
+    if (isDm) {
+        touchConversation(targetId);
+    }
 
-    return api.post('/messages', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-  }, [targetId, isDm]);
+    return res;
+  }, [targetId, isDm, touchConversation]);
 
   return { 
     messages, 

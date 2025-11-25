@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Channel } from '../../store/serverStore';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Channel, useServerStore } from '../../store/serverStore';
+import { useAuthStore } from '../../store/authStore';
 import { Socket } from 'socket.io-client';
 import { Message } from '../../hooks/useChat'; 
 import api from '../../lib/api';
@@ -27,7 +28,6 @@ interface Props {
   onToggleMembers: () => void;
 }
 
-// ✅ OPTIMISATION : React.memo pour éviter les re-renders inutiles
 const ChatArea = React.memo(function ChatArea({
   activeChannel, messages, isLoadingMore, hasMore, 
   inputValue, showMembers, socket, replyingTo,
@@ -35,14 +35,17 @@ const ChatArea = React.memo(function ChatArea({
   onScroll, onUserClick, onToggleMembers
 }: Props) {
   
+  const { user } = useAuthStore();
+  const { markConversationAsRead } = useServerStore();
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
-  const [isSending, setIsSending] = useState(false);
+  
+  // File d'attente locale pour l'affichage optimiste
+  const [pendingMessages, setPendingMessages] = useState<Message[]>([]);
   
   const [showSkeleton, setShowSkeleton] = useState(false);
   const scrollToBottomRef = useRef<(() => void) | null>(null);
 
-  // Gestion du Skeleton intelligent
   useEffect(() => {
     let timeout: any;
     if (isLoadingMore) {
@@ -53,18 +56,79 @@ const ChatArea = React.memo(function ChatArea({
     return () => clearTimeout(timeout);
   }, [isLoadingMore]);
 
+  useEffect(() => {
+      if (activeChannel && activeChannel.type === 'dm') {
+          api.post(`/conversations/${activeChannel.id}/read`).catch(console.error);
+          markConversationAsRead(activeChannel.id);
+      }
+  }, [activeChannel?.id, messages.length]);
+
+  // ✅ CORRECTION MAJEURE : FUSION INTELLIGENTE (DEDUPLICATION)
+  // On utilise useMemo pour calculer la liste à afficher À CHAQUE RENDU.
+  // Si un message "réel" (messages) correspond à un message "en attente" (pending), on cache le pending.
+  // Cela évite le "saut" visuel où les deux messages coexistent pendant 10ms.
+  const combinedMessages = useMemo(() => {
+    // On filtre les messages en attente qui ont DÉJÀ été reçus via le socket
+    const filteredPending = pendingMessages.filter(pending => {
+        // On cherche s'il existe un message réel identique reçu récemment
+        const isAlreadyReceived = messages.slice(-10).some(real => 
+            real.content === pending.content &&
+            real.user.id === pending.user.id &&
+            // On vérifie que c'est bien le même message (créé dans un intervalle de 5s)
+            Math.abs(new Date(real.createdAt).getTime() - new Date(pending.createdAt).getTime()) < 5000
+        );
+        return !isAlreadyReceived;
+    });
+
+    return [...messages, ...filteredPending];
+  }, [messages, pendingMessages]);
+
+
   const handleSendMessage = async (e: React.FormEvent, file?: File | null) => {
     e.preventDefault();
-    if ((!inputValue.trim() && !file) || isSending) return;
+    if (!inputValue.trim() && !file) return;
 
-    setIsSending(true);
+    const contentToSend = inputValue.trim();
+    const replyToId = replyingTo?.id;
+
+    setInputValue('');
+    setReplyingTo(null);
+
+    const tempId = `temp-${Date.now()}-${Math.random()}`; 
+    let tempMsg: Message | null = null;
+
+    if (!file && user) {
+        tempMsg = {
+            id: tempId,
+            content: contentToSend,
+            attachments: [],
+            user: {
+                id: user.id,
+                username: user.username,
+                discriminator: user.discriminator,
+                avatarUrl: user.avatarUrl || undefined
+            },
+            createdAt: new Date().toISOString(),
+            channelId: activeChannel?.id,
+            replyTo: replyingTo ? { id: replyToId, content: replyingTo.content, user: replyingTo.user } : null,
+            isPending: true
+        };
+        setPendingMessages(prev => [...prev, tempMsg!]);
+        if (scrollToBottomRef.current) setTimeout(() => { scrollToBottomRef.current?.(); }, 10);
+    }
+
     try {
-        await sendMessage(inputValue.trim(), file || undefined, replyingTo?.id);
-        setInputValue('');
-        setReplyingTo(null);
+        await sendMessage(contentToSend, file || undefined, replyToId);
         if (scrollToBottomRef.current) setTimeout(() => { scrollToBottomRef.current?.(); }, 100);
-    } catch (err) { console.error("Erreur envoi:", err); } 
-    finally { setIsSending(false); }
+    } catch (err) { 
+        console.error("Erreur envoi:", err);
+    } finally { 
+        if (tempMsg) {
+            // On retire le pending message de la liste d'attente
+            // Grâce au useMemo ci-dessus, la transition se fera sans saut visuel
+            setPendingMessages(prev => prev.filter(m => m.id !== tempId));
+        }
+    }
   };
 
   const performDelete = async () => {
@@ -92,7 +156,8 @@ const ChatArea = React.memo(function ChatArea({
 
        <div className="flex-1 min-h-0 relative">
          <MessageList 
-            messages={messages}
+            // ✅ On utilise la liste fusionnée et nettoyée
+            messages={combinedMessages}
             channel={activeChannel}
             hasMore={hasMore}
             isLoadingMore={showSkeleton}
@@ -114,7 +179,6 @@ const ChatArea = React.memo(function ChatArea({
             setReplyingTo={setReplyingTo}
             socket={socket}
             activeChannel={activeChannel}
-            isSending={isSending}
          />
        </div>
 
@@ -138,5 +202,4 @@ const ChatArea = React.memo(function ChatArea({
     );
 });
 
-// ✅ L'EXPORT MANQUANT EST ICI
 export default ChatArea;

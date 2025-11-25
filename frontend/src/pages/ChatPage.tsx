@@ -14,7 +14,6 @@ import ChatArea from '../components/chat/ChatArea';
 import MemberList from '../components/MemberList';
 import UserFooter from '../components/chat/UserFooter';
 import FriendsDashboard from '../components/chat/FriendsDashboard';
-import VideoRoom from '../components/chat/VideoRoom';
 
 import CreateServerModal from '../components/CreateServerModal';
 import InviteModal from '../components/InviteModal';
@@ -188,10 +187,6 @@ export default function ChatPage() {
   const renderMainContent = () => {
     if (showFriendsDashboard) {
         return <FriendsDashboard onUserContextMenu={handleUserContextMenu} />;
-    }
-
-    if (activeServer && activeChannel && (activeChannel.type === 'AUDIO' || activeChannel.type === 'VIDEO')) {
-        return <VideoRoom channel={activeChannel} />;
     }
 
     return (

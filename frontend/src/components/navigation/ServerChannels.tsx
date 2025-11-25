@@ -1,12 +1,9 @@
 import { useState, useEffect } from 'react';
-// ✅ AJOUT DE L'IMPORT MANQUANT ICI
-import { useAuthStore } from '../../store/authStore';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Server, Channel, Category, useServerStore } from '../../store/serverStore';
 import api from '../../lib/api';
 import Tooltip from '../ui/Tooltip';
 
-// UI Components
 import EditServerModal from '../server-settings/ServerSettingsModal';
 import ConfirmModal from '../ui/ConfirmModal';
 import CreateCategoryModal from '../ui/CreateCategoryModal';
@@ -15,6 +12,7 @@ import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/Contex
 import ChannelModal from '../ui/ChannelModal';
 import ServerHeader from '../chat/ServerHeader';
 import ChannelList from '../chat/ChannelList';
+import { useAuthStore } from '../../store/authStore';
 
 interface Props {
   activeServer: Server;
@@ -101,17 +99,48 @@ export default function ServerChannels({
       else setIsCreateCategoryOpen(true);
       setContextMenu(null);
   };
+  
   const handleContextMenuGlobal = (e: React.MouseEvent) => { if (!isOwner) return; e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type: 'GLOBAL' }); };
   const handleContextMenuChannel = (e: React.MouseEvent, channel: Channel) => { if (!isOwner) return; e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, type: 'CHANNEL', data: channel }); };
   const handleContextMenuCategory = (e: React.MouseEvent, category: Category) => { if (!isOwner) return; e.preventDefault(); e.stopPropagation(); setContextMenu({ x: e.clientX, y: e.clientY, type: 'CATEGORY', data: category }); };
+  
   const handleDeleteChannelContext = () => {
-      const channel = contextMenu?.data; if (!channel) return; setContextMenu(null); 
-      setConfirmConfig({ title: `Supprimer #${channel.name}`, message: <span>Êtes-vous sûr de vouloir supprimer le salon <strong>#{channel.name}</strong> ?</span>, isDestructive: true, confirmText: 'Supprimer', action: async () => { try { await api.delete(`/channels/${channel.id}`); } catch (err) { console.error(err); } } });
+      const channel = contextMenu?.data; 
+      if (!channel) return; 
+      setContextMenu(null); 
+      setConfirmConfig({ 
+          title: `Supprimer #${channel.name}`, 
+          message: <span>Êtes-vous sûr de vouloir supprimer le salon <strong>#{channel.name}</strong> ?</span>, 
+          isDestructive: true, 
+          confirmText: 'Supprimer', 
+          action: async () => { 
+              try { 
+                  await api.delete(`/channels/${channel.id}`); 
+                  // IMPORTANT : Fermeture de la modale de confirmation
+                  setConfirmOpen(false);
+              } catch (err) { console.error(err); } 
+          } 
+      });
       setConfirmOpen(true);
   };
+  
   const handleDeleteCategoryContext = () => {
-      const category = contextMenu?.data; if (!category) return; setContextMenu(null);
-      setConfirmConfig({ title: `Supprimer ${category.name}`, message: <span>Voulez-vous vraiment supprimer la catégorie <strong>{category.name}</strong> et tous ses salons ?</span>, isDestructive: true, confirmText: 'Supprimer', action: async () => { try { await api.delete(`/categories/${category.id}`); } catch (err) { console.error(err); } } });
+      const category = contextMenu?.data; 
+      if (!category) return; 
+      setContextMenu(null);
+      setConfirmConfig({ 
+          title: `Supprimer ${category.name}`, 
+          message: <span>Voulez-vous vraiment supprimer la catégorie <strong>{category.name}</strong> et tous ses salons ?</span>, 
+          isDestructive: true, 
+          confirmText: 'Supprimer', 
+          action: async () => { 
+              try { 
+                  await api.delete(`/categories/${category.id}`); 
+                  // IMPORTANT : Fermeture de la modale de confirmation
+                  setConfirmOpen(false);
+              } catch (err) { console.error(err); } 
+          } 
+      });
       setConfirmOpen(true);
   };
 
