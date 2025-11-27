@@ -9,12 +9,12 @@ export const PATCH_NOTE_DATA = {
   bannerUrl: 'https://images.unsplash.com/photo-1553095066-5014bc7b7f2d?q=80&w=2071&auto=format&fit=crop',
   
   // URL d'invitation au serveur Velmu
-  inviteUrl: 'https://velmu.vercel.app/',
+  inviteUrl: 'https://velmu.vercel.app/invite/velmu',
   
   sections: [
     {
       title: 'Serveur officiel Velmu',
-      description: "Rejoins le serveur officiel pour découvrir la communauté, poser tes questions et rester informé des dernières nouveautés !",
+      description: "Rejoins le serveur officiel pour découvrir la communauté, poser tes questions et rester informé des dernières nouveautés ! (Enfin... bientôt parce que pour l'instant, c'est un peu vide et sans trop de fonctionnalité !)",
       type: 'feature' as const
     }
   ],
