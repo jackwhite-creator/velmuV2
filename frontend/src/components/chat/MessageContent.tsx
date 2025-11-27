@@ -96,7 +96,7 @@ export default function MessageContent({
           
           <div className="flex flex-wrap items-baseline gap-x-1">
               {msg.content && (
-                <div className="markdown-body text-[15px]">
+                <div className="markdown-body text-[15px] break-all">
                     <ReactMarkdown 
                         remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{

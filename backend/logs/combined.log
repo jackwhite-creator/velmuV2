@@ -847,3 +847,21 @@ Foreign key constraint violated: `Member_userId_fkey (index)`
 [2025-11-27 18:28:35] INFO: Environment: development
 [2025-11-27 18:28:36] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
 [2025-11-27 18:28:36] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:29:52] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:29:52] INFO: Environment: development
+[2025-11-27 18:30:18] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:30:32] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:30:32] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:30:48] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:30:48] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:31:09] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:31:09] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:37:12] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:37:13] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:37:46] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:37:46] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:40:26] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:47:38] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:47:38] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:47:38] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:47:38] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465

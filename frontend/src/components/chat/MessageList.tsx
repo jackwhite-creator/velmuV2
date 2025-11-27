@@ -22,7 +22,6 @@ interface Props {
   onScrollToBottom?: (fn: () => void) => void;
 }
 
-// ✅ CORRECTION FOND : bg-[#313338] pour matcher exactement ChatArea
 const DateSeparator = ({ date }: { date: Date }) => (
   <div className="relative flex items-center justify-center my-6 select-none group px-4">
     <div className="absolute inset-0 flex items-center px-4">
@@ -99,7 +98,11 @@ export default function MessageList({
                const dateCurrent = new Date(msg.createdAt);
                const datePrev = previousMsg ? new Date(previousMsg.createdAt) : null;
                const isNewDay = !datePrev || (dateCurrent.getDate() !== datePrev.getDate());
-               const shouldGroup = isSameUser && isTimeClose && !msg.replyTo && !isNewDay;
+               
+               // Never group system messages or messages after system messages
+               const isCurrentSystem = msg.type === 'SYSTEM';
+               const isPreviousSystem = previousMsg?.type === 'SYSTEM';
+               const shouldGroup = isSameUser && isTimeClose && !msg.replyTo && !isNewDay && !isCurrentSystem && !isPreviousSystem;
 
                return (
                  <Fragment key={msg.id}>
