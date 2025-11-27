@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { Users, Check } from 'lucide-react';
 import api from '../lib/api';
 import { useServerStore } from '../store/serverStore';
 
@@ -21,8 +22,6 @@ interface InviteInfo {
 export default function InvitePage() {
   const { code } = useParams();
   const navigate = useNavigate();
-  
-  // ✅ AJOUT : On récupère setServers pour mettre à jour la liste globale
   const { setServers } = useServerStore();
   
   const [info, setInfo] = useState<InviteInfo | null>(null);
@@ -54,8 +53,7 @@ export default function InvitePage() {
       const res = await api.post(`/invites/${code}/join`);
       const serverId = res.data.serverId;
 
-      // ✅ CORRECTION CRUCIALE : On recharge la liste des serveurs pour que la sidebar se mette à jour
-      // Sinon le nouveau serveur n'apparaît pas sans refresh (F5)
+      // Reload servers list to update sidebar
       const serversRes = await api.get('/servers');
       setServers(serversRes.data);
 
@@ -77,57 +75,81 @@ export default function InvitePage() {
     return (
       <div className="flex h-screen bg-background-quaternary items-center justify-center font-sans">
         <div className="animate-pulse flex flex-col items-center gap-4">
-            <div className="w-20 h-20 bg-background-secondary rounded-2xl"></div>
-            <div className="h-6 w-48 bg-background-secondary rounded-sm"></div>
+            <div className="w-24 h-24 bg-background-secondary rounded-2xl"></div>
+            <div className="h-6 w-56 bg-background-secondary rounded"></div>
+            <div className="h-4 w-32 bg-background-secondary rounded"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-background-quaternary items-center justify-center font-sans select-none p-4">
+    <div className="flex h-screen bg-background-quaternary items-center justify-center font-sans p-4">
        
-       <div className="w-full max-w-md bg-background-primary rounded-md shadow-xl border border-background-tertiary p-8 text-center animate-in fade-in zoom-in-95 duration-200">
+       <div className="w-full max-w-md bg-background-primary rounded-lg shadow-xl border border-background-tertiary p-8">
           
-            <div className="w-24 h-24 bg-background-secondary rounded-2xl flex items-center justify-center overflow-hidden mx-auto mb-6 border border-background-tertiary shadow-sm">
-                {info?.server.iconUrl ? (
-                    <img src={info.server.iconUrl} alt={info.server.name} className="w-full h-full object-cover" />
-                ) : (
-                    <span className="text-text-header font-bold text-3xl">
-                        {info?.server.name.substring(0, 2).toUpperCase()}
-                    </span>
-                )}
+            {/* Server Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-background-secondary rounded-2xl flex items-center justify-center overflow-hidden border border-background-tertiary shadow-sm">
+                  {info?.server.iconUrl ? (
+                      <img src={info.server.iconUrl} alt={info.server.name} className="w-full h-full object-cover" />
+                  ) : (
+                      <span className="text-text-header font-bold text-3xl">
+                          {info?.server.name.substring(0, 2).toUpperCase()}
+                      </span>
+                  )}
+              </div>
             </div>
 
-            <div>
-                <p className="text-text-muted text-sm font-medium mb-2">
-                    <strong className="text-text-normal">{info?.inviter.username}</strong> t'a invité à rejoindre
+            {/* Invitation Text */}
+            <div className="text-center mb-6">
+                <p className="text-text-muted text-sm font-medium mb-1">
+                    <span className="text-text-normal font-semibold">{info?.inviter.username}</span> t'invite à rejoindre
                 </p>
 
-                <h1 className="text-2xl font-bold text-text-header mb-4 truncate leading-tight">
+                <h1 className="text-3xl font-bold text-text-header mb-5 truncate">
                     {info?.server.name}
                 </h1>
 
-                <div className="flex justify-center gap-4 mb-8 bg-background-secondary py-2 px-4 rounded-sm inline-flex mx-auto border border-background-tertiary">
-                    <div className="flex items-center gap-2">
+                {/* Member Count */}
+                <div className="flex justify-center mb-6">
+                    <div className="flex items-center gap-2 bg-background-secondary py-2 px-4 rounded border border-background-tertiary">
                         <div className="w-2 h-2 rounded-full bg-status-green"></div>
-                        <span className="text-xs text-text-muted font-bold uppercase tracking-wide">{info?.server.memberCount} Membres</span>
+                        <Users className="w-4 h-4 text-text-muted" />
+                        <span className="text-sm text-text-normal font-semibold">
+                          {info?.server.memberCount.toLocaleString()}
+                        </span>
+                        <span className="text-sm text-text-muted">
+                          membre{(info?.server.memberCount || 0) > 1 ? 's' : ''}
+                        </span>
                     </div>
                 </div>
 
+                {/* Error Message */}
                 {error && (
-                    <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded-sm mb-6 border border-status-danger/20 font-medium">
-                    {error}
+                    <div className="bg-status-danger/10 text-status-danger text-sm p-3 rounded border border-status-danger/30 font-medium mb-4">
+                      {error}
                     </div>
                 )}
 
+                {/* Join Button */}
                 {!error && (
                     <button 
                         onClick={handleJoin}
                         disabled={isJoining}
-                        className="w-full bg-brand hover:bg-brand-hover text-white font-bold py-3 rounded-sm transition-all shadow-md active:translate-y-[1px] disabled:opacity-50 disabled:cursor-not-allowed text-sm uppercase tracking-wide"
+                        className="w-full bg-brand hover:bg-brand-hover text-white font-semibold py-3 px-4 rounded transition-colors shadow-sm active:translate-y-px disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
-                        {isJoining ? 'Entrée en cours...' : "Accepter l'invitation"}
+                        {isJoining ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                            Connexion...
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-5 h-5" />
+                            Accepter l'invitation
+                          </>
+                        )}
                     </button>
                 )}
             </div>

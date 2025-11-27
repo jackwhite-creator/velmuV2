@@ -6,6 +6,9 @@ const router = Router();
 
 router.post('/create', authenticateToken, InviteController.create);
 
+// GET /api/invites/:code - Get invite information (no auth required)
+router.get('/:code', InviteController.getInviteInfo);
+
 // POST /api/invites/:code/join
 router.post('/:code/join', authenticateToken, InviteController.join);
 

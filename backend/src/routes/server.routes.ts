@@ -10,7 +10,7 @@ import {
     leaveServer,
     updateServer,
     getServerInvites,
-    deleteServerInvite // ✅ Import
+    deleteServerInvite 
 } from '../controllers/server.controller';
 
 const router = Router();
@@ -25,7 +25,12 @@ const createServerLimiter = rateLimit({
   message: { error: 'Limite de création de serveur atteinte. Attendez 1 heure.' },
   standardHeaders: true,
   legacyHeaders: false,
-  skipSuccessfulRequests: false
+  skipSuccessfulRequests: false,
+  keyGenerator: (req) => {
+    // Rate limit par ID utilisateur
+    // On utilise 'unknown' comme fallback si user n'est pas défini (ne devrait pas arriver avec authenticateToken)
+    return (req as any).user ? (req as any).user.userId : 'unknown';
+  }
 });
 
 router.get('/', getUserServers);
@@ -36,7 +41,6 @@ router.delete('/:serverId', deleteServer);
 router.post('/:serverId/leave', leaveServer);
 
 router.get('/:serverId/invites', getServerInvites);
-// ✅ ROUTE SUPPRESSION
 router.delete('/:serverId/invites/:inviteId', deleteServerInvite);
 
 export default router;

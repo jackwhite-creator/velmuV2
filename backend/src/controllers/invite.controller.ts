@@ -130,7 +130,11 @@ export const InviteController = {
       ]);
 
       // --- SYSTEM MESSAGE LOGIC ---
-      const server = await prisma.server.findUnique({ where: { id: invite.serverId } });
+      const server = await prisma.server.findUnique({ 
+        where: { id: invite.serverId },
+        select: { id: true, systemChannelId: true }
+      });
+      
       if (server && server.systemChannelId) {
           try {
              const user = await prisma.user.findUnique({ where: { id: userId! } });

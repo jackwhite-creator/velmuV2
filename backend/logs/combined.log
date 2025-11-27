@@ -660,3 +660,190 @@ Error: Accès refusé
 [2025-11-27 17:14:32] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
 [2025-11-27 17:29:47] INFO: ✅ Velmu server started on port 4000
 [2025-11-27 17:29:47] INFO: Environment: development
+[2025-11-27 17:29:49] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:40:03] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:40:03] INFO: Environment: development
+[2025-11-27 17:40:03] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:52:51] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:52:51] INFO: Environment: development
+[2025-11-27 17:53:33] INFO: User connected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 17:56:19] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:56:19] INFO: Environment: development
+[2025-11-27 17:56:20] INFO: User connected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 17:56:45] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:56:45] INFO: Environment: development
+[2025-11-27 17:56:46] INFO: User connected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 18:02:35] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:02:35] INFO: Environment: development
+[2025-11-27 18:02:35] INFO: User connected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 18:15:36] INFO: User disconnected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 18:15:36] INFO: User connected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 18:15:36] ERROR: Error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:36] ERROR: Unexpected error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:36] ERROR: Error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:36] ERROR: Unexpected error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:39] INFO: User disconnected: eb995732-80c3-4fc6-a84b-dee3b8e91b2a
+[2025-11-27 18:19:50] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:19:50] INFO: Environment: development
+[2025-11-27 18:20:05] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:20:05] INFO: Environment: development
+[2025-11-27 18:21:24] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:21:24] INFO: Environment: development
+[2025-11-27 18:24:05] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:24:05] INFO: Environment: development
+[2025-11-27 18:25:22] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 18:25:26] ERROR: Error: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:7
+    at Proxy._transactionWithCallback (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:8000)
+    at createServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:70:20)
+[2025-11-27 18:25:26] ERROR: Unexpected error: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:7
+    at Proxy._transactionWithCallback (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:8000)
+    at createServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:70:20)
+[2025-11-27 18:25:27] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 18:25:39] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:25:47] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:16] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:16] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:22] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:22] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:26] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:26] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:27] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:27] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:35] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:27:35] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:28:35] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:28:35] INFO: Environment: development
+[2025-11-27 18:28:36] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:28:36] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465

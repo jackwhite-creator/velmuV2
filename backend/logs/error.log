@@ -166,3 +166,145 @@ Error: Accès refusé
 [2025-11-27 17:00:50] ERROR: Error: Accès refusé
 Error: Accès refusé
     at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 18:15:36] ERROR: Error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:36] ERROR: Unexpected error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:36] ERROR: Error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:15:36] ERROR: Unexpected error: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+PrismaClientKnownRequestError: 
+Invalid `prisma.member.findMany()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:41
+
+  6 export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  7   try {
+  8     const userId = req.user!.userId;
+→ 9     const members = await prisma.member.findMany(
+The table `public.Member` does not exist in the current database.
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at getUserServers (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:9:21)
+[2025-11-27 18:25:26] ERROR: Error: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:7
+    at Proxy._transactionWithCallback (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:8000)
+    at createServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:70:20)
+[2025-11-27 18:25:26] ERROR: Unexpected error: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `tx.member.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:23
+
+  82   }
+  83 });
+  84 
+→ 85 await tx.member.create(
+Foreign key constraint violated: `Member_userId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:7
+    at Proxy._transactionWithCallback (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:8000)
+    at createServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:70:20)
