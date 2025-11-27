@@ -865,3 +865,15 @@ Foreign key constraint violated: `Member_userId_fkey (index)`
 [2025-11-27 18:47:38] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
 [2025-11-27 18:47:38] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
 [2025-11-27 18:47:38] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:47:41] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 18:47:41] INFO: Environment: development
+[2025-11-27 18:47:42] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:47:42] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:48:12] INFO: User connected: b245479f-951c-4779-b4a0-ebfe4772a138
+[2025-11-27 18:48:30] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 18:48:32] INFO: User disconnected: b245479f-951c-4779-b4a0-ebfe4772a138
+[2025-11-27 18:48:32] INFO: User connected: b245479f-951c-4779-b4a0-ebfe4772a138
+[2025-11-27 18:57:52] INFO: User disconnected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465
+[2025-11-27 18:59:32] INFO: User connected: b9ed04c6-6d2e-43e8-a3ac-c9b6e83c9465

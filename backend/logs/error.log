@@ -308,3 +308,6 @@ Foreign key constraint violated: `Member_userId_fkey (index)`
     at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:85:7
     at Proxy._transactionWithCallback (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:8000)
     at createServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:70:20)
+[2025-11-27 18:48:30] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
