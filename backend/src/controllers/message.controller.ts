@@ -1,20 +1,16 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { ChatService } from '../services/chat.service';
-import { AIService } from '../services/ai.service';
+import { AppError, NotFoundError, AuthorizationError } from '../middlewares/error.middleware';
 
-const AI_BOT_ID = 'cl-velmu-ai-bot-0001';
-const AI_BOT_NAME = 'Velmu AI';
-const AI_MENTION = `@${AI_BOT_NAME}`;
-
-export const createMessage = async (req: Request, res: Response) => {
+export const createMessage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.userId;
     const { content, channelId, conversationId, replyToId } = req.body;
     const file = req.file;
 
     if (!content && !file) {
-        return res.status(400).json({ error: "Le message ne peut pas être vide" });
+        throw new AppError(400, "Le message ne peut pas être vide");
     }
     
     let fileData = null;
@@ -73,57 +69,19 @@ export const createMessage = async (req: Request, res: Response) => {
       });
     }
 
-    // Étape 1 : On envoie toujours le message de l'utilisateur à tout le monde
     io.to(room).emit('new_message', newMessage);
-
-    // Étape 2 : APRÈS, on vérifie si c'est une mention pour l'IA
-    if (content && content.trim().startsWith(AI_MENTION)) {
-      const userQuestion = content.trim().substring(AI_MENTION.length).trim();
-
-      if (userQuestion) {
-        // On lance le traitement IA en arrière-plan (sans await)
-        (async () => {
-          const typingPayload = { 
-            userId: AI_BOT_ID, 
-            username: AI_BOT_NAME, 
-            isTyping: true,
-            channelId,
-            conversationId
-          };
-          io.to(room).emit('user_typing', typingPayload);
-
-          const aiResponse = await AIService.getChatCompletion(userQuestion);
-
-          typingPayload.isTyping = false;
-          io.to(room).emit('user_typing', typingPayload);
-          
-          const aiMessage = await ChatService.createMessage({
-            userId: AI_BOT_ID,
-            content: aiResponse,
-            fileData: null,
-            channelId,
-            conversationId,
-            replyToId: newMessage.id // L'IA répond directement au message de l'utilisateur
-          });
-
-          io.to(room).emit('new_message', aiMessage);
-        })();
-      }
-    }
-
     return res.status(201).json(newMessage);
 
   } catch (error) {
-    console.error("Create Message Error:", error);
-    return res.status(500).json({ error: "Erreur lors de l'envoi du message" });
+    next(error);
   }
 };
 
-export const getMessages = async (req: Request, res: Response) => {
+export const getMessages = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { channelId, conversationId, cursor } = req.query;
         if (!channelId && !conversationId) {
-            return res.status(400).json({ error: "ID manquant" });
+            throw new AppError(400, "ID manquant");
         }
         let messages;
         const limit = 20;
@@ -138,19 +96,18 @@ export const getMessages = async (req: Request, res: Response) => {
         }
         return res.json({ items: messages, nextCursor });
     } catch (error) {
-        console.error("Get Messages Error:", error);
-        return res.status(500).json({ error: "Impossible de récupérer les messages" });
+        next(error);
     }
 };
 
-export const updateMessage = async (req: Request, res: Response) => {
+export const updateMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.user!.userId;
         const { messageId } = req.params;
         const { content } = req.body;
         const message = await prisma.message.findUnique({ where: { id: messageId } });
-        if (!message) return res.status(404).json({ error: "Message introuvable" });
-        if (message.userId !== userId) return res.status(403).json({ error: "Non autorisé" });
+        if (!message) throw new NotFoundError("Message introuvable");
+        if (message.userId !== userId) throw new AuthorizationError("Non autorisé");
         const updatedMessage = await prisma.message.update({
             where: { id: messageId },
             data: { content },
@@ -165,17 +122,17 @@ export const updateMessage = async (req: Request, res: Response) => {
         io.to(room).emit('message_updated', updatedMessage);
         res.json(updatedMessage);
     } catch (error) {
-        res.status(500).json({ error: "Erreur serveur" });
+        next(error);
     }
 };
 
-export const deleteMessage = async (req: Request, res: Response) => {
+export const deleteMessage = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const userId = req.user!.userId;
         const { messageId } = req.params;
         const message = await prisma.message.findUnique({ where: { id: messageId } });
-        if (!message) return res.status(404).json({ error: "Message introuvable" });
-        if (message.userId !== userId) return res.status(403).json({ error: "Non autorisé" });
+        if (!message) throw new NotFoundError("Message introuvable");
+        if (message.userId !== userId) throw new AuthorizationError("Non autorisé");
         await prisma.message.delete({ where: { id: messageId } });
         const io = req.app.get('io');
         const room = message.channelId || `conversation_${message.conversationId}`;
@@ -186,6 +143,6 @@ export const deleteMessage = async (req: Request, res: Response) => {
         });
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: "Erreur serveur" });
+        next(error);
     }
 };

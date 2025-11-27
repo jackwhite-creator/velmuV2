@@ -1,8 +1,9 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
 import { ChannelType } from '@prisma/client';
+import { AppError, NotFoundError, AuthorizationError } from '../middlewares/error.middleware';
 
-export const getUserServers = async (req: Request, res: Response) => {
+export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.userId;
     const members = await prisma.member.findMany({
@@ -12,12 +13,11 @@ export const getUserServers = async (req: Request, res: Response) => {
     const servers = members.map(m => m.server);
     res.json(servers);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erreur récupération serveurs" });
+    next(error);
   }
 };
 
-export const getServer = async (req: Request, res: Response) => {
+export const getServer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId } = req.params;
     const userId = req.user!.userId;
@@ -26,7 +26,7 @@ export const getServer = async (req: Request, res: Response) => {
       where: { userId_serverId: { userId, serverId } }
     });
 
-    if (!member) return res.status(403).json({ error: "Accès refusé" });
+    if (!member) throw new AuthorizationError("Accès refusé");
 
     const server = await prisma.server.findUnique({
       where: { id: serverId },
@@ -46,20 +46,21 @@ export const getServer = async (req: Request, res: Response) => {
       }
     });
 
+    if (!server) throw new NotFoundError("Serveur introuvable");
+
     res.json(server);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erreur serveur" });
+    next(error);
   }
 };
 
-export const createServer = async (req: Request, res: Response) => {
+export const createServer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name } = req.body;
     const userId = req.user!.userId;
     const file = req.file;
 
-    if (!name) return res.status(400).json({ error: "Le nom est requis" });
+    if (!name) throw new AppError(400, "Le nom est requis");
 
     let iconUrl = null;
     if (file) {
@@ -113,7 +114,7 @@ export const createServer = async (req: Request, res: Response) => {
     const fullServer = await prisma.server.findUnique({
         where: { id: server.id },
         include: { 
-            channels: { orderBy: { order: 'asc' } }, 
+            channels: { orderBy:  { order: 'asc' } }, 
             categories: { 
                 orderBy: { order: 'asc' },
                 include: { channels: { orderBy: { order: 'asc' } } } 
@@ -126,12 +127,11 @@ export const createServer = async (req: Request, res: Response) => {
     res.status(201).json(fullServer);
 
   } catch (error) {
-    console.error("Erreur création serveur:", error);
-    res.status(500).json({ error: "Impossible de créer le serveur" });
+    next(error);
   }
 };
 
-export const updateServer = async (req: Request, res: Response) => {
+export const updateServer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId } = req.params;
     const { name } = req.body;
@@ -139,10 +139,10 @@ export const updateServer = async (req: Request, res: Response) => {
     const file = req.file;
 
     const server = await prisma.server.findUnique({ where: { id: serverId } });
-    if (!server) return res.status(404).json({ error: "Serveur introuvable" });
+    if (!server) throw new NotFoundError("Serveur introuvable");
 
     if (server.ownerId !== userId) {
-      return res.status(403).json({ error: "Seul le propriétaire peut modifier ce serveur" });
+      throw new AuthorizationError("Seul le propriétaire peut modifier ce serveur");
     }
 
     let updateData: any = { name };
@@ -161,39 +161,37 @@ export const updateServer = async (req: Request, res: Response) => {
     res.json(updatedServer);
 
   } catch (error) {
-    console.error("Erreur update serveur:", error);
-    res.status(500).json({ error: "Impossible de mettre à jour le serveur" });
+    next(error);
   }
 };
 
-export const deleteServer = async (req: Request, res: Response) => {
+export const deleteServer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId } = req.params;
     const userId = req.user!.userId;
 
     const server = await prisma.server.findUnique({ where: { id: serverId } });
-    if (!server) return res.status(404).json({ error: "Serveur introuvable" });
-    if (server.ownerId !== userId) return res.status(403).json({ error: "Non autorisé" });
+    if (!server) throw new NotFoundError("Serveur introuvable");
+    if (server.ownerId !== userId) throw new AuthorizationError("Non autorisé");
 
     await prisma.server.delete({ where: { id: serverId } });
 
     res.json({ message: "Serveur supprimé" });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Erreur suppression serveur" });
+    next(error);
   }
 };
 
-export const leaveServer = async (req: Request, res: Response) => {
+export const leaveServer = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId } = req.params;
     const userId = req.user!.userId;
 
     const server = await prisma.server.findUnique({ where: { id: serverId } });
-    if (!server) return res.status(404).json({ error: "Serveur introuvable" });
+    if (!server) throw new NotFoundError("Serveur introuvable");
 
     if (server.ownerId === userId) {
-      return res.status(400).json({ error: "Le propriétaire ne peut pas quitter le serveur. Vous devez le supprimer." });
+      throw new AppError(400, "Le propriétaire ne peut pas quitter le serveur. Vous devez le supprimer.");
     }
 
     try {
@@ -201,7 +199,7 @@ export const leaveServer = async (req: Request, res: Response) => {
             where: { userId_serverId: { userId, serverId } }
         });
     } catch (e) {
-        return res.status(400).json({ error: "Vous n'êtes pas membre de ce serveur" });
+        throw new AppError(400, "Vous n'êtes pas membre de ce serveur");
     }
 
     const io = req.app.get('io');
@@ -210,12 +208,11 @@ export const leaveServer = async (req: Request, res: Response) => {
     res.json({ message: "Serveur quitté avec succès" });
 
   } catch (error) {
-    console.error("Erreur leave server:", error);
-    res.status(500).json({ error: "Erreur lors du départ du serveur" });
+    next(error);
   }
 };
 
-export const getServerInvites = async (req: Request, res: Response) => {
+export const getServerInvites = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId } = req.params;
     const userId = req.user!.userId;
@@ -225,7 +222,7 @@ export const getServerInvites = async (req: Request, res: Response) => {
       include: { roles: true }
     });
 
-    if (!member) return res.status(403).json({ error: "Accès refusé" });
+    if (!member) throw new AuthorizationError("Accès refusé");
 
     const invites = await prisma.invite.findMany({
       where: { serverId },
@@ -239,12 +236,11 @@ export const getServerInvites = async (req: Request, res: Response) => {
 
     res.json(invites);
   } catch (error) {
-    console.error("Erreur récupération invitations:", error);
-    res.status(500).json({ error: "Impossible de charger les invitations" });
+    next(error);
   }
 };
 
-export const deleteServerInvite = async (req: Request, res: Response) => {
+export const deleteServerInvite = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId, inviteId } = req.params;
     const userId = req.user!.userId;
@@ -255,7 +251,7 @@ export const deleteServerInvite = async (req: Request, res: Response) => {
       include: { server: true, roles: true }
     });
 
-    if (!member) return res.status(403).json({ error: "Accès refusé" });
+    if (!member) throw new AuthorizationError("Accès refusé");
 
     // Pour simplifier : Seul l'owner ou les admins peuvent supprimer
     // (On considère ici que si tu as accès aux paramètres, tu peux supprimer)
@@ -264,7 +260,7 @@ export const deleteServerInvite = async (req: Request, res: Response) => {
     // 2. Vérif que l'invitation appartient bien à ce serveur
     const invite = await prisma.invite.findUnique({ where: { id: inviteId } });
     if (!invite || invite.serverId !== serverId) {
-        return res.status(404).json({ error: "Invitation introuvable" });
+        throw new NotFoundError("Invitation introuvable");
     }
 
     // 3. Suppression
@@ -272,7 +268,6 @@ export const deleteServerInvite = async (req: Request, res: Response) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error("Erreur suppression invitation:", error);
-    res.status(500).json({ error: "Erreur lors de la suppression" });
+    next(error);
   }
 };

@@ -1,12 +1,13 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { prisma } from '../lib/prisma';
+import { AppError, NotFoundError } from '../middlewares/error.middleware';
 
-export const updateProfile = async (req: Request, res: Response) => {
+export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user?.userId;
     const { bio } = req.body;
     
-    if (!userId) return res.status(401).json({ error: 'Non autorisé' });
+    if (!userId) throw new AppError(401, 'Non autorisé');
 
     const updates: any = { bio };
 
@@ -37,12 +38,11 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     res.json(updatedUser);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Erreur lors de la mise à jour' });
+    next(error);
   }
 };
 
-export const getUserProfile = async (req: Request, res: Response) => {
+export const getUserProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = req.params;
 
@@ -60,11 +60,11 @@ export const getUserProfile = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'Utilisateur introuvable' });
+      throw new NotFoundError('Utilisateur introuvable');
     }
 
     res.json(user);
   } catch (error) {
-    res.status(500).json({ error: 'Erreur serveur' });
+    next(error);
   }
 };

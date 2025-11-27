@@ -2,34 +2,30 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
 import { SocketGuard } from './services/socket.guard';
+import { config } from './config/env';
+import logger from './lib/logger';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-dev-key';
 const onlineUsers = new Map<string, Set<string>>();
 
 export const initSocket = (httpServer: HttpServer) => {
 
   const io = new Server(httpServer, {
     cors: {
-      // 👇 CORRECTION MAJEURE : On utilise une fonction pour être plus souple
       origin: (requestOrigin, callback) => {
-        const allowedOrigins = [
-          "http://localhost:5173",
-          "https://velmu.vercel.app",
-          process.env.CLIENT_URL
-        ];
+        const allowedOrigins = config.allowedOrigins;
 
-        // 1. Si pas d'origine (ex: appel serveur à serveur), on autorise
+        // Si pas d'origine (ex: appel serveur à serveur), on autorise
         if (!requestOrigin) return callback(null, true);
 
-        // 2. On vérifie si l'origine est dans la liste (en ignorant le slash de fin)
+        // On vérifie si l'origine est dans la liste
         const isAllowed = allowedOrigins.some(origin => 
-          origin && requestOrigin.startsWith(origin.replace(/\/$/, "")) // On retire le slash final pour comparer
+          origin && requestOrigin.startsWith(origin.replace(/\/$/, ""))
         );
 
         if (isAllowed) {
           callback(null, true);
         } else {
-          console.log("🔴 CORS Bloqué pour l'origine :", requestOrigin); // Utile pour les logs Render
+          logger.warn('CORS blocked for origin', { origin: requestOrigin });
           callback(new Error("Not allowed by CORS"));
         }
       },
@@ -46,7 +42,7 @@ export const initSocket = (httpServer: HttpServer) => {
   io.use((socket, next) => {
     const token = socket.handshake.auth.token;
     if (!token) return next(new Error("Authentication error"));
-    jwt.verify(token, JWT_SECRET, (err: any, decoded: any) => {
+    jwt.verify(token, config.jwtSecret, (err: any, decoded: any) => {
       if (err) return next(new Error("Authentication error"));
       (socket as any).userId = decoded.userId;
       next();
@@ -55,7 +51,7 @@ export const initSocket = (httpServer: HttpServer) => {
 
   io.on('connection', (socket: Socket) => {
     const userId = (socket as any).userId;
-    console.log(`🟢 User ${userId} connected`);
+    logger.info(`User connected: ${userId}`);
 
     socket.join(userId); 
     
@@ -64,30 +60,30 @@ export const initSocket = (httpServer: HttpServer) => {
     
     broadcastOnlineUsers();
 
-    socket.on('join_channel', async (channelId) => {
+    socket.on('join_channel', async (channelId: string) => {
         const canJoin = await SocketGuard.validateChannelAccess(userId, channelId);
         if (!canJoin) return socket.emit('error', { message: "Access Denied" });
         socket.join(channelId);
     });
     
-    socket.on('join_conversation', async (conversationId) => {
+    socket.on('join_conversation', async (conversationId: string) => {
         const canJoin = await SocketGuard.validateConversationAccess(userId, conversationId);
         if (!canJoin) return socket.emit('error', { message: "Access Denied" });
         socket.join(`conversation_${conversationId}`);
     });
     
-    socket.on('join_server', async (serverId) => {
+    socket.on('join_server', async (serverId: string) => {
          const canJoin = await SocketGuard.validateServerAccess(userId, serverId);
          if (!canJoin) return;
          socket.join(`server_${serverId}`);
     });
 
-    socket.on('typing_start', (data) => {
+    socket.on('typing_start', (data: any) => {
         const room = data.channelId || `conversation_${data.conversationId}`;
         socket.to(room).emit('user_typing', { ...data, userId, isTyping: true });
     });
     
-    socket.on('typing_stop', (data) => {
+    socket.on('typing_stop', (data: any) => {
         const room = data.channelId || `conversation_${data.conversationId}`;
         socket.to(room).emit('user_typing', { ...data, userId, isTyping: false });
     });
@@ -108,6 +104,7 @@ export const initSocket = (httpServer: HttpServer) => {
           broadcastOnlineUsers();
         }
       }
+      logger.info(`User disconnected: ${userId}`);
     });
   });
 

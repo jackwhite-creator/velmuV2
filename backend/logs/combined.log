@@ -1,0 +1,330 @@
+[2025-11-27 13:44:17] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:44:17] INFO: Environment: development
+[2025-11-27 13:46:04] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:46:04] INFO: Environment: development
+[2025-11-27 13:46:05] INFO: User connected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:46:06] INFO: User connected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:46:13] INFO: User disconnected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:46:13] INFO: User connected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:46:35] INFO: User disconnected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:48:36] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:48:36] INFO: Environment: development
+[2025-11-27 13:48:37] INFO: User connected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:49:12] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:49:12] INFO: Environment: development
+[2025-11-27 13:49:14] INFO: User connected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:49:15] INFO: User disconnected: 2e8a0c4b-6c73-414a-ac66-e463cf6bff31
+[2025-11-27 13:49:19] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:49:19] INFO: Environment: development
+[2025-11-27 13:49:41] INFO: User connected: b1cc6679-22f5-410a-8312-8ec46343a4a3
+[2025-11-27 13:50:00] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:50:00] INFO: Environment: development
+[2025-11-27 13:50:01] INFO: User connected: b1cc6679-22f5-410a-8312-8ec46343a4a3
+[2025-11-27 13:50:03] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 13:50:03] INFO: Environment: development
+[2025-11-27 13:50:04] INFO: User connected: b1cc6679-22f5-410a-8312-8ec46343a4a3
+[2025-11-27 13:50:21] INFO: User disconnected: b1cc6679-22f5-410a-8312-8ec46343a4a3
+[2025-11-27 13:50:22] INFO: User connected: b1cc6679-22f5-410a-8312-8ec46343a4a3
+[2025-11-27 13:51:28] INFO: User disconnected: b1cc6679-22f5-410a-8312-8ec46343a4a3
+[2025-11-27 13:51:35] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:52:43] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:52:43] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:54:54] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:54:56] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:54:56] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:55:09] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:55:09] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:55:09] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:55:09] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 13:58:32] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:58:32] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:58:33] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:58:33] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:58:33] WARN: Rate limit exceeded
+[2025-11-27 13:58:33] WARN: Rate limit exceeded
+[2025-11-27 13:58:34] WARN: Rate limit exceeded
+[2025-11-27 13:58:34] WARN: Rate limit exceeded
+[2025-11-27 13:58:34] WARN: Rate limit exceeded
+[2025-11-27 13:58:49] WARN: Rate limit exceeded
+[2025-11-27 13:58:49] WARN: Rate limit exceeded
+[2025-11-27 13:59:05] WARN: Rate limit exceeded
+[2025-11-27 13:59:05] WARN: Rate limit exceeded
+[2025-11-27 13:59:05] WARN: Rate limit exceeded
+[2025-11-27 13:59:05] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 13:59:05] WARN: Rate limit exceeded
+[2025-11-27 13:59:05] WARN: Rate limit exceeded
+[2025-11-27 13:59:05] WARN: Rate limit exceeded
+[2025-11-27 13:59:07] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:00:40] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:00:40] INFO: Environment: development
+[2025-11-27 14:01:05] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:01:13] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:01:13] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:01:18] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:01:38] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:01:38] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:01:48] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:01:48] INFO: Environment: development
+[2025-11-27 14:01:48] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:01:48] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:04:33] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:04:33] INFO: Environment: development
+[2025-11-27 14:04:33] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:04:33] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:05:03] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:05:03] INFO: Environment: development
+[2025-11-27 14:05:03] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:05:03] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:05:10] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:05:32] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:05:32] INFO: Environment: development
+[2025-11-27 14:05:32] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:05:54] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:05:56] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:05:58] INFO: User connected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:06:00] INFO: User disconnected: 40838b19-dc70-4612-bada-b2c79f6594fe
+[2025-11-27 14:06:11] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:06:27] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:06:27] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:06:29] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:06:29] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:06:42] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:06:42] INFO: Environment: development
+[2025-11-27 14:06:43] INFO: User connected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:06:45] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:06:52] INFO: User disconnected: becd4759-96d3-45fd-8445-6a0e543adb9b
+[2025-11-27 14:07:01] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:07:13] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:07:13] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:07:55] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:07:56] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:08:08] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:08:08] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:08:52] WARN: Rate limit exceeded
+[2025-11-27 14:09:46] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:47] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:47] WARN: Rate limit exceeded
+[2025-11-27 14:09:47] WARN: Rate limit exceeded
+[2025-11-27 14:09:47] WARN: Rate limit exceeded
+[2025-11-27 14:09:47] WARN: Rate limit exceeded
+[2025-11-27 14:09:47] WARN: Rate limit exceeded
+[2025-11-27 14:09:47] WARN: Rate limit exceeded
+[2025-11-27 14:09:47] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:48] WARN: Rate limit exceeded
+[2025-11-27 14:09:48] WARN: Rate limit exceeded
+[2025-11-27 14:09:48] WARN: Rate limit exceeded
+[2025-11-27 14:09:48] WARN: Rate limit exceeded
+[2025-11-27 14:09:48] WARN: Rate limit exceeded
+[2025-11-27 14:09:48] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:48] WARN: Rate limit exceeded
+[2025-11-27 14:09:48] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:49] WARN: Rate limit exceeded
+[2025-11-27 14:09:49] WARN: Rate limit exceeded
+[2025-11-27 14:09:49] WARN: Rate limit exceeded
+[2025-11-27 14:09:49] WARN: Rate limit exceeded
+[2025-11-27 14:09:49] WARN: Rate limit exceeded
+[2025-11-27 14:09:49] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:49] WARN: Rate limit exceeded
+[2025-11-27 14:09:58] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:58] WARN: Rate limit exceeded
+[2025-11-27 14:09:58] WARN: Rate limit exceeded
+[2025-11-27 14:09:58] WARN: Rate limit exceeded
+[2025-11-27 14:09:58] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:09:58] WARN: Rate limit exceeded
+[2025-11-27 14:09:58] WARN: Rate limit exceeded
+[2025-11-27 14:09:58] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:01] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:01] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:01] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:02] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] WARN: Rate limit exceeded
+[2025-11-27 14:10:02] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:55] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:55] WARN: Rate limit exceeded
+[2025-11-27 14:10:55] WARN: Rate limit exceeded
+[2025-11-27 14:10:55] WARN: Rate limit exceeded
+[2025-11-27 14:10:55] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:10:55] WARN: Rate limit exceeded
+[2025-11-27 14:10:55] WARN: Rate limit exceeded
+[2025-11-27 14:10:55] WARN: Rate limit exceeded
+[2025-11-27 14:10:57] WARN: Rate limit exceeded
+[2025-11-27 14:10:57] WARN: Rate limit exceeded
+[2025-11-27 14:10:57] WARN: Rate limit exceeded
+[2025-11-27 14:10:58] WARN: Rate limit exceeded
+[2025-11-27 14:10:58] WARN: Rate limit exceeded
+[2025-11-27 14:12:06] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:12:06] INFO: Environment: development
+[2025-11-27 14:12:06] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:12:06] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:12:08] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:12:08] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:12:44] WARN: Rate limit exceeded
+[2025-11-27 14:12:44] WARN: Rate limit exceeded
+[2025-11-27 14:14:31] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:14:31] INFO: Environment: development
+[2025-11-27 14:14:38] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:38] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:38] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:39] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:39] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:40] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:40] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:14:41] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:42] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:42] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:42] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:42] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:43] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:44] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:45] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:45] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:46] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:46] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:47] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:47] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:47] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:47] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:48] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:48] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:49] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:49] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:50] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:50] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:50] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:50] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:51] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:51] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:52] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:52] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:53] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:53] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:53] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:53] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:54] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:54] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:54] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:54] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:54] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:54] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:55] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:55] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:55] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:55] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:55] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:55] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:56] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:56] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:58] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:58] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:14:59] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:00] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:01] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:01] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:01] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:02] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:02] INFO: User connected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:29] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:15:45] INFO: User disconnected: 879c1e46-ddad-4e3b-aafc-0447e9cf719f
+[2025-11-27 14:19:26] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:19:26] INFO: Environment: development
+[2025-11-27 14:19:31] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:20:23] INFO: User disconnected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:20:23] INFO: User connected: d8d191c8-fa5a-4fd0-9215-5a6d9220c60b
+[2025-11-27 14:23:22] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:23:22] INFO: Environment: development
+[2025-11-27 14:23:30] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:23:30] INFO: Environment: development
+[2025-11-27 14:36:59] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:36:59] INFO: Environment: development
+[2025-11-27 14:41:39] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:41:39] INFO: Environment: development
+[2025-11-27 14:42:06] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 14:42:18] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 14:42:41] INFO: User connected: 3d98c55f-24ab-4f5f-9750-84c24e0ade7b
+[2025-11-27 14:42:48] INFO: User disconnected: 3d98c55f-24ab-4f5f-9750-84c24e0ade7b
+[2025-11-27 14:47:12] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:47:12] INFO: Environment: development
+[2025-11-27 14:49:02] INFO: User connected: c06ada44-00e9-4807-a910-f63d66e4e965
+[2025-11-27 14:53:10] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:53:10] INFO: Environment: development
+[2025-11-27 14:53:46] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:53:46] INFO: Environment: development

@@ -28,4 +28,11 @@ const storage = new CloudinaryStorage({
   } as any, // "as any" nécessaire pour contourner une petite erreur de typage de la librairie
 });
 
-export const upload = multer({ storage: storage });
+import { config } from '../config/env';
+
+export const upload = multer({ 
+  storage: storage,
+  limits: {
+    fileSize: config.maxFileSize // 10MB par défaut
+  }
+});

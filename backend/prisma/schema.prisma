@@ -37,7 +37,7 @@ model User {
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
   
-  conversations    ConversationMember[] // Relation mise à jour
+  conversations    ConversationMember[]
   
   @@unique([username, discriminator])
   @@index([email])
@@ -134,18 +134,17 @@ model Conversation {
   id            String    @id @default(uuid())
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
-  lastMessageAt DateTime  @default(now()) // NOUVEAU : Pour le tri
+  lastMessageAt DateTime  @default(now())
   
-  members       ConversationMember[] // NOUVEAU : Relation explicite
+  members       ConversationMember[]
   messages      Message[]
 }
 
-// NOUVEAU MODÈLE pour gérer les statuts de lecture et de visibilité par utilisateur
 model ConversationMember {
   id             String       @id @default(uuid())
   joinedAt       DateTime     @default(now())
   lastReadAt     DateTime     @default(now())
-  closed         Boolean      @default(false) // <--- NOUVEAU CHAMP
+  closed         Boolean      @default(false)
   
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -177,8 +176,6 @@ model Message {
 
   attachments    Attachment[]
   
-  isAiGenerated  Boolean   @default(false)
-
   @@index([channelId, createdAt(sort: Desc)]) 
   @@index([conversationId, createdAt(sort: Desc)])
 }
