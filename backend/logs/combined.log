@@ -653,3 +653,10 @@ Error: Accès refusé
 [2025-11-27 17:09:43] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
 [2025-11-27 17:12:31] INFO: User connected: 8671a3a1-40f1-4445-b9ed-ccdc95d9a01f
 [2025-11-27 17:12:33] INFO: User disconnected: 8671a3a1-40f1-4445-b9ed-ccdc95d9a01f
+[2025-11-27 17:13:02] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:13:02] INFO: Environment: development
+[2025-11-27 17:13:02] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:14:31] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:14:32] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:29:47] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:29:47] INFO: Environment: development

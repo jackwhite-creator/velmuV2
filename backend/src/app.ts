@@ -21,6 +21,9 @@ import messageRoutes from './routes/message.routes';
 
 const app = express();
 
+// Trust proxy for rate limiting behind Render/Vercel
+app.set('trust proxy', 1);
+
 // Security headers
 app.use(helmet());
 
