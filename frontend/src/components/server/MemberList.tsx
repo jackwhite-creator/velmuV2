@@ -1,7 +1,5 @@
-import React from 'react';
-import { useServerStore } from '../store/serverStore';
-import { useAuthStore } from '../store/authStore';
-import Tooltip from './ui/Tooltip';
+import { useServerStore } from '../../store/serverStore';
+import Tooltip from '../ui/Tooltip';
 
 interface Props {
   onUserClick: (e: React.MouseEvent, userId: string) => void;

@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
 import ConfirmModal from '../ui/ConfirmModal';
 import { Message } from '../../hooks/useChat';
+import { formatDiscordDate } from '../../lib/dateUtils';
 
 import MessageReplyHeader from './MessageReplyHeader';
 import MessageAvatar from './MessageAvatar';
@@ -98,6 +99,27 @@ export default function MessageItem({
           ${isMentioningMe ? 'before:content-[""] before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[2px]' : ''}
         `}
       >
+        {msg.type === 'SYSTEM' ? (
+            <div className="flex gap-4 w-full mt-[17px] py-1 group-hover:opacity-100 opacity-80 transition-opacity">
+                <div className="w-10 flex-shrink-0 flex items-center justify-center">
+                    <div className="text-brand">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2 text-text-muted text-base font-medium">
+                    <span>
+                        <span className="font-bold text-text-normal cursor-pointer hover:underline" onClick={(e) => onUserClick(e, msg.user.id)}>
+                            {msg.content.split(' est arrivé !')[0]}
+                        </span> 
+                        <span> est arrivé !</span>
+                    </span>
+                    <span className="text-[11px] text-zinc-500 font-medium ml-1">
+                        {formatDiscordDate(msg.createdAt)}
+                    </span>
+                </div>
+            </div>
+        ) : (
+        <>
         {msg.replyTo && !shouldGroup && (
           <MessageReplyHeader replyTo={msg.replyTo} onClick={() => onReplyClick(msg.replyTo!.id)} />
         )}
@@ -159,6 +181,8 @@ export default function MessageItem({
             onEdit={() => { setIsEditing(true); setEditContent(msg.content); }}
             onDelete={() => onDelete(msg.id)}
           />
+        )}
+        </>
         )}
       </div>
 

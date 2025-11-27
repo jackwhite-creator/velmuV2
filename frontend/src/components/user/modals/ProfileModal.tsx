@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { useAuthStore } from '../store/authStore';
-import Modal from './ui/Modal';
-import SettingsSidebar from './settings/SettingsSidebar';
-import MyAccount from './settings/MyAccount';
+import { useAuthStore } from '../../../store/authStore';
+import Modal from '../../ui/Modal';
+import SettingsSidebar from '../../settings/SettingsSidebar';
+import MyAccount from '../../settings/MyAccount';
 
 interface ProfileModalProps {
   isOpen: boolean;

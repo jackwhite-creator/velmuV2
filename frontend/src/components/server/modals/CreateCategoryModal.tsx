@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import api from '../../lib/api';
-import { useServerStore } from '../../store/serverStore';
-import Modal from './Modal';
+import api from '../../../lib/api';
+import { useServerStore } from '../../../store/serverStore';
+import Modal from '../../ui/Modal';
 
 interface Props {
   isOpen: boolean;

@@ -1,12 +1,12 @@
-import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../lib/api';
-import { useServerStore } from '../../store/serverStore';
-import { useFriendStore } from '../../store/friendStore';
-import { useAuthStore } from '../../store/authStore';
-import Modal from '../ui/Modal';
-import ConfirmModal from '../ui/ConfirmModal';
 
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useServerStore } from '../../../store/serverStore';
+import { useFriendStore } from '../../../store/friendStore';
+import { useAuthStore } from '../../../store/authStore';
+import api from '../../../lib/api';
+import Modal from '../../ui/Modal';
+import ConfirmModal from '../../ui/ConfirmModal';
 import ProfileHeader from './ProfileHeader';
 import ProfileInfo from './ProfileInfo';
 
@@ -43,7 +43,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
   useEffect(() => {
     if (userId) {
       const cachedMember = activeServer?.members?.find((m: any) => m.user.id === userId);
-      const cachedDMUser = conversations.flatMap(c => c.users).find(u => u.id === userId);
+      const cachedDMUser = conversations.flatMap((c: any) => c.users).find((u: any) => u.id === userId);
       const cachedSelf = isMe ? currentUser : null;
       const cachedUser = cachedMember?.user || cachedDMUser || cachedSelf;
 

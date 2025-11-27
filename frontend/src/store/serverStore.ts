@@ -20,7 +20,6 @@ export interface Server {
   iconUrl: string | null;
   ownerId: string;
   categories?: Category[];
-  members?: any[];
 }
 
 export interface Conversation {

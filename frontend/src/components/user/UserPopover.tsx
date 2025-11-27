@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useNavigate } from 'react-router-dom'; // <--- AJOUT
+import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenProfile, triggerRect }: Props) {
-  const navigate = useNavigate(); // <--- HOOK
+  const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const popoverRef = useRef<HTMLDivElement>(null);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -43,11 +43,10 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  // ✅ NOUVELLE FONCTION DÉCONNEXION
   const handleLogout = () => {
       logout();
       onClose();
-      navigate('/login'); // Redirection explicite
+      navigate('/login');
   };
 
   const style: React.CSSProperties = {
@@ -124,7 +123,7 @@ export default function UserPopover({ isOpen, onClose, onOpenSettings, onOpenPro
             <div className="h-px bg-[#1e1f22] my-1 mx-2"></div>
 
             <button 
-                onClick={handleLogout} // ✅ Utilisation du handler
+                onClick={handleLogout}
                 className="w-full text-left px-3 py-2 rounded-sm hover:bg-red-600 text-red-400 hover:text-white text-sm font-medium transition-colors flex items-center gap-3 group"
             >
                 <svg className="w-4 h-4 text-red-400 group-hover:text-white transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>

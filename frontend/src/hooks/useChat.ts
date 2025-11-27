@@ -17,10 +17,11 @@ export interface Message {
   user: { id: string; username: string; discriminator: string; avatarUrl?: string };
   createdAt: string;
   updatedAt?: string;
+  type?: 'DEFAULT' | 'SYSTEM';
   replyTo?: { id: string; content: string; user: { username: string } } | null;
   channelId?: string | null;
   conversationId?: string | null;
-  isPending?: boolean; // <--- AJOUT : Pour gérer l'état visuel
+  isPending?: boolean;
 }
 
 export const useChat = (targetId: string | undefined, isDm: boolean) => {

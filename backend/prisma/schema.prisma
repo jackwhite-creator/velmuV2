@@ -13,6 +13,11 @@ enum ChannelType {
   VIDEO
 }
 
+enum MessageType {
+  DEFAULT
+  SYSTEM
+}
+
 enum RequestStatus {
   PENDING
   ACCEPTED
@@ -55,6 +60,9 @@ model Server {
   categories  Category[]
   invites     Invite[]
   roles       Role[]
+
+  systemChannelId String?
+  systemChannel   Channel? @relation("SystemChannel", fields: [systemChannelId], references: [id])
 }
 
 model Role {
@@ -113,6 +121,7 @@ model Channel {
   server     Server      @relation("ServerChannels", fields: [serverId], references: [id], onDelete: Cascade)
   
   messages   Message[]
+  systemFor  Server[]    @relation("SystemChannel")
 }
 
 model Invite {
@@ -157,6 +166,7 @@ model ConversationMember {
 
 model Message {
   id             String    @id @default(uuid())
+  type           MessageType @default(DEFAULT)
   content        String    @db.Text
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt

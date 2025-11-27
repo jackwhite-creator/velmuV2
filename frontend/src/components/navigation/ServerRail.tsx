@@ -8,9 +8,9 @@ import api from '../../lib/api';
 
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
 import ConfirmModal from '../ui/ConfirmModal';
-import CreateServerModal from '../CreateServerModal';
-import JoinServerModal from '../JoinServerModal';
-import InviteModal from '../../components/InviteModal';
+import CreateServerModal from '../server/modals/CreateServerModal';
+import JoinServerModal from '../server/modals/JoinServerModal';
+import InviteModal from '../server/modals/InviteModal';
 
 const styles = `
   @keyframes tooltipPop {

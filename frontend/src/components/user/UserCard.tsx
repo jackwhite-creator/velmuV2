@@ -1,7 +1,7 @@
-import { useEffect, useState, useRef } from 'react';
-import { useAuthStore } from '../store/authStore';
-import { useServerStore } from '../store/serverStore';
-import api from '../lib/api';
+import { useState, useEffect, useRef } from 'react';
+import { useAuthStore } from '../../store/authStore';
+import { useServerStore } from '../../store/serverStore';
+import api from '../../lib/api';
 
 interface UserCardProps {
   userId: string;

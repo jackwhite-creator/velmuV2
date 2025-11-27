@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Server } from '../../store/serverStore';
-import api from '../../lib/api';
-import ConfirmModal from '../ui/ConfirmModal';
+import { Server } from '../../../store/serverStore';
+import api from '../../../lib/api';
+import ConfirmModal from '../../ui/ConfirmModal';
 
 interface Invite {
   id: string;

@@ -11,15 +11,15 @@ import ServerRail from '../components/navigation/ServerRail';
 import ServerChannels from '../components/navigation/ServerChannels';
 import DMSidebar from '../components/chat/DMSidebar';
 import ChatArea from '../components/chat/ChatArea';
-import MemberList from '../components/MemberList';
+import MemberList from '../components/server/MemberList';
 import UserFooter from '../components/chat/UserFooter';
 import FriendsDashboard from '../components/chat/FriendsDashboard';
 
-import CreateServerModal from '../components/CreateServerModal';
-import InviteModal from '../components/InviteModal';
-import JoinServerModal from '../components/JoinServerModal';
-import ProfileModal from '../components/ProfileModal';
-import UserProfileModal from '../components/user-profile/UserProfileModal';
+import CreateServerModal from '../components/server/modals/CreateServerModal';
+import InviteModal from '../components/server/modals/InviteModal';
+import JoinServerModal from '../components/server/modals/JoinServerModal';
+import ProfileModal from '../components/user/modals/ProfileModal';
+import UserProfileModal from '../components/user/profile/UserProfileModal';
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../components/ui/ContextMenu';
 import ConfirmModal from '../components/ui/ConfirmModal';
 

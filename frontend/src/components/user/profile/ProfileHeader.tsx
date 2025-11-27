@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { FullProfile } from './UserProfileModal';
-import Tooltip from '../ui/Tooltip';
-import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
+import Tooltip from '../../ui/Tooltip';
+import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../../ui/ContextMenu';
 import { AnimatePresence } from 'framer-motion';
 
 interface Props {

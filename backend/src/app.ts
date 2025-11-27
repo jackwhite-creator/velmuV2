@@ -63,9 +63,9 @@ app.use('/api/', writeLimiter);
 
 // Strict rate limiter for auth routes (both GET and POST)
 const authLimiter = rateLimit({
-  windowMs: config.rateLimitWindow, // 15 minutes
+  windowMs: 2 * 60 * 1000, // 2 minutes
   max: config.authRateLimitMax, // 5 attempts
-  message: { error: 'Trop de tentatives de connexion, veuillez réessayer dans 15 minutes' },
+  message: { error: 'Trop de tentatives de connexion, veuillez réessayer dans 2 minutes' },
   skipSuccessfulRequests: true,
   standardHeaders: true,
   legacyHeaders: false

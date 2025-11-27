@@ -1,9 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useAuthStore } from '../../store/authStore';
-import UserPopover from '../ui/UserPopover';
-import ProfileModal from '../ProfileModal';
-import UserProfileModal from '../user-profile/UserProfileModal';
+import UserPopover from '../user/UserPopover';
 import Tooltip from '../ui/Tooltip';
+import ProfileModal from '../user/modals/ProfileModal';
+import UserProfileModal from '../user/profile/UserProfileModal';
 
 export default function UserFooter() {
   const { user } = useAuthStore();

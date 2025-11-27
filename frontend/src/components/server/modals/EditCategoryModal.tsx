@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import api from '../../lib/api';
-import { Category } from '../../store/serverStore';
-import ConfirmModal from './ConfirmModal';
-import Modal from './Modal';
+import api from '../../../lib/api';
+import { Category } from '../../../store/serverStore';
+import ConfirmModal from '../../ui/ConfirmModal';
+import Modal from '../../ui/Modal';
 
 interface Props {
   isOpen: boolean;

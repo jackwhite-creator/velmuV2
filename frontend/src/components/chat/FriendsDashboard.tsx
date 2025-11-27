@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useFriendStore, FriendRequest } from '../../store/friendStore';
 import { useServerStore } from '../../store/serverStore';
 import api from '../../lib/api';
-import UserProfileModal from '../user-profile/UserProfileModal';
+import UserProfileModal from '../user/profile/UserProfileModal';
 import ConfirmModal from '../ui/ConfirmModal';
 
 interface FriendsDashboardProps {

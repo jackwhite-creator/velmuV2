@@ -1,0 +1,168 @@
+[2025-11-27 15:00:26] ERROR: Error: Erreur de validation
+Error: Erreur de validation
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\middlewares\validate.middleware.ts:17:21
+    at Layer.handle [as handle_request] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\route.js:149:13)
+    at done (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:519:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[2025-11-27 15:00:37] ERROR: Error: Erreur de validation
+Error: Erreur de validation
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\middlewares\validate.middleware.ts:17:21
+    at Layer.handle [as handle_request] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\route.js:149:13)
+    at done (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:519:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[2025-11-27 15:00:46] ERROR: Error: Erreur de validation
+Error: Erreur de validation
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\middlewares\validate.middleware.ts:17:21
+    at Layer.handle [as handle_request] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\route.js:149:13)
+    at done (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:519:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[2025-11-27 15:01:56] ERROR: Error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:01:56] ERROR: Unexpected error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:01:58] ERROR: Error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:01:58] ERROR: Unexpected error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 16:24:56] ERROR: Error: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at Object.createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:12)
+    at createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\message.controller.ts:29:24)
+[2025-11-27 16:24:56] ERROR: Unexpected error: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at Object.createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:12)
+    at createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\message.controller.ts:29:24)
+[2025-11-27 16:26:00] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:41:31] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:47:29] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:52:25] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:53:25] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:53:25] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:53:36] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:37] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:37] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:38] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:59:35] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:59:45] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 17:00:50] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)

@@ -9,7 +9,7 @@ import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
 import MessageList from './MessageList';
 import ConfirmModal from '../ui/ConfirmModal';
-import ImageViewerModal from '../ImageViewerModal';
+import ImageViewerModal from '../shared/modals/ImageViewerModal';
 
 interface Props {
   activeChannel: Channel | null;

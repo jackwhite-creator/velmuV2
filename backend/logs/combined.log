@@ -328,3 +328,328 @@
 [2025-11-27 14:53:10] INFO: Environment: development
 [2025-11-27 14:53:46] INFO: ✅ Velmu server started on port 4000
 [2025-11-27 14:53:46] INFO: Environment: development
+[2025-11-27 14:59:15] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 14:59:15] INFO: Environment: development
+[2025-11-27 14:59:34] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:00:26] ERROR: Error: Erreur de validation
+Error: Erreur de validation
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\middlewares\validate.middleware.ts:17:21
+    at Layer.handle [as handle_request] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\route.js:149:13)
+    at done (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:519:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[2025-11-27 15:00:37] ERROR: Error: Erreur de validation
+Error: Erreur de validation
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\middlewares\validate.middleware.ts:17:21
+    at Layer.handle [as handle_request] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\route.js:149:13)
+    at done (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:519:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[2025-11-27 15:00:46] ERROR: Error: Erreur de validation
+Error: Erreur de validation
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\middlewares\validate.middleware.ts:17:21
+    at Layer.handle [as handle_request] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\layer.js:95:5)
+    at next (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\express\lib\router\route.js:149:13)
+    at done (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:59:7)
+    at indicateDone (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:63:68)
+    at Multipart.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:187:7)
+    at Multipart.emit (node:events:519:28)
+    at emitCloseNT (node:internal/streams/destroy:148:10)
+    at processTicksAndRejections (node:internal/process/task_queues:89:21)
+[2025-11-27 15:01:56] ERROR: Error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:01:56] ERROR: Unexpected error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:01:58] ERROR: Error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:01:58] ERROR: Unexpected error: File too large
+MulterError: File too large
+    at abortWithCode (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:85:22)
+    at FileStream.<anonymous> (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\multer\lib\make-middleware.js:155:11)
+    at FileStream.emit (node:events:519:28)
+    at SBMH.ssCb [as _cb] (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:479:32)
+    at feed (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:248:10)
+    at SBMH.push (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\streamsearch\lib\sbmh.js:104:16)
+    at Multipart._write (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\busboy\lib\types\multipart.js:567:19)
+    at writeOrBuffer (node:internal/streams/writable:572:12)
+    at _write (node:internal/streams/writable:501:10)
+    at Multipart.Writable.write (node:internal/streams/writable:510:10)
+[2025-11-27 15:02:28] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:11:02] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:11:02] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:25:41] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 15:25:41] INFO: Environment: development
+[2025-11-27 15:30:28] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:30:28] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:30:30] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:30:30] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:31:39] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:31:40] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:31:42] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:31:42] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:31:59] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:32:00] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:32:06] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:32:07] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:32:33] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:32:34] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:35:02] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:35:03] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:35:04] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:35:04] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:36:11] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:36:11] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:12] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:12] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:36:25] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:26] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:51] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:36:51] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:52] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:36:52] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:54] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:36:55] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:40:23] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 15:40:23] INFO: Environment: development
+[2025-11-27 15:40:30] INFO: User connected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:40:39] INFO: User disconnected: 06faa44e-789f-4042-8cf2-d89625579b75
+[2025-11-27 15:42:19] INFO: User connected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:51:13] INFO: User disconnected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:56:00] INFO: User connected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:56:19] INFO: User disconnected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:56:19] INFO: User connected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:57:50] INFO: User disconnected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:57:50] INFO: User connected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:58:27] INFO: User disconnected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:58:27] INFO: User connected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 15:59:00] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 15:59:32] INFO: User disconnected: 625c65a0-7373-4e03-b5d3-4e9e2eb5c200
+[2025-11-27 16:00:36] INFO: User connected: 709704f0-b1e1-40c6-b8b9-4dea1ac43af9
+[2025-11-27 16:08:35] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 16:08:35] INFO: Environment: development
+[2025-11-27 16:08:35] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 16:08:37] INFO: User connected: 709704f0-b1e1-40c6-b8b9-4dea1ac43af9
+[2025-11-27 16:08:38] INFO: User disconnected: 709704f0-b1e1-40c6-b8b9-4dea1ac43af9
+[2025-11-27 16:08:40] INFO: User connected: 709704f0-b1e1-40c6-b8b9-4dea1ac43af9
+[2025-11-27 16:08:42] INFO: User disconnected: 709704f0-b1e1-40c6-b8b9-4dea1ac43af9
+[2025-11-27 16:08:43] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 16:08:43] INFO: User connected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 16:08:48] INFO: User disconnected: bcce2942-e133-4be4-92f7-206090469f51
+[2025-11-27 16:09:22] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:10:55] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:18:31] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 16:18:31] INFO: Environment: development
+[2025-11-27 16:18:32] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:18:32] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:22:53] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 16:22:53] INFO: Environment: development
+[2025-11-27 16:24:40] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:24:56] ERROR: Error: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at Object.createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:12)
+    at createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\message.controller.ts:29:24)
+[2025-11-27 16:24:56] ERROR: Unexpected error: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+PrismaClientKnownRequestError: 
+Invalid `prisma.message.create()` invocation in
+D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:33
+
+  64   conversationId?: string;
+  65   replyToId?: string;
+  66 }) {
+→ 67   return await prisma.message.create(
+Foreign key constraint violated: `Message_channelId_fkey (index)`
+    at $n.handleRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:7315)
+    at $n.handleAndLogRequestError (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6623)
+    at $n.request (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:121:6307)
+    at l (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\node_modules\@prisma\client\runtime\library.js:130:9633)
+    at Object.createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\services\chat.service.ts:67:12)
+    at createMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\message.controller.ts:29:24)
+[2025-11-27 16:24:57] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:25:26] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:25:26] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:25:38] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:25:38] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:26:00] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:26:42] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:26:42] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:30:57] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:30:58] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:31:05] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:31:05] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:32:21] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 16:32:21] INFO: Environment: development
+[2025-11-27 16:32:23] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:32:23] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:36:12] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:36:12] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:40:16] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:40:16] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:40:21] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:40:21] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:41:23] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:41:23] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:41:31] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:41:34] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:41:34] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:47:16] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:47:16] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:47:24] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:47:25] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:47:29] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:51:43] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:51:43] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:52:25] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:52:59] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:52:59] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:53:19] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:53:19] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:53:25] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:53:25] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:53:36] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:37] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:37] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:38] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:194:24)
+[2025-11-27 16:53:39] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:53:39] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 16:57:55] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:57:55] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:59:28] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:59:28] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 16:59:35] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 16:59:45] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 17:00:50] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\Velmu\backend\src\controllers\server.controller.ts:29:24)
+[2025-11-27 17:01:11] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:01:11] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:01:11] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:01:11] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:01:26] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:01:26] INFO: Environment: development
+[2025-11-27 17:01:27] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:01:27] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:01:29] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:01:29] INFO: Environment: development
+[2025-11-27 17:01:31] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:01:31] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:01:58] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:01:58] INFO: Environment: development
+[2025-11-27 17:01:59] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:02:00] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:04:00] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:04:00] INFO: Environment: development
+[2025-11-27 17:04:01] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:04:01] INFO: Environment: development
+[2025-11-27 17:04:01] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:04:01] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:04:03] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:04:03] INFO: Environment: development
+[2025-11-27 17:04:04] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:04:04] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:04:11] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:04:11] INFO: Environment: development
+[2025-11-27 17:04:13] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:04:13] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:04:17] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:04:17] INFO: Environment: development
+[2025-11-27 17:04:18] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:04:19] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:09:33] INFO: ✅ Velmu server started on port 4000
+[2025-11-27 17:09:33] INFO: Environment: development
+[2025-11-27 17:09:36] INFO: User connected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:09:40] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:09:41] INFO: User disconnected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:09:41] INFO: User connected: 2027b992-e3fe-4e44-a8c5-bf8e0fff7ff8
+[2025-11-27 17:09:43] INFO: User disconnected: 7bda85c2-2c6f-415d-a2d3-7bb16257d655
+[2025-11-27 17:12:31] INFO: User connected: 8671a3a1-40f1-4445-b9ed-ccdc95d9a01f
+[2025-11-27 17:12:33] INFO: User disconnected: 8671a3a1-40f1-4445-b9ed-ccdc95d9a01f

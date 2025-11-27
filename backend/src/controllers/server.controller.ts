@@ -146,6 +146,9 @@ export const updateServer = async (req: Request, res: Response, next: NextFuncti
     }
 
     let updateData: any = { name };
+    if (req.body.systemChannelId !== undefined) {
+        updateData.systemChannelId = req.body.systemChannelId;
+    }
     if (file) {
         updateData.iconUrl = (file as any).path || (file as any).secure_url;
     }

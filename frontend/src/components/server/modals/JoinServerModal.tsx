@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../lib/api';
-import { useServerStore } from '../store/serverStore';
-import Modal from './ui/Modal';
+import { useServerStore } from '../../../store/serverStore';
+import api from '../../../lib/api';
+import Modal from '../../ui/Modal';
 
 interface Props {
   isOpen: boolean;

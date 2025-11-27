@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import Modal from './ui/Modal';
-import { PATCH_NOTE_DATA } from '../config/patchNotes';
+import { useState, useEffect } from 'react';
+import Modal from '../../ui/Modal';
+import { PATCH_NOTE_DATA } from '../../../config/patchNotes';
 
 interface Props {
   isOpen: boolean;

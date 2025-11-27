@@ -11,7 +11,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ChatPage from './pages/ChatPage';
 import InvitePage from './pages/InvitePage';
-import PatchNotesModal from './components/PatchNotesModal';
+import PatchNotesModal from './components/shared/modals/PatchNotesModal';
 import { PATCH_NOTE_DATA } from './config/patchNotes';
 
 function App() {

@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { useNavigate, Link } from 'react-router-dom';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { Eye, EyeOff } from 'lucide-react';
-import PasswordStrengthIndicator from '../components/PasswordStrengthIndicator';
+import PasswordStrengthIndicator from '../components/auth/PasswordStrengthIndicator';
 
 export default function RegisterPage() {
   const navigate = useNavigate();

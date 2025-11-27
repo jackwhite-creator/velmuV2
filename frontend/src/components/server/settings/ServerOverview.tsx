@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useServerStore, Server } from '../../store/serverStore';
-import api from '../../lib/api';
+import { useServerStore, Server } from '../../../store/serverStore';
+import api from '../../../lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -14,6 +14,7 @@ export default function ServerOverview({ server }: Props) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [systemChannelId, setSystemChannelId] = useState(server.systemChannelId || '');
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -21,13 +22,14 @@ export default function ServerOverview({ server }: Props) {
     setName(server.name);
     setPreviewUrl(server.iconUrl || '');
     setSelectedFile(null);
+    setSystemChannelId(server.systemChannelId || '');
     setHasChanges(false);
   }, [server]);
 
   useEffect(() => {
-    const isDifferent = name !== server.name || selectedFile !== null;
+    const isDifferent = name !== server.name || selectedFile !== null || systemChannelId !== (server.systemChannelId || '');
     setHasChanges(isDifferent);
-  }, [name, selectedFile, server]);
+  }, [name, selectedFile, server, systemChannelId]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -41,6 +43,7 @@ export default function ServerOverview({ server }: Props) {
     setName(server.name);
     setPreviewUrl(server.iconUrl || '');
     setSelectedFile(null);
+    setSystemChannelId(server.systemChannelId || '');
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
@@ -53,6 +56,9 @@ export default function ServerOverview({ server }: Props) {
       formData.append('name', name);
       if (selectedFile) {
         formData.append('icon', selectedFile);
+      }
+      if (systemChannelId) {
+          formData.append('systemChannelId', systemChannelId);
       }
 
       const res = await api.put(`/servers/${server.id}`, formData, {
@@ -123,6 +129,32 @@ export default function ServerOverview({ server }: Props) {
                         placeholder="Le meilleur serveur..."
                     />
                 </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+                <label className="text-xs font-bold text-text-muted uppercase tracking-wide">
+                    Salon de bienvenue
+                </label>
+                <p className="text-xs text-text-muted mb-2">
+                    Ce salon recevra un message automatique lorsqu'un nouvel utilisateur rejoint le serveur.
+                </p>
+                <select
+                    value={systemChannelId}
+                    onChange={(e) => setSystemChannelId(e.target.value)}
+                    className="w-full bg-background-tertiary border-none rounded-sm p-3 text-text-normal font-medium focus:ring-1 focus:ring-brand outline-none transition-all"
+                >
+                    <option value="">Aucun salon sélectionné</option>
+                    {(() => {
+                        const allChannels = [
+                            ...(server.channels || []),
+                            ...(server.categories?.flatMap(c => c.channels) || [])
+                        ].filter(c => c.type === 'TEXT');
+                        
+                        return allChannels.map(channel => (
+                            <option key={channel.id} value={channel.id}># {channel.name}</option>
+                        ));
+                    })()}
+                </select>
             </div>
         </div>
       </div>

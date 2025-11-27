@@ -4,12 +4,12 @@ import { Server, Channel, Category, useServerStore } from '../../store/serverSto
 import api from '../../lib/api';
 import Tooltip from '../ui/Tooltip';
 
-import EditServerModal from '../server-settings/ServerSettingsModal';
+import EditServerModal from '../server/settings/ServerSettingsModal';
 import ConfirmModal from '../ui/ConfirmModal';
-import CreateCategoryModal from '../ui/CreateCategoryModal';
-import EditCategoryModal from '../ui/EditCategoryModal';
+import CreateCategoryModal from '../server/modals/CreateCategoryModal';
+import EditCategoryModal from '../server/modals/EditCategoryModal';
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
-import ChannelModal from '../ui/ChannelModal';
+import ChannelModal from '../server/modals/ChannelModal';
 import ServerHeader from '../chat/ServerHeader';
 import ChannelList from '../chat/ChannelList';
 import { useAuthStore } from '../../store/authStore';

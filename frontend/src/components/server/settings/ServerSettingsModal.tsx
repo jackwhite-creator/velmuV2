@@ -1,18 +1,16 @@
 import { useState } from 'react';
-import { Server } from '../../store/serverStore';
-import Modal from '../ui/Modal';
+import { useServerStore, Server } from '../../../store/serverStore';
+import { useNavigate } from 'react-router-dom';
+import api from '../../../lib/api';
+import Modal from '../../ui/Modal';
+import ConfirmModal from '../../ui/ConfirmModal';
 import ServerSettingsSidebar from './ServerSettingsSidebar';
 import ServerOverview from './ServerOverview';
-import ServerInvites from './ServerInvites'; // ✅ AJOUT DE L'IMPORT
-import api from '../../lib/api';
-import { useServerStore } from '../../store/serverStore';
-import { useNavigate } from 'react-router-dom';
-import ConfirmModal from '../ui/ConfirmModal';
+import ServerInvites from './ServerInvites';
 
-// Placeholder pour les onglets futurs
 const PlaceholderTab = ({ title }: { title: string }) => (
-    <div className="p-10 text-text-normal h-full flex items-center justify-center flex-col opacity-50">
-        <h1 className="text-2xl font-bold text-text-header mb-2">{title}</h1>
+    <div className="flex-1 flex flex-col items-center justify-center text-text-muted">
+        <h2 className="text-xl font-bold mb-2">{title}</h2>
         <p>Cette section est en cours de développement.</p>
     </div>
 );

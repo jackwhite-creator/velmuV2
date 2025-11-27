@@ -129,6 +129,31 @@ export const InviteController = {
         })
       ]);
 
+      // --- SYSTEM MESSAGE LOGIC ---
+      const server = await prisma.server.findUnique({ where: { id: invite.serverId } });
+      if (server && server.systemChannelId) {
+          try {
+             const user = await prisma.user.findUnique({ where: { id: userId! } });
+             if (user) {
+                 const systemMsg = await prisma.message.create({
+                     data: {
+                         content: `${user.username}#${user.discriminator} est arrivé !`,
+                         type: "SYSTEM",
+                         channelId: server.systemChannelId,
+                         userId: userId!
+                     },
+                     include: { user: true }
+                 });
+                 
+                 const io = req.app.get('io');
+                 io.to(server.systemChannelId).emit('new_message', systemMsg);
+             }
+          } catch (e) {
+              console.error("Erreur creation message systeme", e);
+          }
+      }
+      // ----------------------------
+
       res.json({ message: "Serveur rejoint", serverId: invite.serverId });
 
     } catch (error) {
