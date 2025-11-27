@@ -9,7 +9,7 @@ export const PATCH_NOTE_DATA = {
   bannerUrl: 'https://images.unsplash.com/photo-1553095066-5014bc7b7f2d?q=80&w=2071&auto=format&fit=crop',
   
   // URL d'invitation au serveur Velmu
-  inviteUrl: 'https://velmu.app/invite/velmu',
+  inviteUrl: 'https://velmu.vercel.app/',
   
   sections: [
     {
