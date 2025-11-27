@@ -101,9 +101,9 @@ export default function PatchNotesModal({ isOpen, onClose }: Props) {
                     </div>
                 ))}
 
-                {/* Invitation Card */}
+                {/* Invitation Card - Subtle with left border */}
                 {PATCH_NOTE_DATA.inviteUrl && (
-                  <div className="mt-8 p-6 bg-background-secondary border-2 border-brand/30 rounded-lg">
+                  <div className="mt-8 p-6 bg-background-secondary/50 border-l-4 border-brand rounded-r-lg">
                     <div className="flex items-start gap-4">
                       <div className="flex-shrink-0 w-12 h-12 bg-brand/20 rounded-full flex items-center justify-center">
                         <ExternalLink className="w-6 h-6 text-brand" />
@@ -112,6 +112,9 @@ export default function PatchNotesModal({ isOpen, onClose }: Props) {
                         <h4 className="text-lg font-bold text-text-header mb-2">
                           Rejoins le serveur officiel Velmu
                         </h4>
+                        <p className="text-sm text-text-muted mb-4">
+                          Rencontre la communauté, pose tes questions et découvre toutes les fonctionnalités !
+                        </p>
                         <a
                           href={PATCH_NOTE_DATA.inviteUrl}
                           target="_blank"
@@ -132,7 +135,7 @@ export default function PatchNotesModal({ isOpen, onClose }: Props) {
         <div className="p-4 bg-background-secondary flex justify-center flex-shrink-0 border-t border-background-tertiary z-20">
             <button 
                 onClick={onClose}
-                className="bg-background-tertiary hover:bg-background-modifier-hover text-text-normal px-10 py-2.5 rounded-[3px] text-sm font-medium transition-colors shadow-sm"
+                className="bg-brand hover:bg-brand-hover text-white px-10 py-2.5 rounded-[3px] text-sm font-medium transition-colors shadow-sm"
             >
                 {PATCH_NOTE_DATA.buttonText}
             </button>
