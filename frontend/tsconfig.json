@@ -29,9 +29,10 @@
       "@/store/*": ["./src/store/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/pages/*": ["./src/pages/*"],
-      "@/types/*": ["./src/types/*"]
+      "@/types/*": ["./src/types/*"],
+      "@backend/*": ["../backend/src/*"]
     }
   },
-  "include": ["src"],
+  "include": ["src", "../backend/src/shared/types.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

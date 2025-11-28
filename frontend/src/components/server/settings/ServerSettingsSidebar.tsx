@@ -11,6 +11,7 @@ export default function ServerSettingsSidebar({ activeTab, onTabChange, server, 
   // ✅ NETTOYAGE : On ne garde que les onglets actifs
   const menuItems = [
     { id: 'overview', label: "Vue d'ensemble" },
+    { id: 'roles', label: 'Rôles' },
     { id: 'invites', label: 'Invitations' },
   ];
 

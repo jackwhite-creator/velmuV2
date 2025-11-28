@@ -44,7 +44,7 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
       return;
     }
 
-    let message;
+    let message: any;
     if (channelId) {
       message = await messageService.createChannelMessage(channelId, userId, {
         content,
@@ -74,9 +74,9 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
             const { conversationService } = await import('../services/conversation.service');
             const conversation = await conversationService.getConversation(conversationId, userId);
             
-            if (conversation && conversation.users) {
-                conversation.users.forEach((u: any) => {
-                    io.to(`user_${u.id}`).emit('new_message', { ...message, conversationId });
+            if (conversation && conversation.members) {
+                conversation.members.forEach((member: any) => {
+                    io.to(`user_${member.userId}`).emit('new_message', { ...message, conversationId });
                 });
             }
         } catch (err) {
