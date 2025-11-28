@@ -7,6 +7,7 @@ import ConfirmModal from '../../ui/ConfirmModal';
 import ServerSettingsSidebar from './ServerSettingsSidebar';
 import ServerOverview from './ServerOverview';
 import ServerInvites from './ServerInvites';
+import ServerRoles from './ServerRoles';
 
 const PlaceholderTab = ({ title }: { title: string }) => (
     <div className="flex-1 flex flex-col items-center justify-center text-text-muted">
@@ -42,7 +43,7 @@ export default function ServerSettingsModal({ isOpen, server, onClose }: Props) 
   const renderContent = () => {
     switch (activeTab) {
       case 'overview': return <ServerOverview server={server} />;
-      case 'roles': return <PlaceholderTab title="Rôles" />;
+      case 'roles': return <ServerRoles serverId={server.id} />;
       case 'members': return <PlaceholderTab title="Membres" />;
       // ✅ AJOUT DU CAS POUR LES INVITATIONS
       case 'invites': return <ServerInvites server={server} />;

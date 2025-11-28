@@ -6,6 +6,7 @@
 import { Server, Category, Channel, Member, Role } from '@prisma/client';
 import { BaseRepository } from './base.repository';
 import { ServerWithRelations } from '../shared/types';
+import { Permissions, DEFAULT_PERMISSIONS } from '../shared/permissions';
 
 export class ServerRepository extends BaseRepository<Server> {
   constructor() {
@@ -73,12 +74,23 @@ export class ServerRepository extends BaseRepository<Server> {
         data: { name, iconUrl, ownerId }
       });
 
-      // 2. Créer le rôle Admin
+      // 2a. Créer le rôle @everyone (position 0)
+      const everyoneRole = await tx.role.create({
+        data: {
+          name: "@everyone",
+          color: "#99aab5",
+          permissions: DEFAULT_PERMISSIONS,
+          serverId: newServer.id,
+          position: 0
+        }
+      });
+
+      // 2b. Créer le rôle Admin (position 999)
       const adminRole = await tx.role.create({
         data: {
           name: "Admin",
           color: "#E91E63",
-          permissions: ["ADMINISTRATOR"],
+          permissions: [Permissions.ADMINISTRATOR],
           serverId: newServer.id,
           position: 999
         }
