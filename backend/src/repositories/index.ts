@@ -11,3 +11,4 @@ export * from './conversation.repository';
 export * from './user.repository';
 export * from './friend.repository';
 export * from './invite.repository';
+export * from './role.repository';
