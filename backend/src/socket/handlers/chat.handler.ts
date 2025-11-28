@@ -1,12 +1,14 @@
 import { Server } from 'socket.io';
 import { AuthenticatedSocket } from '../../types';
-import { typingUsers } from '../socket.manager';
+import { typingUsers } from '../../socket';
 
 export const registerChatHandlers = (io: Server, socket: AuthenticatedSocket) => {
     const { userId } = socket;
 
     socket.on('typing_start', ({ channelId, conversationId, username }) => {
-        const room = channelId || `conversation_${conversationId}`;
+        // Ensure room naming consistency with room.handler.ts
+        const room = channelId ? `channel_${channelId}` : `conversation_${conversationId}`;
+
         if (!typingUsers.has(room)) typingUsers.set(room, new Map());
         
         typingUsers.get(room)?.set(userId, username);
@@ -17,7 +19,7 @@ export const registerChatHandlers = (io: Server, socket: AuthenticatedSocket) =>
     });
 
     socket.on('typing_stop', ({ channelId, conversationId, username }) => {
-        const room = channelId || `conversation_${conversationId}`;
+        const room = channelId ? `channel_${channelId}` : `conversation_${conversationId}`;
         const roomTypers = typingUsers.get(room);
         
         if (roomTypers) {
