@@ -14,12 +14,33 @@ export interface Category {
   channels: Channel[];
 }
 
+export interface Member {
+  id: string;
+  userId: string;
+  serverId: string;
+  nickname: string | null;
+  joinedAt: string;
+  user: {
+    id: string;
+    username: string;
+    discriminator: string;
+    avatarUrl: string | null;
+    bio?: string | null;
+  };
+  roles: {
+    id: string;
+    name: string;
+    color: string;
+  }[];
+}
+
 export interface Server {
   id: string;
   name: string;
   iconUrl: string | null;
   ownerId: string;
   categories?: Category[];
+  members?: Member[];
 }
 
 export interface Conversation {
@@ -50,17 +71,23 @@ interface ServerState {
   
   setActiveServer: (server: Server | null) => void;
   updateServer: (server: Server) => void;
+  
+  // Member Actions
+  addMember: (serverId: string, member: Member) => void;
+  removeMember: (serverId: string, memberId: string) => void;
+  updateMember: (serverId: string, member: Member) => void;
 
   setActiveChannel: (channel: Channel | null) => void;
   setConversations: (conversations: Conversation[]) => void;
   addConversation: (conversation: Conversation) => void;
   setActiveConversation: (conversation: Conversation | null) => void;
   markConversationAsRead: (conversationId: string) => void;
-  touchConversation: (conversationId: string) => void; // <--- NOUVEAU
+  touchConversation: (conversationId: string) => void; 
   closeConversation: (conversationId: string) => void;
   
   setOnlineUsers: (userIds: string[]) => void;
   getLastChannelId: (serverId: string) => string | null;
+  handleNewMessage: (message: any) => void;
 }
 
 export const useServerStore = create<ServerState>((set, get) => ({
@@ -100,6 +127,61 @@ export const useServerStore = create<ServerState>((set, get) => ({
         }
     }
     return { servers: newServers, activeServer: newActiveServer, activeChannel: newActiveChannel };
+  }),
+
+  addMember: (serverId, member) => set((state) => {
+      // Update in servers list
+      const newServers = state.servers.map(s => {
+          if (s.id === serverId) {
+              const currentMembers = s.members || [];
+              if (currentMembers.some(m => m.id === member.id)) return s;
+              return { ...s, members: [...currentMembers, member] };
+          }
+          return s;
+      });
+
+      // Update activeServer if it matches
+      let newActiveServer = state.activeServer;
+      if (state.activeServer?.id === serverId) {
+          const currentMembers = state.activeServer.members || [];
+          if (!currentMembers.some(m => m.id === member.id)) {
+              newActiveServer = { ...state.activeServer, members: [...currentMembers, member] };
+          }
+      }
+
+      return { servers: newServers, activeServer: newActiveServer };
+  }),
+
+  removeMember: (serverId, memberId) => set((state) => {
+      const newServers = state.servers.map(s => {
+          if (s.id === serverId && s.members) {
+              return { ...s, members: s.members.filter(m => m.id !== memberId) };
+          }
+          return s;
+      });
+
+      let newActiveServer = state.activeServer;
+      if (state.activeServer?.id === serverId && state.activeServer.members) {
+          newActiveServer = { ...state.activeServer, members: state.activeServer.members.filter(m => m.id !== memberId) };
+      }
+
+      return { servers: newServers, activeServer: newActiveServer };
+  }),
+
+  updateMember: (serverId, member) => set((state) => {
+      const newServers = state.servers.map(s => {
+          if (s.id === serverId && s.members) {
+              return { ...s, members: s.members.map(m => m.id === member.id ? member : m) };
+          }
+          return s;
+      });
+
+      let newActiveServer = state.activeServer;
+      if (state.activeServer?.id === serverId && state.activeServer.members) {
+          newActiveServer = { ...state.activeServer, members: state.activeServer.members.map(m => m.id === member.id ? member : m) };
+      }
+
+      return { servers: newServers, activeServer: newActiveServer };
   }),
   
   setActiveChannel: (channel) => {
@@ -141,18 +223,14 @@ export const useServerStore = create<ServerState>((set, get) => ({
       )
   })),
 
-  // ✅ NOUVELLE FONCTION : Remonte la conversation en haut de liste
   touchConversation: (conversationId) => set((state) => {
       const conversation = state.conversations.find(c => c.id === conversationId);
-      if (!conversation) return state; // Si elle n'est pas dans la liste (ex: fermée), on ne fait rien (ou on pourrait reload)
+      if (!conversation) return state; 
 
-      // On met à jour la date
       const updatedConv = { ...conversation, lastMessageAt: new Date().toISOString() };
       
-      // On la sort de la liste
       const others = state.conversations.filter(c => c.id !== conversationId);
       
-      // On la remet tout en haut
       return { conversations: [updatedConv, ...others] };
   }),
   
@@ -168,5 +246,26 @@ export const useServerStore = create<ServerState>((set, get) => ({
 
   getLastChannelId: (serverId) => {
       return localStorage.getItem(`velmu_last_channel_${serverId}`);
-  }
+  },
+
+  handleNewMessage: (message) => set((state) => {
+      if (!message.conversationId) return state;
+
+      const conversationId = message.conversationId;
+      const conversation = state.conversations.find(c => c.id === conversationId);
+      
+      if (!conversation) return state;
+
+      const isActive = state.activeConversation?.id === conversationId;
+      
+      const updatedConv = { 
+          ...conversation, 
+          lastMessageAt: message.createdAt,
+          unreadCount: isActive ? 0 : (conversation.unreadCount || 0) + 1
+      };
+
+      const others = state.conversations.filter(c => c.id !== conversationId);
+      
+      return { conversations: [updatedConv, ...others] };
+  })
 }));

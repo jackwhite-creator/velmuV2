@@ -1,12 +1,14 @@
 import { Router } from 'express';
-import { CategoryController } from '../controllers/category.controller';
+import { createCategory, updateCategory, deleteCategory, reorderCategories } from '../controllers/category.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.post('/', authenticateToken, CategoryController.create);
-router.put('/reorder', authenticateToken, CategoryController.reorder); // <--- NOUVEAU
-router.put('/:categoryId', authenticateToken, CategoryController.update);
-router.delete('/:categoryId', authenticateToken, CategoryController.delete);
+router.use(authenticateToken);
+
+router.post('/', createCategory);
+router.put('/reorder', reorderCategories);
+router.put('/:categoryId', updateCategory);
+router.delete('/:categoryId', deleteCategory);
 
 export default router;

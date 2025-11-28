@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { Socket } from 'socket.io-client';
 import { Message } from '../../hooks/useChat'; 
 import api from '../../lib/api';
+import { prepareMentionsForBackend } from '../../lib/mentionUtils';
 
 import ChatHeader from './ChatHeader';
 import ChatInput from './ChatInput';
@@ -26,7 +27,7 @@ interface Props {
   onScroll: () => Promise<any>; 
   onUserClick: (e: React.MouseEvent, userId: string) => void;
   onToggleMembers: () => void;
-  onMobileBack?: () => void; // AJOUT
+  onMobileBack?: () => void; 
 }
 
 const ChatArea = React.memo(function ChatArea({
@@ -37,7 +38,7 @@ const ChatArea = React.memo(function ChatArea({
 }: Props) {
   
   const { user } = useAuthStore();
-  const { markConversationAsRead } = useServerStore();
+  const { markConversationAsRead, activeServer, activeConversation } = useServerStore();
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   
@@ -79,7 +80,18 @@ const ChatArea = React.memo(function ChatArea({
     e.preventDefault();
     if (!inputValue.trim() && !file) return;
 
-    const contentToSend = inputValue.trim();
+    let contentToSend = inputValue.trim();
+    
+    // Parse mentions: @username -> <@userId>
+    let users: any[] = [];
+    if (activeChannel?.type === 'dm' && activeConversation) {
+        users = activeConversation.users || [];
+    } else if (activeServer?.members) {
+        users = activeServer.members.map((m: any) => m.user);
+    }
+
+    contentToSend = prepareMentionsForBackend(contentToSend, users);
+
     const replyToId = replyingTo?.id;
 
     setInputValue('');
@@ -150,7 +162,7 @@ const ChatArea = React.memo(function ChatArea({
             channel={activeChannel} 
             showMembers={showMembers} 
             onToggleMembers={onToggleMembers} 
-            onMobileBack={onMobileBack} // PASSER LA PROP
+            onMobileBack={onMobileBack} 
          />
        </div>
 

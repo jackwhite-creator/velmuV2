@@ -4,6 +4,8 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { formatDiscordDate } from '../../lib/dateUtils';
 import Tooltip from '../ui/Tooltip';
+import { useServerStore } from '../../store/serverStore';
+import { processMentionsForFrontend } from '../../lib/mentionUtils';
 
 interface Props {
   msg: any;
@@ -13,20 +15,23 @@ interface Props {
   isMentioningMe: boolean;
   isModified: boolean;
   onUserClick: (e: React.MouseEvent) => void;
+  onMentionClick: (e: React.MouseEvent, userId: string) => void;
   setEditContent: (val: string) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onImageClick: (url: string) => void;
   onImageLoad: () => void;
+  canMentionEveryone?: boolean;
 }
 
 export default function MessageContent({ 
   msg, shouldGroup, isEditing, editContent, isMentioningMe, isModified,
-  onUserClick, setEditContent, onSaveEdit, onCancelEdit, onImageClick,
-  onImageLoad 
+  onUserClick, onMentionClick, setEditContent, onSaveEdit, onCancelEdit, onImageClick,
+  onImageLoad, canMentionEveryone = true
 }: Props) {
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { activeServer, activeConversation } = useServerStore();
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -47,7 +52,12 @@ export default function MessageContent({
   };
 
   const processedContent = msg.content 
-    ? msg.content.replace(/\n(?=\n)/g, '\n\u200B') 
+    ? processMentionsForFrontend(
+        msg.content, 
+        activeConversation, 
+        activeServer,
+        !msg.isPending || canMentionEveryone
+      ).replace(/\n(?=\n)/g, '\n\u200B') 
     : '';
 
   return (
@@ -100,9 +110,40 @@ export default function MessageContent({
                     <ReactMarkdown 
                         remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{
-                            a: ({node, ...props}) => (
-                                <a target="_blank" rel="noopener noreferrer" className="text-brand hover:underline cursor-pointer cursor-text" {...props} />
-                            ),
+                            a: ({node, href, children, ...props}) => {
+                                if (href?.startsWith('#mention-')) {
+                                    const userId = href.replace('#mention-', '');
+                                    
+                                    if (userId === 'everyone') {
+                                        return (
+                                            <span 
+                                                className="bg-[rgba(240,178,50,0.1)] text-[#f0b232] px-1 rounded-[3px] font-medium hover:bg-[rgba(240,178,50,0.2)] transition-colors select-none cursor-default"
+                                            >
+                                                {children}
+                                            </span>
+                                        );
+                                    }
+
+                                    return (
+                                        <span 
+                                            onClick={(e) => { 
+                                                e.preventDefault();
+                                                e.stopPropagation(); 
+                                                onMentionClick(e, userId);
+                                            }}
+                                            className="bg-[#3c4270] text-[#c9cdfb] px-1 rounded-[3px] font-medium cursor-pointer hover:bg-[#5865f2] hover:text-white transition-colors select-none"
+                                            data-user-id={userId}
+                                        >
+                                            {children}
+                                        </span>
+                                    );
+                                }
+                                return (
+                                    <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline cursor-pointer cursor-text" {...props}>
+                                        {children}
+                                    </a>
+                                );
+                            },
                             p: ({node, ...props}) => (
                                 <div className="mb-1 last:mb-0 min-h-[1.25rem] cursor-text w-fit max-w-full" {...props} />
                             ),

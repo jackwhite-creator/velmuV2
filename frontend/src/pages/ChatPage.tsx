@@ -14,6 +14,7 @@ import ChatArea from '../components/chat/ChatArea';
 import MemberList from '../components/server/MemberList';
 import UserFooter from '../components/chat/UserFooter';
 import FriendsDashboard from '../components/chat/FriendsDashboard';
+import GlobalSocketListener from '../components/chat/GlobalSocketListener';
 
 import CreateServerModal from '../components/server/modals/CreateServerModal';
 import InviteModal from '../components/server/modals/InviteModal';
@@ -52,14 +53,10 @@ export default function ChatPage() {
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
   const [friendToDelete, setFriendToDelete] = useState<{ id: string; username: string; } | null>(null);
 
-  useEffect(() => {
-    if (socket && activeServer?.id) {
-      socket.emit('join_server', activeServer.id);
-    }
-  }, [socket, activeServer?.id]);
-
+  // Socket Events
   useEffect(() => {
     if (!socket) return;
+
     const handleRefreshServer = async (updatedServerId: string) => {
       if (activeServer && activeServer.id === updatedServerId) {
         try {
@@ -68,10 +65,41 @@ export default function ChatPage() {
         } catch (e) { console.error("Erreur refresh", e); }
       }
     };
+
+    const handleMemberAdded = (member: any) => {
+        if (activeServer) {
+            const sId = member.serverId || activeServer.id;
+            useServerStore.getState().addMember(sId, member);
+        }
+    };
+
+    const handleMemberRemoved = (data: { memberId: string, serverId?: string }) => {
+        if (activeServer) {
+             useServerStore.getState().removeMember(activeServer.id, data.memberId);
+        }
+    };
+
+    const handleMemberUpdated = (member: any) => {
+        if (activeServer) {
+            const sId = member.serverId || activeServer.id;
+            useServerStore.getState().updateMember(sId, member);
+        }
+    };
+
     socket.on('refresh_server_ui', handleRefreshServer);
-    return () => { socket.off('refresh_server_ui', handleRefreshServer); };
+    socket.on('member_added', handleMemberAdded);
+    socket.on('member_removed', handleMemberRemoved);
+    socket.on('member_updated', handleMemberUpdated);
+
+    return () => { 
+        socket.off('refresh_server_ui', handleRefreshServer); 
+        socket.off('member_added', handleMemberAdded);
+        socket.off('member_removed', handleMemberRemoved);
+        socket.off('member_updated', handleMemberUpdated);
+    };
   }, [socket, activeServer, updateServer]);
 
+  // Server/Channel Navigation Logic
   useEffect(() => {
     if (serverId && serverId !== '@me') {
       const targetServer = servers.find(s => s.id === serverId);
@@ -115,6 +143,14 @@ export default function ChatPage() {
     }
   }, [serverId, channelId, servers, activeServer, navigate, conversations, setActiveServer, setActiveChannel, setActiveConversation, getLastChannelId]);
 
+  // Join Server Socket Room
+  useEffect(() => {
+    if (socket && activeServer?.id) {
+      socket.emit('join_server', activeServer.id);
+    }
+  }, [socket, activeServer?.id]);
+
+
   const { messages, loading, hasMore, loadMore, sendMessage } = useChat(
     !activeServer ? activeConversation?.id : activeChannel?.id, 
     !activeServer
@@ -123,7 +159,7 @@ export default function ChatPage() {
   const isDmMode = !activeServer;
   const showFriendsDashboard = isDmMode && !activeConversation;
   const effectiveChannel = isDmMode && activeConversation 
-    ? { id: activeConversation.id, name: activeConversation.users.find(u => u.id !== user?.id)?.username || 'Ami', type: 'dm' } 
+    ? { id: activeConversation.id, name: activeConversation.users?.find(u => u.id !== user?.id)?.username || 'Ami', type: 'dm' } 
     : activeChannel;
   
   const handleUserClick = (e: React.MouseEvent, userId: string) => {
@@ -181,7 +217,7 @@ export default function ChatPage() {
   const isFriend = userMenu && requests.some(
     req => req.status === 'ACCEPTED' && 
            ((req.senderId === user?.id && req.receiverId === userMenu.user.id) || 
-            (req.receiverId === user?.id && req.senderId === userMenu.user.id))
+             (req.receiverId === user?.id && req.senderId === userMenu.user.id))
   );
 
   const renderMainContent = () => {
@@ -206,6 +242,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex h-screen w-full bg-[#1e1e20] text-zinc-100 overflow-hidden font-sans select-none">
+      <GlobalSocketListener />
       
       <ServerRail onOpenCreateServer={() => setIsCreateServerOpen(true)} onOpenJoinServer={() => setIsJoinServerOpen(true)} />
 

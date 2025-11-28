@@ -1,136 +1,69 @@
-import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
+import { Request, Response, NextFunction } from 'express';
+import { channelService } from '../services/channel.service';
 
-export const CategoryController = {
-  // 1. CRÉER UNE CATÉGORIE
-  async create(req: Request, res: Response) {
-    try {
-      const userId = req.user?.userId;
-      const { name, serverId } = req.body;
+export const createCategory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    // serverId is in body because route is /api/categories/
+    const { serverId, name } = req.body;
 
-      if (!name || !serverId) {
-        return res.status(400).json({ error: "Données manquantes" });
-      }
+    const category = await channelService.createCategory(serverId, userId, name);
 
-      // Vérification des droits (Propriétaire du serveur)
-      const server = await prisma.server.findUnique({
-        where: { id: serverId }
-      });
-
-      if (!server) return res.status(404).json({ error: "Serveur introuvable" });
-      if (server.ownerId !== userId) return res.status(403).json({ error: "Interdit" });
-
-      // Création
-      const category = await prisma.category.create({
-        data: {
-          name,
-          serverId,
-          order: 999 // Par défaut à la fin
-        }
-      });
-
-      // Notification Socket
-      const io = req.app.get('io');
+    const io = req.app.get('io');
+    if (io) {
       io.to(`server_${serverId}`).emit('refresh_server_ui', serverId);
-
-      res.status(201).json(category);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erreur création catégorie" });
     }
-  },
 
-  // 2. MODIFIER UNE CATÉGORIE
-  async update(req: Request, res: Response) {
-    try {
-      const userId = req.user?.userId;
-      const { categoryId } = req.params;
-      const { name } = req.body;
+    res.status(201).json(category);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      const category = await prisma.category.findUnique({
-        where: { id: categoryId },
-        include: { server: true }
-      });
+export const updateCategory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { categoryId } = req.params;
+    const userId = req.user!.userId;
+    const { name, order } = req.body;
 
-      if (!category) return res.status(404).json({ error: "Catégorie introuvable" });
-      if (category.server.ownerId !== userId) return res.status(403).json({ error: "Interdit" });
+    const category = await channelService.updateCategory(categoryId, userId, { name, order });
 
-      const updated = await prisma.category.update({
-        where: { id: categoryId },
-        data: { name }
-      });
-
-      // Notification Socket
-      const io = req.app.get('io');
-      io.to(`server_${category.server.id}`).emit('refresh_server_ui', category.server.id);
-
-      res.json(updated);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erreur modification catégorie" });
+    const io = req.app.get('io');
+    if (io && category.serverId) {
+      io.to(`server_${category.serverId}`).emit('refresh_server_ui', category.serverId);
     }
-  },
 
-  // 3. SUPPRIMER UNE CATÉGORIE
-  async delete(req: Request, res: Response) {
-    try {
-      const userId = req.user?.userId;
-      const { categoryId } = req.params;
+    res.json(category);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      const category = await prisma.category.findUnique({
-        where: { id: categoryId },
-        include: { server: true }
-      });
+export const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { categoryId } = req.params;
+    const userId = req.user!.userId;
+    const result = await channelService.deleteCategory(categoryId, userId);
+    res.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      if (!category) return res.status(404).json({ error: "Catégorie introuvable" });
-      if (category.server.ownerId !== userId) return res.status(403).json({ error: "Interdit" });
-
-      const serverId = category.server.id;
-
-      await prisma.category.delete({
-        where: { id: categoryId }
-      });
-
-      // Notification Socket
-      const io = req.app.get('io');
-      io.to(`server_${serverId}`).emit('refresh_server_ui', serverId);
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erreur suppression catégorie" });
+export const reorderCategories = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const { updates } = req.body;
+    
+    const result = await channelService.reorderCategories(userId, updates);
+    
+    const io = req.app.get('io');
+    if (io && result.serverId) {
+        io.to(`server_${result.serverId}`).emit('refresh_server_ui', result.serverId);
     }
-  },
 
-  // 4. RÉORGANISER (Drag & Drop Catégories)
-  async reorder(req: Request, res: Response) {
-    try {
-      const userId = req.user?.userId;
-      // On reçoit : { serverId, orderedIds: ["cat1", "cat2", ...] }
-      const { serverId, orderedIds } = req.body;
-
-      const server = await prisma.server.findUnique({ where: { id: serverId } });
-      if (!server) return res.status(404).json({ error: "Serveur introuvable" });
-      if (server.ownerId !== userId) return res.status(403).json({ error: "Interdit" });
-
-      // Transaction pour mettre à jour l'ordre de chaque catégorie
-      const transaction = orderedIds.map((catId: string, index: number) => {
-        return prisma.category.update({
-          where: { id: catId },
-          data: { order: index }
-        });
-      });
-
-      await prisma.$transaction(transaction);
-
-      // Socket refresh
-      const io = req.app.get('io');
-      io.to(`server_${serverId}`).emit('refresh_server_ui', serverId);
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erreur réorganisation" });
-    }
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
   }
 };

@@ -1,9 +1,9 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { SocketGuard } from './services/socket.guard';
 import { config } from './config/env';
 import logger from './lib/logger';
+import { registerRoomHandlers } from './socket/handlers/room.handler';
 
 const onlineUsers = new Map<string, Set<string>>();
 
@@ -53,47 +53,16 @@ export const initSocket = (httpServer: HttpServer) => {
     const userId = (socket as any).userId;
     logger.info(`User connected: ${userId}`);
 
-    socket.join(userId); 
+    // Fix: join 'user_ID' to match friend.controller emission
+    socket.join(`user_${userId}`); 
     
     if (!onlineUsers.has(userId)) onlineUsers.set(userId, new Set());
     onlineUsers.get(userId)?.add(socket.id);
     
     broadcastOnlineUsers();
 
-    socket.on('join_channel', async (channelId: string) => {
-        const canJoin = await SocketGuard.validateChannelAccess(userId, channelId);
-        if (!canJoin) return socket.emit('error', { message: "Access Denied" });
-        socket.join(channelId);
-    });
-    
-    socket.on('join_conversation', async (conversationId: string) => {
-        const canJoin = await SocketGuard.validateConversationAccess(userId, conversationId);
-        if (!canJoin) return socket.emit('error', { message: "Access Denied" });
-        socket.join(`conversation_${conversationId}`);
-    });
-    
-    socket.on('join_server', async (serverId: string) => {
-         const canJoin = await SocketGuard.validateServerAccess(userId, serverId);
-         if (!canJoin) return;
-         socket.join(`server_${serverId}`);
-    });
-
-    socket.on('typing_start', (data: any) => {
-        const room = data.channelId || `conversation_${data.conversationId}`;
-        socket.to(room).emit('user_typing', { ...data, userId, isTyping: true });
-    });
-    
-    socket.on('typing_stop', (data: any) => {
-        const room = data.channelId || `conversation_${data.conversationId}`;
-        socket.to(room).emit('user_typing', { ...data, userId, isTyping: false });
-    });
-
-    socket.on('leave_channel', (channelId: string) => {
-        socket.leave(channelId);
-    });
-    socket.on('leave_conversation', (conversationId: string) => {
-        socket.leave(`conversation_${conversationId}`);
-    });
+    // Use the modular handler
+    registerRoomHandlers(io, socket as any);
 
     socket.on('disconnect', () => {
       const userSockets = onlineUsers.get(userId);

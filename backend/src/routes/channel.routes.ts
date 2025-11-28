@@ -1,23 +1,21 @@
 import { Router } from 'express';
-import { ChannelController } from '../controllers/channel.controller';
+import { createChannel, updateChannel, deleteChannel, reorderChannels } from '../controllers/channel.controller';
+import { getChannelMessages, sendChannelMessage } from '../controllers/message.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
-// 👇 Nouveaux imports pour les messages
-import { getChannelMessages, createChannelMessage } from '../controllers/channel-message.controller';
 import { upload } from '../middlewares/upload.middleware';
 
 const router = Router();
 
-// On sécurise toutes les routes de ce fichier
 router.use(authenticateToken);
 
-// --- Gestion des Channels (Admin/Modif) ---
-router.post('/', ChannelController.create);
-router.put('/reorder', ChannelController.reorder);
-router.put('/:channelId', ChannelController.update);
-router.delete('/:channelId', ChannelController.delete);
+// Channel management
+router.post('/', createChannel);
+router.put('/reorder', reorderChannels);
+router.put('/:channelId', updateChannel);
+router.delete('/:channelId', deleteChannel);
 
-// --- Gestion des Messages de Channels (Chat) ---
+// Channel messages
 router.get('/:channelId/messages', getChannelMessages);
-router.post('/:channelId/messages', upload.single('file'), createChannelMessage);
+router.post('/:channelId/messages', upload.single('file'), sendChannelMessage);
 
 export default router;

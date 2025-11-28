@@ -4,12 +4,19 @@ interface Props {
   channel: Channel;
   showMembers: boolean;
   onToggleMembers: () => void;
+  onMobileBack?: () => void;
 }
 
-export default function ChatHeader({ channel, showMembers, onToggleMembers }: Props) {
+export default function ChatHeader({ channel, showMembers, onToggleMembers, onMobileBack }: Props) {
   return (
     <div className="h-12 border-b border-background-tertiary flex items-center px-4 shadow-sm bg-background-primary z-10 flex-shrink-0 justify-between select-none transition-colors duration-200 font-sans">
       <div className="flex items-center overflow-hidden">
+        {onMobileBack && (
+            <button onClick={onMobileBack} className="md:hidden mr-3 text-text-muted hover:text-text-normal">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+            </button>
+        )}
+        
         {channel.type === 'dm' ? (
            <span className="text-text-muted text-2xl mr-3 font-medium">@</span>
         ) : (

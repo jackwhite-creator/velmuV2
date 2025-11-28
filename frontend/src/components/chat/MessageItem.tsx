@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import api from '../../lib/api';
 import { useAuthStore } from '../../store/authStore';
+import { useServerStore } from '../../store/serverStore';
+import { Permissions } from '../../../../backend/src/shared/permissions';
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
 import ConfirmModal from '../ui/ConfirmModal';
 import { Message } from '../../hooks/useChat';
@@ -39,6 +41,7 @@ export default function MessageItem({
   isOwner, serverId, onImageClick, onImageLoad
 }: Props) {
   const { user: currentUser } = useAuthStore();
+  const { activeServer } = useServerStore();
   
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(msg.content);
@@ -46,9 +49,28 @@ export default function MessageItem({
   const [confirmKickOpen, setConfirmKickOpen] = useState(false);
 
   const isModified = msg.updatedAt && (new Date(msg.updatedAt).getTime() - new Date(msg.createdAt).getTime() > 2000);
-  const isMentioningMe = msg.replyTo?.user?.id === currentUser?.id;
 
-  const marginTopClass = shouldGroup ? 'mt-[2px]' : 'mt-[17px]';
+  // Check permissions for @everyone if message is pending
+  const canMentionEveryone = React.useMemo(() => {
+    if (!activeServer || !currentUser) return false;
+    if (activeServer.ownerId === currentUser.id) return true;
+    
+    const member = activeServer.members?.find(m => m.userId === currentUser.id);
+    if (!member) return false;
+
+    return member.roles?.some(r => 
+      r.permissions.includes(Permissions.ADMINISTRATOR) || 
+      r.permissions.includes(Permissions.MENTION_EVERYONE)
+    ) || false;
+  }, [activeServer, currentUser]);
+
+  const isMentioningMe = (msg.replyTo?.user?.id === currentUser?.id) || 
+    (currentUser?.id && msg.content?.includes(`<@${currentUser.id}>`)) || 
+    (msg.content?.includes('@everyone') && (!msg.isPending || canMentionEveryone));
+
+  const marginTopClass = shouldGroup 
+    ? (isMentioningMe ? 'mt-0 pt-[2px]' : 'mt-[2px]') 
+    : 'mt-[17px]';
   
   const backgroundClass = isMentioningMe 
     ? 'bg-[rgba(240,178,50,0.1)] hover:bg-[rgba(240,178,50,0.15)] before:bg-status-warning' 
@@ -141,11 +163,13 @@ export default function MessageItem({
                 isMentioningMe={isMentioningMe || false}
                 isModified={isModified || false}
                 onUserClick={(e) => onUserClick(e, msg.user.id)}
+                onMentionClick={onUserClick}
                 setEditContent={setEditContent}
                 onSaveEdit={saveEdit}
                 onCancelEdit={() => { setIsEditing(false); setEditContent(msg.content); }}
                 onImageClick={onImageClick}
                 onImageLoad={onImageLoad}
+                canMentionEveryone={canMentionEveryone}
             />
 
             {msg.attachments && msg.attachments.length > 0 && (

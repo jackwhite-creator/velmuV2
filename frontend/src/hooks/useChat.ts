@@ -53,7 +53,8 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     api.get('/messages', { params })
       .then((res) => {
         if (targetIdRef.current === targetId) {
-            setMessages(res.data.items.reverse());
+            const items = Array.isArray(res.data) ? res.data : (res.data.items || []);
+            setMessages(items.reverse());
             setHasMore(!!res.data.nextCursor);
         }
       })
@@ -123,7 +124,8 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
         setHasMore(false);
       }
       
-      const olderMsgs = res.data.items.reverse();
+      const items = Array.isArray(res.data) ? res.data : (res.data.items || []);
+      const olderMsgs = items.reverse();
       
       if (olderMsgs.length > 0) {
         setMessages((prev) => {

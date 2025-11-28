@@ -1,164 +1,108 @@
-import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
+import { Request, Response, NextFunction } from 'express';
+import { conversationService } from '../services/conversation.service';
+import { messageService } from '../services/message.service';
 
-export const ConversationController = {
-  async getOrCreate(req: Request, res: Response) {
-    try {
-      const currentUserId = req.user?.userId;
-      const { targetUserId } = req.body;
+export const getUserConversations = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const conversations = await conversationService.getUserConversations(userId);
+    res.json(conversations);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      if (!currentUserId || !targetUserId) return res.status(400).json({ error: "IDs manquants" });
+export const createConversation = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const { targetUserId } = req.body;
+    const conversation = await conversationService.createOrGetConversation(userId, targetUserId);
+    res.status(201).json(conversation);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      let conversation = await prisma.conversation.findFirst({
-        where: {
-          AND: [
-            { members: { some: { userId: currentUserId } } },
-            { members: { some: { userId: targetUserId } } }
-          ]
-        },
-        include: {
-          members: {
-            include: { user: { select: { id: true, username: true, discriminator: true, avatarUrl: true } } }
-          }
-        }
+export const getConversation = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user!.userId;
+    const conversation = await conversationService.getConversation(conversationId, userId);
+    res.json(conversation);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getConversationMessages = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user!.userId;
+    const { limit, cursor } = req.query;
+    
+    const messages = await messageService.getConversationMessages(
+      conversationId,
+      userId,
+      limit ? parseInt(limit as string) : undefined,
+      cursor as string
+    );
+    
+    res.json(messages);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const sendMessage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user!.userId;
+    const { content, replyToId, attachments } = req.body;
+
+    const message = await messageService.createConversationMessage(conversationId, userId, {
+      content,
+      replyToId,
+      attachments
+    });
+
+    const io = req.app.get('io');
+    if (io) {
+      // Emit to the conversation room (for those currently viewing it)
+      io.to(`conversation_${conversationId}`).emit('new_message', message);
+      
+      // Fetch conversation to get participants
+      const conversation = await conversationService.getConversation(conversationId, userId);
+      
+      // Emit to each user's private room (for notifications/list update)
+      conversation.members.forEach(member => {
+          io.to(`user_${member.userId}`).emit('conversation_bump', { id: conversationId });
       });
-
-      if (!conversation) {
-        conversation = await prisma.conversation.create({
-          data: {
-            members: {
-              create: [
-                { userId: currentUserId, closed: false }, // Ouvert pour le créateur
-                { userId: targetUserId, closed: true }    // Fermé par défaut pour le destinataire (tant qu'il n'y a pas de message)
-              ]
-            }
-          },
-          include: {
-            members: {
-              include: { user: { select: { id: true, username: true, discriminator: true, avatarUrl: true } } }
-            }
-          }
-        });
-      } else {
-        // Si la conversation existe mais était fermée pour moi, je la rouvre
-        const member = conversation.members.find(m => m.userId === currentUserId);
-        if (member && member.closed) {
-            await prisma.conversationMember.update({
-                where: { id: member.id },
-                data: { closed: false }
-            });
-        }
-      }
-
-      const formattedResult = {
-          ...conversation,
-          users: conversation.members.map(m => m.user),
-          unreadCount: 0
-      };
-
-      // Note : On n'émet PAS de socket ici. Le DM n'apparaîtra chez l'autre que lors du premier message.
-      res.json(formattedResult);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: "Erreur conversation" });
     }
-  },
 
-  async getMyConversations(req: Request, res: Response) {
-    try {
-      const userId = req.user?.userId;
-      if (!userId) return res.status(401).json({ error: "Non auth" });
+    res.status(201).json(message);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      // On ne récupère que les conversations qui ne sont PAS fermées pour cet utilisateur
-      const conversations = await prisma.conversation.findMany({
-        where: {
-          members: { 
-            some: { 
-                userId,
-                closed: false // <--- FILTRE IMPORTANT
-            } 
-          }
-        },
-        include: {
-          members: {
-            include: {
-                user: { select: { id: true, username: true, discriminator: true, avatarUrl: true, bio: true } }
-            }
-          },
-          messages: {
-            orderBy: { createdAt: 'desc' },
-            take: 1
-          }
-        },
-        orderBy: { lastMessageAt: 'desc' }
-      });
+export const markAsRead = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user!.userId;
+    await conversationService.markAsRead(conversationId, userId);
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
 
-      const conversationsWithUnread = await Promise.all(conversations.map(async (conv) => {
-          const currentUserMember = conv.members.find(m => m.userId === userId);
-          let unreadCount = 0;
-
-          if (currentUserMember) {
-              unreadCount = await prisma.message.count({
-                  where: {
-                      conversationId: conv.id,
-                      createdAt: { gt: currentUserMember.lastReadAt },
-                      userId: { not: userId } 
-                  }
-              });
-          }
-
-          return {
-              ...conv,
-              users: conv.members.map(m => m.user), 
-              unreadCount 
-          };
-      }));
-
-      res.json(conversationsWithUnread);
-    } catch (error) {
-      console.error("Erreur get convs:", error);
-      res.status(500).json({ error: "Erreur chargement conversations" });
-    }
-  },
-
-  async markAsRead(req: Request, res: Response) {
-      try {
-          const userId = req.user?.userId;
-          const { conversationId } = req.params;
-
-          await prisma.conversationMember.update({
-              where: {
-                  userId_conversationId: {
-                      userId: userId!,
-                      conversationId
-                  }
-              },
-              data: { lastReadAt: new Date() }
-          });
-
-          res.json({ success: true });
-      } catch (error) {
-          console.error("Erreur mark as read:", error);
-          res.status(500).json({ error: "Erreur serveur" });
-      }
-  },
-
-  async closeConversation(req: Request, res: Response) {
-      try {
-          const userId = req.user?.userId;
-          const { conversationId } = req.params;
-
-          await prisma.conversationMember.update({
-              where: {
-                  userId_conversationId: { userId: userId!, conversationId }
-              },
-              data: { closed: true }
-          });
-
-          res.json({ success: true });
-      } catch (error) {
-          console.error("Erreur close conversation:", error);
-          res.status(500).json({ error: "Impossible de fermer la conversation" });
-      }
+export const closeConversation = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { conversationId } = req.params;
+    const userId = req.user!.userId;
+    await conversationService.closeConversation(conversationId, userId);
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
   }
 };

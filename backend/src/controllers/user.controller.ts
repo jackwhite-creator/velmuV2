@@ -1,68 +1,45 @@
 import { Request, Response, NextFunction } from 'express';
-import { prisma } from '../lib/prisma';
-import { AppError, NotFoundError } from '../middlewares/error.middleware';
+import { userService } from '../services/user.service';
 
-export const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+export const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const userId = req.user?.userId;
-    const { bio } = req.body;
-    
-    if (!userId) throw new AppError(401, 'Non autorisé');
-
-    const updates: any = { bio };
-
-    // Gestion des fichiers (Avatar & Bannière)
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
-
-    if (files?.avatar?.[0]) {
-      updates.avatarUrl = files.avatar[0].path; // URL Cloudinary
-    }
-
-    if (files?.banner?.[0]) {
-      updates.bannerUrl = files.banner[0].path; // URL Cloudinary
-    }
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: updates,
-      select: {
-        id: true,
-        email: true,
-        username: true,
-        discriminator: true,
-        avatarUrl: true,
-        bannerUrl: true,
-        bio: true
-      }
-    });
-
-    res.json(updatedUser);
+    const { userId } = req.params;
+    const user = await userService.getUserById(userId);
+    res.json(user);
   } catch (error) {
     next(error);
   }
 };
 
-export const getUserProfile = async (req: Request, res: Response, next: NextFunction) => {
+export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { userId } = req.params;
-
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        id: true,
-        username: true,
-        discriminator: true,
-        avatarUrl: true,
-        bannerUrl: true,
-        bio: true,
-        createdAt: true
-      }
-    });
-
-    if (!user) {
-      throw new NotFoundError('Utilisateur introuvable');
+    const userId = req.user!.userId;
+    const file = req.file;
+    
+    let updateData = { ...req.body };
+    if (file) {
+      const field = req.body.field || 'avatarUrl';
+      updateData[field] = (file as any).path || (file as any).secure_url;
     }
 
+    // Nettoyer les champs undefined/null qui ne devraient pas être mis à jour
+    Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined || updateData[key] === 'undefined') {
+            delete updateData[key];
+        }
+    });
+
+    const user = await userService.updateUser(userId, updateData);
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCurrentUser = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const user = await userService.getUserProfile(userId);
     res.json(user);
   } catch (error) {
     next(error);

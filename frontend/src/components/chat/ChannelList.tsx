@@ -85,8 +85,8 @@ export default function ChannelList({
         newCategories.splice(destination.index, 0, movedCategory);
         setActiveServer({ ...server, categories: newCategories });
         try {
-            const orderedIds = newCategories.map(c => c.id);
-            await api.put('/categories/reorder', { serverId: server.id, orderedIds });
+            const updates = newCategories.map((c, index) => ({ id: c.id, order: index }));
+            await api.put('/categories/reorder', { updates });
         } catch (err) { console.error(err); }
         return;
     }
@@ -103,12 +103,12 @@ export default function ChannelList({
     setActiveServer({ ...server, categories: newCategories });
 
     try {
-        const orderedIds = destCat.channels.map(c => c.id);
-        await api.put('/channels/reorder', {
-            activeId: draggableId,
-            categoryId: destCat.id,
-            orderedIds
-        });
+        const updates = destCat.channels.map((c, index) => ({
+            id: c.id,
+            order: index,
+            categoryId: destCat.id
+        }));
+        await api.put('/channels/reorder', { updates });
     } catch (err) { console.error(err); }
   };
 

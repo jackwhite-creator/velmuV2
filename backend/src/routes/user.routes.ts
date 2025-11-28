@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { updateProfile, getUserProfile } from '../controllers/user.controller';
+import { updateUser, getUser, getCurrentUser } from '../controllers/user.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
 import { validate } from '../middlewares/validate.middleware';
@@ -14,9 +14,10 @@ router.put('/me',
     { name: 'banner', maxCount: 1 }
   ]),
   validate(UpdateProfileSchema),
-  updateProfile
+  updateUser
 );
     
-router.get('/:userId', authenticateToken, getUserProfile);
+router.get('/me', authenticateToken, getCurrentUser);
+router.get('/:userId', authenticateToken, getUser);
 
 export default router;

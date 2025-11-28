@@ -34,7 +34,12 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
     e.preventDefault();
     setAddStatus(null);
     try {
-      const res = await api.post('/friends/request', { usernameString: addUsername });
+      const [username, discriminator] = addUsername.split('#');
+      if (!username || !discriminator) {
+        setAddStatus({ type: 'error', msg: "Format invalide. Utilisez Pseudo#0000" });
+        return;
+      }
+      const res = await api.post('/friends/request', { username, discriminator });
       addRequest(res.data); 
       setAddStatus({ type: 'success', msg: `Demande envoyée à ${addUsername} !` });
       setAddUsername('');
@@ -46,7 +51,7 @@ export default function FriendsDashboard({ onUserContextMenu }: FriendsDashboard
   const handleAccept = async (requestId: string) => {
     try {
       updateRequest(requestId, 'ACCEPTED');
-      await api.post('/friends/respond', { requestId, action: 'ACCEPT' });
+      await api.post('/friends/respond', { requestId, status: 'ACCEPTED' });
     } catch (e) { console.error(e); }
   };
 

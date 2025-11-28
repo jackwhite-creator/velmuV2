@@ -1,72 +1,51 @@
-import { Request, Response } from 'express';
-import { prisma } from '../lib/prisma';
+import { Request, Response, NextFunction } from 'express';
+import { memberService } from '../services/member.service';
 
-export const MemberController = {
-  async getByServerId(req: Request, res: Response) {
-    try {
-      const { serverId } = req.params;
-      
-      const members = await prisma.member.findMany({
-        where: { serverId },
-        include: {
-          user: {
-            select: {
-              id: true,
-              username: true,
-              discriminator: true,
-              avatarUrl: true,
-            }
-          },
-          roles: true
-        },
-        orderBy: { joinedAt: 'asc' } 
-      });
+export const getServerMembers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { serverId } = req.params;
+    const userId = req.user!.userId;
+    const members = await memberService.getServerMembers(serverId, userId);
+    res.json(members);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      res.json(members);
-    } catch (error) {
-      res.status(500).json({ error: "Erreur chargement membres" });
+export const updateMember = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { serverId, memberId } = req.params;
+    const userId = req.user!.userId;
+    const { nickname, roleIds } = req.body;
+
+    const member = await memberService.updateMember(serverId, memberId, userId, { nickname, roleIds });
+    
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`server_${serverId}`).emit('member_updated', member);
     }
-  },
 
-  async kick(req: Request, res: Response) {
-    try {
-      const requesterId = req.user?.userId;
-      const { serverId, memberId } = req.params; 
+    res.json(member);
+  } catch (error) {
+    next(error);
+  }
+};
 
-      const server = await prisma.server.findUnique({ where: { id: serverId } });
-      if (!server) return res.status(404).json({ error: "Serveur introuvable" });
+export const kickMember = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { serverId, memberId } = req.params;
+    const userId = req.user!.userId;
 
-      if (server.ownerId !== requesterId) {
-        return res.status(403).json({ error: "Permission refusée" });
-      }
+    await memberService.kickMember(serverId, memberId, userId);
 
-      if (memberId === requesterId) {
-        return res.status(400).json({ error: "Impossible de s'auto-exclure" });
-      }
-
-      const memberToDelete = await prisma.member.findFirst({
-        where: {
-          userId: memberId,
-          serverId: serverId
-        }
-      });
-
-      if (!memberToDelete) {
-        return res.status(404).json({ error: "Ce membre n'est pas dans le serveur" });
-      }
-
-      await prisma.member.delete({
-        where: { id: memberToDelete.id }
-      });
-
-      const io = req.app.get('io');
-      io.to(`server_${serverId}`).emit('refresh_members');
-      io.emit('member_kicked', { serverId, userId: memberId });
-
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Erreur Kick:", error);
-      res.status(500).json({ error: "Erreur interne" });
+    const io = req.app.get('io');
+    if (io) {
+      io.to(`server_${serverId}`).emit('member_removed', { memberId });
+      io.to(`user_${memberId}`).emit('kicked_from_server', { serverId });
     }
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
   }
 };

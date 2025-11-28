@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import api from '../../../lib/api';
 import { Channel } from '../../../store/serverStore';
 import ConfirmModal from '../../ui/ConfirmModal';
@@ -14,6 +15,7 @@ interface Props {
 
 export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, channel }: Props) {
   const isEditMode = !!channel;
+  const { serverId } = useParams();
   
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +38,8 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
       if (isEditMode && channel) {
         await api.put(`/channels/${channel.id}`, { name });
       } else if (categoryId) {
-        await api.post('/channels', { name, categoryId, type: 'TEXT' });
+        if (!serverId) return;
+        await api.post('/channels', { name, categoryId, type: 'TEXT', serverId });
         if (onSuccess) onSuccess();
       }
       onClose();

@@ -1,11 +1,11 @@
 import { Router } from 'express';
-import { MemberController } from '../controllers/member.controller';
+import { getServerMembers, kickMember } from '../controllers/member.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
 
-router.get('/:serverId', authenticateToken, MemberController.getByServerId);
+router.get('/:serverId', authenticateToken, getServerMembers);
 
-router.delete('/:serverId/kick/:memberId', authenticateToken, MemberController.kick);
+router.delete('/:serverId/kick/:memberId', authenticateToken, kickMember);
 
 export default router;

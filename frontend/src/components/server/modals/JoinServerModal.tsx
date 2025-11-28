@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServerStore } from '../../../store/serverStore';
+import { useSocketStore } from '../../../store/socketStore';
 import api from '../../../lib/api';
 import Modal from '../../ui/Modal';
 
@@ -12,6 +13,7 @@ interface Props {
 export default function JoinServerModal({ isOpen, onClose }: Props) {
   const navigate = useNavigate();
   const { setServers } = useServerStore();
+  const { socket } = useSocketStore();
   
   const [code, setCode] = useState('');
   const [error, setError] = useState('');
@@ -40,16 +42,19 @@ export default function JoinServerModal({ isOpen, onClose }: Props) {
     try {
       const res = await api.post(`/invites/${cleanCode}/join`);
 
-      if (res.data && res.data.serverId) {
-        const serversRes = await api.get('/servers');
-        setServers(serversRes.data);
-        navigate(`/channels/${res.data.serverId}`);
-        handleClose();
-      } else {
-        const serversRes = await api.get('/servers');
-        setServers(serversRes.data);
-        handleClose();
+      // res.data is the server object (with potential member info if we changed it, but store expects server list)
+      // Actually we just need to refresh servers list
+      const serversRes = await api.get('/servers');
+      setServers(serversRes.data);
+
+      if (res.data && res.data.id) {
+          if (socket) {
+              socket.emit('join_server', res.data.id);
+          }
+          navigate(`/channels/${res.data.id}`);
       }
+      
+      handleClose();
 
     } catch (err: any) {
       console.error("Erreur join:", err);

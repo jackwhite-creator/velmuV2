@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
 
-import { Channel } from '../../store/serverStore';
+import { Channel, useServerStore } from '../../store/serverStore';
 import TypingIndicator from './TypingIndicator';
 import Tooltip from '../ui/Tooltip';
 import { useChatInput } from '../../hooks/useChatInput';
+import MentionList from './MentionList';
 
 interface Props {
   inputValue: string;
@@ -34,12 +35,115 @@ export default function ChatInput(props: Props) {
     triggerSend, handleTyping, addEmoji, canSend
   } = useChatInput(props);
 
+  const { activeServer, activeConversation } = useServerStore();
+
+  // Mention State
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null);
+  const [mentionIndex, setMentionIndex] = useState(0);
+  const [mentionPosition, setMentionPosition] = useState({ bottom: 40, left: 0 });
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (mentionQuery === null) {
+        setFilteredUsers([]);
+        return;
+    }
+
+    let users: any[] = [];
+    if (activeChannel.type === 'dm' && activeConversation) {
+        users = activeConversation.users;
+    } else if (activeServer?.members) {
+        users = activeServer.members.map(m => m.user);
+    }
+
+    const lowerQuery = mentionQuery.toLowerCase();
+    const filtered = users
+        .filter(u => u.username.toLowerCase().includes(lowerQuery))
+        .slice(0, 10); // Limit to 10
+
+    setFilteredUsers(filtered);
+    setMentionIndex(0);
+  }, [mentionQuery, activeServer, activeChannel, activeConversation]);
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (filteredUsers.length > 0) {
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            setMentionIndex(prev => (prev > 0 ? prev - 1 : filteredUsers.length - 1));
+            return;
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            setMentionIndex(prev => (prev < filteredUsers.length - 1 ? prev + 1 : 0));
+            return;
+        }
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            selectUser(filteredUsers[mentionIndex]);
+            return;
+        }
+        if (e.key === 'Escape') {
+            setMentionQuery(null);
+            return;
+        }
+    }
+
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      // On autorise l'envoi même si un autre est en cours (gestion file d'attente côté parent)
       triggerSend(e);
     }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newVal = e.target.value;
+      setInputValue(newVal);
+      handleTyping();
+
+      const cursor = e.target.selectionStart;
+      const textBefore = newVal.slice(0, cursor);
+      const lastAt = textBefore.lastIndexOf('@');
+
+      if (lastAt !== -1) {
+          const query = textBefore.slice(lastAt + 1);
+          // Check if query contains spaces (end of mention attempt)
+          if (!query.includes(' ')) {
+              setMentionQuery(query);
+              
+              // Calculate position (approximate)
+              // Ideally use a library like textarea-caret, but for now simple offset
+              // Or just fixed position above input
+              setMentionPosition({ bottom: 60, left: 20 + (lastAt * 8) }); 
+              return;
+          }
+      }
+      setMentionQuery(null);
+  };
+
+  const selectUser = (user: any) => {
+      if (!textInputRef.current) return;
+      
+      const cursor = textInputRef.current.selectionStart;
+      const textBefore = inputValue.slice(0, cursor);
+      const lastAt = textBefore.lastIndexOf('@');
+      
+      const prefix = inputValue.slice(0, lastAt);
+      const suffix = inputValue.slice(cursor);
+      
+      // Insert @username instead of <@id>
+      const mentionText = `@${user.username} `;
+      const newValue = prefix + mentionText + suffix;
+      
+      setInputValue(newValue);
+      setMentionQuery(null);
+      
+      // Restore focus and cursor
+      setTimeout(() => {
+          if (textInputRef.current) {
+              textInputRef.current.focus();
+              const newCursorPos = prefix.length + mentionText.length;
+              textInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          }
+      }, 10);
   };
 
   const handleManualSend = (e: React.MouseEvent) => {
@@ -69,6 +173,16 @@ export default function ChatInput(props: Props) {
   return (
     <div className="bg-[#313338] flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
         
+        {filteredUsers.length > 0 && (
+            <MentionList 
+                users={filteredUsers} 
+                selectedIndex={mentionIndex} 
+                onSelect={selectUser} 
+                onClose={() => setMentionQuery(null)}
+                position={mentionPosition}
+            />
+        )}
+
         <TypingIndicator 
             socket={socket} 
             channelId={activeChannel.type !== 'dm' ? activeChannel.id : undefined}
@@ -124,7 +238,7 @@ export default function ChatInput(props: Props) {
                 className="flex-1 bg-transparent text-zinc-200 outline-none font-normal text-[15px] placeholder-zinc-400 resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed" 
                 placeholder={`Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`} 
                 value={inputValue} 
-                onChange={(e) => { setInputValue(e.target.value); handleTyping(); }} 
+                onChange={handleChange} 
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
                 autoComplete="off"
