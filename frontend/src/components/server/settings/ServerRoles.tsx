@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { Plus, GripVertical, Trash2 } from 'lucide-react';
 import { useServerStore } from '../../../store/serverStore';
@@ -31,6 +32,12 @@ export default function ServerRoles({ serverId }: Props) {
   const loadRoles = async () => {
     try {
       const res = await api.get(`/servers/${serverId}/roles`);
+      // Sort roles by position DESC (highest at top) for UI
+      const sortedRoles = res.data.sort((a: Role, b: Role) => b.position - a.position);
+      setRoles(sortedRoles);
+
+      if (sortedRoles.length > 0 && !selectedRoleId) {
+        setSelectedRoleId(sortedRoles[0].id);
       setRoles(res.data);
       if (res.data.length > 0 && !selectedRoleId) {
         setSelectedRoleId(res.data[0].id);
@@ -44,6 +51,10 @@ export default function ServerRoles({ serverId }: Props) {
     try {
       const res = await api.post(`/servers/${serverId}/roles`);
       const newRole = res.data;
+      // Add new role after the top one (if admin) or just at top
+      // Typically new roles appear above @everyone but below others.
+      // For simplicity, we refresh list which will sort by position
+      loadRoles();
       setRoles([newRole, ...roles]);
       setSelectedRoleId(newRole.id);
     } catch (err) {
@@ -93,6 +104,25 @@ export default function ServerRoles({ serverId }: Props) {
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
+    setRoles(items);
+
+    // Calculate new positions based on UI order
+    // UI: Index 0 is Top.
+    // DB: Position N is Top.
+    // So if we have N items:
+    // Index 0 -> Position N
+    // Index 1 -> Position N-1
+    // ...
+    // Index N -> Position 0 (@everyone)
+
+    // Actually we keep @everyone at bottom always in logic usually, but here dragging allowed above?
+    // Let's protect @everyone from being moved ideally, but dnd-kit can handle it.
+    // For now, simple logic:
+
+    const total = items.length;
+    const updates = items.map((role, index) => ({
+        id: role.id,
+        position: total - 1 - index // Descending order
     // Update positions locally based on index (higher index = lower priority in array, but UI might show reverse)
     // Actually Discord roles: Top is highest priority.
     // Let's assume list is sorted desc by position.
@@ -109,6 +139,9 @@ export default function ServerRoles({ serverId }: Props) {
 
     try {
         await api.put(`/servers/${serverId}/roles/positions`, { roles: updates });
+    } catch (err) {
+        console.error("Failed to reorder", err);
+        loadRoles(); // Revert on error
         loadRoles(); // Refresh to be sure
     } catch (err) {
         console.error("Failed to reorder", err);
@@ -131,6 +164,7 @@ export default function ServerRoles({ serverId }: Props) {
           </button>
         </div>
 
+        <div className="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar">
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="roles-list">
@@ -148,6 +182,16 @@ export default function ServerRoles({ serverId }: Props) {
                               setSelectedRoleId(role.id);
                           }}
                           className={`
+                            group flex items-center px-2 py-1.5 rounded cursor-pointer text-sm mb-1
+                            ${selectedRoleId === role.id ? 'bg-[#404249] text-white' : 'hover:bg-[#35373c]'}
+                            ${snapshot.isDragging ? 'bg-[#404249] shadow-lg opacity-90' : ''}
+                          `}
+                        >
+                          <div {...provided.dragHandleProps} className={`mr-2 ${role.name === '@everyone' ? 'invisible' : 'text-zinc-500 cursor-grab active:cursor-grabbing'}`}>
+                             <GripVertical className="w-4 h-4" />
+                          </div>
+                          <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: role.color }}></div>
+                          <span className="truncate flex-1 font-medium">{role.name}</span>
                             group flex items-center px-2 py-1.5 rounded cursor-pointer text-sm
                             ${selectedRoleId === role.id ? 'bg-[#404249] text-white' : 'hover:bg-[#35373c]'}
                           `}
@@ -170,6 +214,7 @@ export default function ServerRoles({ serverId }: Props) {
       </div>
 
       {/* Main Content */}
+      <div className="flex-1 bg-[#313338] p-8 overflow-y-auto custom-scrollbar">
       <div className="flex-1 bg-[#313338] p-8 overflow-y-auto">
         {selectedRole ? (
           <div className="max-w-2xl space-y-8">
@@ -197,6 +242,7 @@ export default function ServerRoles({ serverId }: Props) {
                           type="color"
                           value={selectedRole.color}
                           onChange={(e) => handleUpdateRole(selectedRole.id, { color: e.target.value })}
+                          className="h-10 w-16 bg-transparent cursor-pointer rounded overflow-hidden"
                           className="h-10 w-16 bg-transparent cursor-pointer"
                        />
                        <div className="flex-1 bg-[#1e1f22] rounded p-2 text-zinc-400 text-sm flex items-center">
@@ -217,6 +263,7 @@ export default function ServerRoles({ serverId }: Props) {
                    const isCritical = perm === Permissions.ADMINISTRATOR;
 
                    return (
+                       <div key={perm} className="flex items-center justify-between py-2 border-b border-[#3f4147] last:border-0 hover:bg-[#3f4147]/30 px-2 rounded">
                        <div key={perm} className="flex items-center justify-between py-2 border-b border-[#3f4147] last:border-0">
                            <div>
                                <div className={`font-medium ${isCritical ? 'text-red-400' : 'text-zinc-200'}`}>
@@ -262,6 +309,7 @@ export default function ServerRoles({ serverId }: Props) {
 
             {/* Save Bar */}
             {hasChanges && (
+                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-[#111214] px-4 py-3 rounded flex items-center gap-8 shadow-xl animate-bounce-in z-50">
                 <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-[#111214] px-4 py-3 rounded flex items-center gap-8 shadow-xl animate-bounce-in">
                     <span className="text-white font-medium">Attention - Vous avez des changements non enregistrés !</span>
                     <div className="flex gap-2">

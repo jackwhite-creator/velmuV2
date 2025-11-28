@@ -7,7 +7,7 @@ import { PrismaClient } from '@prisma/client';
 import { prisma } from '../lib/prisma';
 
 export abstract class BaseRepository<T = any> {
-  protected prisma: PrismaClient;
+  public prisma: PrismaClient;
   protected modelName: string;
 
   constructor(modelName: string) {

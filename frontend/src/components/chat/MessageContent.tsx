@@ -4,7 +4,7 @@ import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { formatDiscordDate } from '../../lib/dateUtils';
 import Tooltip from '../ui/Tooltip';
-import { useServerStore } from '../../store/serverStore';
+import { useServerStore, Member } from '../../store/serverStore';
 import { processMentionsForFrontend } from '../../lib/mentionUtils';
 
 interface Props {
@@ -31,7 +31,7 @@ export default function MessageContent({
 }: Props) {
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { activeServer, activeConversation } = useServerStore();
+  const { activeServer, activeConversation, getMemberColor } = useServerStore();
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -60,11 +60,18 @@ export default function MessageContent({
       ).replace(/\n(?=\n)/g, '\n\u200B') 
     : '';
 
+  const member = activeServer?.members?.find(m => m.userId === msg.user.id);
+  const usernameColor = member ? (getMemberColor(member) || '#e0e1e5') : '#e0e1e5';
+
   return (
     <div className="flex-1 min-w-0 z-10 relative pr-2">
       {!shouldGroup && (
         <div className="flex items-baseline gap-2 mb-0.5 select-none">
-          <span className="font-medium text-indigo-100 hover:underline cursor-pointer" onClick={onUserClick}>
+          <span
+            className="font-medium hover:underline cursor-pointer"
+            style={{ color: usernameColor }}
+            onClick={onUserClick}
+          >
             {msg.user.username}
           </span>
           <span className="text-[11px] text-zinc-500 font-medium">

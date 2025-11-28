@@ -31,6 +31,7 @@ export interface Member {
     id: string;
     name: string;
     color: string;
+    position: number;
   }[];
 }
 
@@ -88,6 +89,7 @@ interface ServerState {
   setOnlineUsers: (userIds: string[]) => void;
   getLastChannelId: (serverId: string) => string | null;
   handleNewMessage: (message: any) => void;
+  getMemberColor: (member: Member) => string | null;
 }
 
 export const useServerStore = create<ServerState>((set, get) => ({
@@ -267,5 +269,21 @@ export const useServerStore = create<ServerState>((set, get) => ({
       const others = state.conversations.filter(c => c.id !== conversationId);
       
       return { conversations: [updatedConv, ...others] };
-  })
+  }),
+
+  getMemberColor: (member: Member) => {
+    if (!member.roles || member.roles.length === 0) return null;
+
+    // Sort by position DESC
+    const sortedRoles = [...member.roles].sort((a, b) => b.position - a.position);
+
+    // Find first role with non-default color
+    for (const role of sortedRoles) {
+        if (role.color && role.color !== '#99aab5') {
+            return role.color;
+        }
+    }
+
+    return null;
+  }
 }));
