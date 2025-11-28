@@ -3,6 +3,8 @@ import rateLimit from 'express-rate-limit';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
 import { updateMessage, deleteMessage, createMessage, getMessages } from '../controllers/message.controller';
+import { requireServerPermission } from '../middlewares/permissions.middleware';
+import { Permissions } from '../shared/permissions';
 
 const router = Router();
 
@@ -22,7 +24,8 @@ const messageLimiter = rateLimit({
 router.get('/', getMessages); 
 
 // POST /api/messages
-router.post('/', messageLimiter, upload.single('file'), createMessage);
+// Check SEND_MESSAGES. Note: Middleware handles DMs gracefully (skips check if no server context)
+router.post('/', messageLimiter, requireServerPermission(Permissions.SEND_MESSAGES), upload.single('file'), createMessage);
 
 // PUT & DELETE
 router.put('/:messageId', updateMessage);

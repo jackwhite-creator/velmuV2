@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { AuthenticatedSocket } from '../../types';
 import { memberRepository, conversationRepository, channelRepository } from '../../repositories';
-import { typingUsers } from '../socket.manager';
+import { typingUsers } from '../../socket';
 
 export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) => {
     const { userId } = socket;
@@ -29,7 +29,7 @@ export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) =>
         if (!isMember) return;
 
         socket.join(`channel_${channelId}`);
-        syncTypingState(channelId, { channelId });
+        syncTypingState(`channel_${channelId}`, { channelId });
     });
     
     socket.on('join_conversation', async (conversationId: string) => {
@@ -51,14 +51,4 @@ export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) =>
     socket.on('leave_channel', (id) => socket.leave(`channel_${id}`));
     socket.on('leave_conversation', (id) => socket.leave(`conversation_${id}`));
     socket.on('leave_server', (id) => socket.leave(`server_${id}`));
-
-    socket.on('typing_start', (data: any) => {
-        const room = data.channelId ? `channel_${data.channelId}` : `conversation_${data.conversationId}`;
-        socket.to(room).emit('user_typing', { ...data, userId, isTyping: true });
-    });
-    
-    socket.on('typing_stop', (data: any) => {
-        const room = data.channelId ? `channel_${data.channelId}` : `conversation_${data.conversationId}`;
-        socket.to(room).emit('user_typing', { ...data, userId, isTyping: false });
-    });
 };
