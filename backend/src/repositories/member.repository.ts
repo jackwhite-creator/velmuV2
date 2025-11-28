@@ -139,13 +139,27 @@ export class MemberRepository extends BaseRepository<Member> {
     
     if (!member) return false;
 
-    // Si le membre a des rôles avec ADMINISTRATOR, il a toutes les permissions
-    if (member.roles?.some(role => role.permissions.includes('ADMINISTRATOR'))) {
+    // 1. Check owner via server repo (could be circular, so we rely on roles here OR add owner check logic if needed)
+    // Ideally, owner should have an invisible 'root' permission or just check server.ownerId.
+    // But for now, let's assume owner always has Admin role or we fetch server.
+    const server = await this.prisma.server.findUnique({ where: { id: serverId }, select: { ownerId: true } });
+    if (server && server.ownerId === userId) return true;
+
+    // 2. Fetch @everyone role for this server
+    const everyoneRole = await this.prisma.role.findFirst({
+      where: { serverId, name: '@everyone' }
+    });
+
+    const rolesToCheck = [...(member.roles || [])];
+    if (everyoneRole) rolesToCheck.push(everyoneRole);
+
+    // 3. Administrator bypass
+    if (rolesToCheck.some(role => role.permissions.includes('ADMINISTRATOR'))) {
       return true;
     }
 
-    // Vérifie si un des rôles a la permission demandée
-    return member.roles?.some(role => role.permissions.includes(permission)) || false;
+    // 4. Check specific permission across all roles (including @everyone)
+    return rolesToCheck.some(role => role.permissions.includes(permission));
   }
 
   /**
