@@ -3,11 +3,17 @@ import { createPortal } from 'react-dom';
 
 // --- TYPES ---
 
-interface ContextMenuProps {
+export interface ContextMenuProps {
   position: { x: number; y: number };
   onClose: () => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  items?: ContextMenuItemData[]; // New Data-Driven Prop
 }
+
+export type ContextMenuItemData =
+  | { type: 'item'; label: string; icon?: React.ReactNode; onClick?: () => void; variant?: 'default' | 'danger'; disabled?: boolean; children?: ContextMenuItemData[] }
+  | { type: 'separator' }
+  | { type: 'label'; label: string };
 
 interface ContextMenuItemProps {
   label: string;
@@ -19,7 +25,7 @@ interface ContextMenuItemProps {
 }
 
 // --- COMPOSANT CONTENEUR ---
-export function ContextMenu({ position, onClose, children }: ContextMenuProps) {
+export function ContextMenu({ position, onClose, children, items }: ContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const [style, setStyle] = useState<React.CSSProperties>({ 
     top: position.y, 
@@ -40,6 +46,28 @@ export function ContextMenu({ position, onClose, children }: ContextMenuProps) {
     }
   }, [position]);
 
+  const renderItems = (itemsToRender: ContextMenuItemData[]) => {
+      return itemsToRender.map((item, index) => {
+          if (item.type === 'separator') return <ContextMenuSeparator key={index} />;
+          if (item.type === 'label') return <ContextMenuLabel key={index} label={item.label} />;
+          if (item.type === 'item') {
+              return (
+                  <ContextMenuItem
+                      key={index}
+                      label={item.label}
+                      icon={item.icon}
+                      onClick={item.onClick}
+                      variant={item.variant}
+                      disabled={item.disabled}
+                  >
+                      {item.children && renderItems(item.children)}
+                  </ContextMenuItem>
+              );
+          }
+          return null;
+      });
+  };
+
   return createPortal(
     <>
       <div 
@@ -54,7 +82,7 @@ export function ContextMenu({ position, onClose, children }: ContextMenuProps) {
         onClick={(e) => e.stopPropagation()} 
         onContextMenu={(e) => e.preventDefault()} 
       >
-        {children}
+        {items ? renderItems(items) : children}
       </div>
     </>,
     document.body
@@ -72,9 +100,6 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
     : "hover:bg-indigo-500 text-zinc-300 hover:text-white";
   const disabledClass = disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : "";
 
-  // Logic for submenu positioning (naive)
-  const subMenuPosition = itemRef.current ? { top: 0, left: '100%' } : {};
-
   return (
     <div 
         className="relative"
@@ -83,7 +108,7 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
     >
         <button 
             ref={itemRef}
-            onClick={onClick} 
+            onClick={() => { onClick?.(); }}
             disabled={disabled}
             className={`${baseClass} ${variantClass} ${disabledClass} ${isSubMenuOpen ? 'bg-indigo-500 text-white' : ''}`}
         >

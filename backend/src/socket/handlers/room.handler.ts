@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { AuthenticatedSocket } from '../../types';
 import { memberRepository, conversationRepository, channelRepository } from '../../repositories';
-import { typingUsers } from '../../socket';
+import { typingUsers, onlineUsers, userServerRooms } from '../../socket';
 
 export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) => {
     const { userId } = socket;
@@ -44,7 +44,32 @@ export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) =>
     socket.on('join_server', async (serverId: string) => {
          const isMember = await memberRepository.isMember(userId, serverId);
          if (isMember) {
-             socket.join(`server_${serverId}`);
+             const roomName = `server_${serverId}`;
+             socket.join(roomName);
+
+             // Track that this user is listening to this server
+             if (!userServerRooms.has(userId)) userServerRooms.set(userId, new Set());
+             userServerRooms.get(userId)?.add(serverId);
+
+             // Broadcast that I am online to this server (if I am actually online, which I am)
+             socket.to(roomName).emit('user_status_change', { userId, status: 'online' });
+
+             // Send back the list of currently online users *in this server* to the client
+             const roomSockets = io.sockets.adapter.rooms.get(roomName);
+             const onlineUserIdsInServer = new Set<string>();
+
+             if (roomSockets) {
+                 // Optimization: Direct access to socket.data.userId via io.sockets.sockets
+                 // This avoids the O(N*M) loop searching through onlineUsers map
+                 roomSockets.forEach(socketId => {
+                     const remoteSocket = io.sockets.sockets.get(socketId) as AuthenticatedSocket;
+                     if (remoteSocket && remoteSocket.userId) {
+                         onlineUserIdsInServer.add(remoteSocket.userId);
+                     }
+                 });
+             }
+
+             socket.emit('server_online_users', { serverId, userIds: Array.from(onlineUserIdsInServer) });
          }
     });
 
