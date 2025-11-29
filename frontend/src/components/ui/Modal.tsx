@@ -43,9 +43,10 @@ export default function Modal({ isOpen, onClose, children, size = 'md' }: ModalP
         <div 
           className={`
             relative w-full ${sizeClasses[size]} 
-            bg-background-floating border border-background-tertiary rounded-md shadow-2xl 
+            bg-primary border border-tertiary rounded-md shadow-2xl
             animate-modal-slide overflow-hidden
           `}
+          style={{ backgroundColor: 'var(--bg-primary)', borderColor: 'var(--bg-tertiary)' }}
           onClick={(e) => e.stopPropagation()}
         >
           {children}

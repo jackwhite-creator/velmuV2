@@ -20,7 +20,7 @@ router.put('/:channelId', updateChannel);
 router.delete('/:channelId', deleteChannel);
 
 // Channel messages
-router.get('/:channelId/messages', getChannelMessages);
+router.get('/:channelId/messages', requireServerPermission(Permissions.VIEW_CHANNELS), getChannelMessages);
 router.post('/:channelId/messages', upload.single('file'), sendChannelMessage);
 
 export default router;

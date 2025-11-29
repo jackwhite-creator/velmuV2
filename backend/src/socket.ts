@@ -10,6 +10,8 @@ import { AuthenticatedSocket } from './types';
 // Shared state
 export const typingUsers = new Map<string, Map<string, string>>();
 export const onlineUsers = new Map<string, Set<string>>();
+// Track which servers a user is connected to (socket rooms) for presence
+export const userServerRooms = new Map<string, Set<string>>();
 
 export const initSocket = (httpServer: HttpServer) => {
 
@@ -38,9 +40,14 @@ export const initSocket = (httpServer: HttpServer) => {
     }
   });
 
-  const broadcastOnlineUsers = () => {
-    const onlineUserIds = Array.from(onlineUsers.keys());
-    io.emit('online_users_update', onlineUserIds);
+  // Broadcast presence only to relevant rooms (servers where the user is a member)
+  const broadcastUserStatus = (userId: string, status: 'online' | 'offline') => {
+      const serverIds = userServerRooms.get(userId);
+      if (serverIds) {
+          serverIds.forEach(serverId => {
+              io.to(`server_${serverId}`).emit('user_status_change', { userId, status });
+          });
+      }
   };
 
   io.use((socket, next) => {
@@ -63,14 +70,19 @@ export const initSocket = (httpServer: HttpServer) => {
     
     if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
-        // Emit status change for incremental updates (future proofing / alternative to broadcast)
-        io.emit('user_status_change', { userId, status: 'online' }); 
+        // Do not emit immediately here. We wait until they join server rooms in `join_server` handler
+        // OR we track their servers here if we had access to DB.
+        // Better approach: Let `join_server` trigger the "I am here" presence for that specific server.
+        // BUT `onlineUsers` is global.
+        // So we just mark them online globally here. The broadcast happens when they join rooms or we can try to broadcast now if we knew rooms.
+        // Since we don't know rooms yet, we rely on `join_server` to add them to rooms,
+        // AND we rely on `join_server` to emit "Hey I'm online" to that room?
+        // No, standard Discord behavior: You are online. If you share a server, you see it.
+        // So when `join_server` happens, we should emit "User X is online" to that server room.
     }
     onlineUsers.get(userId)?.add(socket.id);
+    if (!userServerRooms.has(userId)) userServerRooms.set(userId, new Set());
     
-    // Broadcast full list for simplicity with current frontend
-    broadcastOnlineUsers();
-
     // Register handlers
     registerRoomHandlers(io, socket);
     registerChatHandlers(io, socket);
@@ -80,9 +92,10 @@ export const initSocket = (httpServer: HttpServer) => {
       if (userSockets) {
         userSockets.delete(socket.id);
         if (userSockets.size === 0) {
+          // User is fully offline
           onlineUsers.delete(userId);
-          io.emit('user_status_change', { userId, status: 'offline' });
-          broadcastOnlineUsers();
+          broadcastUserStatus(userId, 'offline');
+          userServerRooms.delete(userId);
         }
       }
 

@@ -6,6 +6,7 @@ import { useServerStore } from '../../store/serverStore';
 import { Socket } from 'socket.io-client';
 import { useAuthStore } from '../../store/authStore';
 import { Permissions } from '@backend/shared/permissions';
+import { usePermission } from '../../hooks/usePermission';
 
 interface Props {
   server: Server;
@@ -22,12 +23,10 @@ export default function ServerHeader({ server, isOwner, socket, onInvite, onOpen
   const [confirmConfig, setConfirmConfig] = useState({ title: '', message: '' as React.ReactNode, action: async () => {}, confirmText: 'Confirmer' });
   
   const { setServers, servers, setActiveServer, setActiveChannel } = useServerStore();
-  const { user } = useAuthStore();
 
-  const myMember = server.members?.find(m => m.userId === user?.id);
-  const hasManageServer = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.MANAGE_SERVER) || r.permissions.includes(Permissions.ADMINISTRATOR));
-  const hasCreateChannel = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.MANAGE_CHANNELS) || r.permissions.includes(Permissions.ADMINISTRATOR));
-  const hasCreateInvite = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.CREATE_INVITES) || r.permissions.includes(Permissions.ADMINISTRATOR));
+  const hasManageServer = usePermission([Permissions.MANAGE_SERVER]);
+  const hasCreateChannel = usePermission([Permissions.MANAGE_CHANNELS]);
+  const hasCreateInvite = usePermission([Permissions.CREATE_INVITES]);
 
   const handleDeleteServer = () => {
     setIsMenuOpen(false);

@@ -14,12 +14,20 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.userId;
-    const file = req.file;
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
     
     let updateData = { ...req.body };
-    if (file) {
-      const field = req.body.field || 'avatarUrl';
-      updateData[field] = (file as any).path || (file as any).secure_url;
+
+    // Handle avatar upload
+    if (files && files['avatar'] && files['avatar'][0]) {
+      const avatarFile = files['avatar'][0];
+      updateData.avatarUrl = (avatarFile as any).path || (avatarFile as any).secure_url;
+    }
+
+    // Handle banner upload
+    if (files && files['banner'] && files['banner'][0]) {
+      const bannerFile = files['banner'][0];
+      updateData.bannerUrl = (bannerFile as any).path || (bannerFile as any).secure_url;
     }
 
     // Nettoyer les champs undefined/null qui ne devraient pas être mis à jour

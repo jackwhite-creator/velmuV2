@@ -130,6 +130,38 @@ export class UserRepository extends BaseRepository<User> {
     const user = await this.findByEmail(email);
     return user !== null;
   }
+
+  /**
+   * Récupère la liste des serveurs en commun entre deux utilisateurs
+   */
+  async getMutualServers(userId1: string, userId2: string) {
+    // On cherche les serveurs où user1 est membre
+    const user1Servers = await this.prisma.member.findMany({
+        where: { userId: userId1 },
+        select: { serverId: true }
+    });
+
+    const user1ServerIds = user1Servers.map(m => m.serverId);
+
+    // On cherche les serveurs parmi ceux-ci où user2 est aussi membre
+    const mutualMembers = await this.prisma.member.findMany({
+        where: {
+            userId: userId2,
+            serverId: { in: user1ServerIds }
+        },
+        include: {
+            server: {
+                select: {
+                    id: true,
+                    name: true,
+                    iconUrl: true
+                }
+            }
+        }
+    });
+
+    return mutualMembers.map(m => m.server);
+  }
 }
 
 export const userRepository = new UserRepository();
