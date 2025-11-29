@@ -8,6 +8,8 @@ import TypingIndicator from './TypingIndicator';
 import Tooltip from '../ui/Tooltip';
 import { useChatInput } from '../../hooks/useChatInput';
 import MentionList from './MentionList';
+import { Permissions } from '@backend/shared/permissions';
+import { usePermission } from '../../hooks/usePermission';
 
 interface Props {
   inputValue: string;
@@ -36,6 +38,7 @@ export default function ChatInput(props: Props) {
   } = useChatInput(props);
 
   const { activeServer, activeConversation } = useServerStore();
+  const hasSendPermission = usePermission(Permissions.SEND_MESSAGES);
 
   // Mention State
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
@@ -235,8 +238,9 @@ export default function ChatInput(props: Props) {
             <textarea 
                 ref={textInputRef}
                 rows={1}
-                className="flex-1 bg-transparent text-zinc-200 outline-none font-normal text-[15px] placeholder-zinc-400 resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed" 
-                placeholder={`Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`} 
+                disabled={!hasSendPermission}
+                className={`flex-1 bg-transparent outline-none font-normal text-[15px] resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed ${!hasSendPermission ? 'text-zinc-500 cursor-not-allowed placeholder-zinc-500' : 'text-zinc-200 placeholder-zinc-400'}`}
+                placeholder={!hasSendPermission ? "Tu n'as pas la permission d'envoyer des messages dans ce salon" : `Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`}
                 value={inputValue} 
                 onChange={handleChange} 
                 onKeyDown={handleKeyDown}
@@ -245,7 +249,7 @@ export default function ChatInput(props: Props) {
                 maxLength={MAX_LENGTH}
             />
             
-            <div className="absolute right-3 top-2.5 flex items-center gap-2">
+            <div className={`absolute right-3 top-2.5 flex items-center gap-2 ${!hasSendPermission ? 'opacity-50 pointer-events-none' : ''}`}>
                 {showCounter && (
                     <span className={`text-[10px] font-bold mr-1 ${remaining < 0 ? 'text-status-danger' : remaining < 200 ? 'text-status-warning' : 'text-zinc-500'}`}>
                         {remaining}

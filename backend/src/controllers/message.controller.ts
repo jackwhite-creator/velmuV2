@@ -44,12 +44,34 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
       return;
     }
 
+    // Handle potential file upload for message
+    let finalAttachments = attachments;
+    if (req.file) {
+      const file = req.file as any;
+      const newAttachment = {
+        url: file.path || file.secure_url,
+        filename: file.originalname,
+        type: file.mimetype,
+        size: file.size
+      };
+      // If attachments is a string (JSON), parse it, otherwise default to array
+      if (typeof finalAttachments === 'string') {
+        try {
+          finalAttachments = JSON.parse(finalAttachments);
+        } catch (e) {
+          finalAttachments = [];
+        }
+      }
+      if (!Array.isArray(finalAttachments)) finalAttachments = [];
+      finalAttachments.push(newAttachment);
+    }
+
     let message: any;
     if (channelId) {
       message = await messageService.createChannelMessage(channelId, userId, {
         content,
         replyToId,
-        attachments
+        attachments: finalAttachments
       });
       
       const io = req.app.get('io');
@@ -60,7 +82,7 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
       message = await messageService.createConversationMessage(conversationId, userId, {
         content,
         replyToId,
-        attachments
+        attachments: finalAttachments
       });
 
       const io = req.app.get('io');

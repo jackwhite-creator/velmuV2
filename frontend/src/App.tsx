@@ -12,6 +12,7 @@ import RegisterPage from './pages/RegisterPage';
 import ChatPage from './pages/ChatPage';
 import InvitePage from './pages/InvitePage';
 import PatchNotesModal from './components/shared/modals/PatchNotesModal';
+import UserProfileModal from './components/server/modals/UserProfileModal';
 import { PATCH_NOTE_DATA } from './config/patchNotes';
 
 function App() {
@@ -77,7 +78,25 @@ function App() {
         }
     });
 
-    socket.on('online_users_update', (ids: string[]) => setOnlineUsers(ids));
+    socket.on('online_users_update', (ids: string[]) => {
+        // Handle global online users (legacy/fallback)
+        setOnlineUsers(ids);
+    });
+
+    socket.on('server_online_users', (data: { serverId: string, userIds: string[] }) => {
+        // Only merge, do not overwrite via setOnlineUsers
+        useServerStore.getState().mergeOnlineUsers(data.userIds);
+    });
+
+    socket.on('user_status_change', (data: { userId: string, status: 'online' | 'offline' }) => {
+        const { onlineUsers, setOnlineUsers } = useServerStore.getState();
+        const newSet = new Set(onlineUsers);
+        if (data.status === 'online') newSet.add(data.userId);
+        else newSet.delete(data.userId);
+        // We need to convert back to array because setOnlineUsers takes array
+        setOnlineUsers(Array.from(newSet));
+    });
+
     socket.on('new_conversation', (conv) => { addConversation(conv); refreshConversations(); });
     socket.on('new_friend_request', addRequest);
     socket.on('friend_request_accepted', (req) => updateRequest(req.id, 'ACCEPTED', req));
@@ -86,6 +105,8 @@ function App() {
     return () => {
       socket.off('conversation_bump');
       socket.off('online_users_update');
+      socket.off('server_online_users');
+      socket.off('user_status_change');
       socket.off('new_conversation');
       socket.off('new_friend_request');
       socket.off('friend_request_accepted');
@@ -138,6 +159,8 @@ function App() {
         isOpen={showPatchNotes} 
         onClose={handleClosePatchNotes} 
       />
+
+      <UserProfileModal />
     </>
   );
 }

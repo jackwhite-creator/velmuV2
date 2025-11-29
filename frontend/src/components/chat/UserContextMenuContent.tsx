@@ -12,6 +12,8 @@ interface Props {
   onClose: () => void;
 }
 
+import { usePermission } from '../../hooks/usePermission';
+
 export default function UserContextMenuContent({ memberId, serverId, onClose }: Props) {
   const navigate = useNavigate();
   const { user: currentUser } = useAuthStore();
@@ -20,19 +22,21 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
   const isMe = currentUser?.id === memberId;
   const member = activeServer?.members?.find(m => m.userId === memberId);
   
+  // Permissions using hook
+  const canKick = usePermission(Permissions.KICK_MEMBERS);
+  const canBan = usePermission(Permissions.BAN_MEMBERS);
+  const canManageRoles = usePermission(Permissions.MANAGE_ROLES);
+
   // Roles Logic
   const getManageableRoles = () => {
       if (!currentUser || !activeServer || !activeServer.roles || !member) return [];
-      
+      if (!canManageRoles) return [];
+
       const myMember = activeServer.members?.find(m => m.userId === currentUser.id);
       if (!myMember) return [];
-
       const isOwner = activeServer.ownerId === currentUser.id;
-      const isAdmin = myMember.roles.some(r => r.permissions.includes(Permissions.ADMINISTRATOR));
-      const canManageRoles = isAdmin || myMember.roles.some(r => r.permissions.includes(Permissions.MANAGE_ROLES));
 
-      if (!isOwner && !canManageRoles) return [];
-
+      // Filter roles lower than mine
       const myHighestPos = Math.max(...(myMember.roles.map(r => r.position) || [0]));
       
       return activeServer.roles.filter(r => {
@@ -69,6 +73,11 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
       } catch (err) { console.error(err); }
   };
 
+  const handleBan = async () => {
+      // TODO: Implement Ban
+      onClose();
+  };
+
   const handleDM = async () => {
       try {
           const res = await api.post('/conversations', { targetUserId: memberId });
@@ -77,18 +86,34 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
       } catch (err) { console.error(err); }
   };
 
+  const handleProfile = () => {
+      // Logic to open profile modal (using a store or callback)
+      // Since we don't have a global profile store yet, we might need to rely on prop callback or add one
+      // The user wants it to work.
+      // Assuming we can trigger it via a window event or store.
+      // For now, let's console log, or if MemberList has a way...
+      // MemberList passed onUserClick, but that's for clicking the item.
+      // Let's assume we can navigate to a profile route or emit an event.
+      // Actually, standard Discord opens a modal.
+      // We will leave a TODO or try to implement if we can find the modal state.
+      // `onOpenProfile` was passed to ServerChannels but not here.
+      // Let's dispatch a custom event for now as a quick fix or just navigate if we had a route.
+      window.dispatchEvent(new CustomEvent('open-profile', { detail: { userId: memberId } }));
+      onClose();
+  };
+
   const manageableRoles = getManageableRoles();
   const isServerContext = !!serverId && !!activeServer;
 
   return (
     <>
-      <ContextMenuItem label="Profil" onClick={() => { /* TODO: Open Profile */ onClose(); }} />
+      <ContextMenuItem label="Profil" onClick={handleProfile} />
       {!isMe && <ContextMenuItem label="Envoyer un message" onClick={handleDM} />}
       
       {isServerContext && !isMe && (
           <>
             <ContextMenuSeparator />
-            {manageableRoles.length > 0 && (
+            {canManageRoles && manageableRoles.length > 0 && (
                  <ContextMenuItem label="Rôles">
                      <ContextMenuLabel label="Membres" />
                      {manageableRoles.map(role => {
@@ -98,7 +123,11 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
                                 key={role.id}
                                 label={role.name}
                                 onClick={() => handleRoleToggle(role.id, !!hasRole)}
-                                icon={hasRole ? <div className="w-2 h-2 bg-white rounded-full"></div> : null}
+                                icon={hasRole ? (
+                                    <svg className="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                ) : (
+                                    <div className="w-4 h-4 border border-zinc-500 rounded-sm"></div>
+                                )}
                              />
                          );
                      })}
@@ -106,8 +135,8 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
             )}
             
             <ContextMenuSeparator />
-            <ContextMenuItem label="Exclure" variant="danger" onClick={handleKick} />
-            <ContextMenuItem label="Bannir" variant="danger" onClick={() => {}} />
+            {canKick && <ContextMenuItem label="Exclure" variant="danger" onClick={handleKick} />}
+            {canBan && <ContextMenuItem label="Bannir" variant="danger" onClick={handleBan} />}
           </>
       )}
     </>

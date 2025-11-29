@@ -33,6 +33,7 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
   const [inviteCode, setInviteCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [permissionDenied, setPermissionDenied] = useState(false);
 
   const [expiresIn, setExpiresIn] = useState(604800);
   const [maxUses, setMaxUses] = useState(0);
@@ -40,6 +41,7 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
   const generateInvite = useCallback(async () => {
     if (!server) return;
     setIsLoading(true);
+    setPermissionDenied(false);
     try {
       const res = await api.post('/invites/create', { 
           serverId: server.id,
@@ -47,8 +49,11 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
           maxUses
       });
       setInviteCode(res.data.code);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erreur génération invitation", error);
+      if (error.response?.status === 403) {
+          setPermissionDenied(true);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +71,28 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
   }, [isOpen, server, generateInvite]);
 
   if (!server) return null;
+
+  if (permissionDenied) {
+      return (
+        <Modal isOpen={isOpen} onClose={onClose} size="sm">
+            <div className="p-6 bg-background-floating flex flex-col items-center text-center">
+                 <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-4 text-red-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                </div>
+                <h2 className="text-xl font-bold text-white mb-2">Permission Refusée</h2>
+                <p className="text-zinc-400 text-sm mb-6">
+                    Vous n'avez pas la permission de créer des invitations pour ce serveur.
+                </p>
+                <button
+                    onClick={onClose}
+                    className="w-full py-2 bg-brand hover:bg-brand-hover text-white rounded-md font-medium transition-colors"
+                >
+                    Compris
+                </button>
+            </div>
+        </Modal>
+      );
+  }
 
   const fullLink = inviteCode ? `${window.location.origin}/invite/${inviteCode}` : '';
 
