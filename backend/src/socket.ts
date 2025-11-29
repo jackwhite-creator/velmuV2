@@ -64,7 +64,7 @@ export const initSocket = (httpServer: HttpServer) => {
     if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
         // Emit status change for incremental updates (future proofing / alternative to broadcast)
-        io.emit('user_status_change', { userId, status: 'online' });
+        io.emit('user_status_change', { userId, status: 'online' }); 
     }
     onlineUsers.get(userId)?.add(socket.id);
     
@@ -91,17 +91,17 @@ export const initSocket = (httpServer: HttpServer) => {
         if (usersInRoom.has(userId)) {
             usersInRoom.delete(userId);
             const isConv = roomId.startsWith('conversation_');
-            socket.to(roomId).emit('user_typing', {
-                userId,
+            socket.to(roomId).emit('user_typing', { 
+                userId, 
                 username: '', // Username not strictly needed for stop typing
                 isTyping: false,
-                channelId: isConv ? undefined : roomId.replace('channel_', ''),
+                channelId: isConv ? undefined : roomId.replace('channel_', ''), 
                 conversationId: isConv ? roomId.replace('conversation_', '') : undefined
             });
         }
         if (usersInRoom.size === 0) typingUsers.delete(roomId);
       });
-
+      
       logger.info(`User disconnected: ${userId}`);
     });
   });

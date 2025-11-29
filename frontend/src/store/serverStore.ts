@@ -42,6 +42,7 @@ export interface Server {
   ownerId: string;
   categories?: Category[];
   members?: Member[];
+  roles?: any[]; // For hierarchy checks
 }
 
 export interface Conversation {
@@ -273,17 +274,17 @@ export const useServerStore = create<ServerState>((set, get) => ({
 
   getMemberColor: (member: Member) => {
     if (!member.roles || member.roles.length === 0) return null;
-
+    
     // Sort by position DESC
     const sortedRoles = [...member.roles].sort((a, b) => b.position - a.position);
-
+    
     // Find first role with non-default color
     for (const role of sortedRoles) {
         if (role.color && role.color !== '#99aab5') {
             return role.color;
         }
     }
-
+    
     return null;
   }
 }));

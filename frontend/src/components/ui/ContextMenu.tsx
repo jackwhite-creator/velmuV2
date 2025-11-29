@@ -76,14 +76,14 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
   const subMenuPosition = itemRef.current ? { top: 0, left: '100%' } : {};
 
   return (
-    <div
+    <div 
         className="relative"
         onMouseEnter={() => children && setIsSubMenuOpen(true)}
         onMouseLeave={() => children && setIsSubMenuOpen(false)}
     >
-        <button
+        <button 
             ref={itemRef}
-            onClick={onClick}
+            onClick={onClick} 
             disabled={disabled}
             className={`${baseClass} ${variantClass} ${disabledClass} ${isSubMenuOpen ? 'bg-indigo-500 text-white' : ''}`}
         >

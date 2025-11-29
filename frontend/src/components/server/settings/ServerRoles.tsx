@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { Plus, GripVertical, Trash2 } from 'lucide-react';
+import { Plus, GripVertical, Trash2, Users } from 'lucide-react';
 import { useServerStore } from '../../../store/serverStore';
 import { Permissions } from '@backend/shared/permissions';
 import api from '../../../lib/api';
@@ -22,8 +21,7 @@ export default function ServerRoles({ serverId }: Props) {
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
-
-  // Loading & Error states could be added here
+  const [activeTab, setActiveTab] = useState<'settings' | 'members'>('settings');
 
   useEffect(() => {
     loadRoles();
@@ -32,15 +30,11 @@ export default function ServerRoles({ serverId }: Props) {
   const loadRoles = async () => {
     try {
       const res = await api.get(`/servers/${serverId}/roles`);
-      // Sort roles by position DESC (highest at top) for UI
       const sortedRoles = res.data.sort((a: Role, b: Role) => b.position - a.position);
       setRoles(sortedRoles);
-
+      
       if (sortedRoles.length > 0 && !selectedRoleId) {
         setSelectedRoleId(sortedRoles[0].id);
-      setRoles(res.data);
-      if (res.data.length > 0 && !selectedRoleId) {
-        setSelectedRoleId(res.data[0].id);
       }
     } catch (err) {
       console.error("Failed to load roles", err);
@@ -51,11 +45,7 @@ export default function ServerRoles({ serverId }: Props) {
     try {
       const res = await api.post(`/servers/${serverId}/roles`);
       const newRole = res.data;
-      // Add new role after the top one (if admin) or just at top
-      // Typically new roles appear above @everyone but below others.
-      // For simplicity, we refresh list which will sort by position
       loadRoles();
-      setRoles([newRole, ...roles]);
       setSelectedRoleId(newRole.id);
     } catch (err) {
       console.error("Failed to create role", err);
@@ -99,52 +89,24 @@ export default function ServerRoles({ serverId }: Props) {
 
   const onDragEnd = async (result: any) => {
     if (!result.destination) return;
-
+    
     const items = Array.from(roles);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
 
     setRoles(items);
 
-    // Calculate new positions based on UI order
-    // UI: Index 0 is Top.
-    // DB: Position N is Top.
-    // So if we have N items:
-    // Index 0 -> Position N
-    // Index 1 -> Position N-1
-    // ...
-    // Index N -> Position 0 (@everyone)
-
-    // Actually we keep @everyone at bottom always in logic usually, but here dragging allowed above?
-    // Let's protect @everyone from being moved ideally, but dnd-kit can handle it.
-    // For now, simple logic:
-
     const total = items.length;
     const updates = items.map((role, index) => ({
         id: role.id,
-        position: total - 1 - index // Descending order
-    // Update positions locally based on index (higher index = lower priority in array, but UI might show reverse)
-    // Actually Discord roles: Top is highest priority.
-    // Let's assume list is sorted desc by position.
-
-    // Simplification: We just send the new order to backend
-    setRoles(items);
-
-    // Calculate new positions
-    // We want the first item in the list to have the highest position
-    const updates = items.map((role, index) => ({
-        id: role.id,
-        position: items.length - index - 1 // 0 is @everyone at bottom
+        position: total - 1 - index 
     }));
 
     try {
         await api.put(`/servers/${serverId}/roles/positions`, { roles: updates });
     } catch (err) {
         console.error("Failed to reorder", err);
-        loadRoles(); // Revert on error
-        loadRoles(); // Refresh to be sure
-    } catch (err) {
-        console.error("Failed to reorder", err);
+        loadRoles();
     }
   };
 
@@ -156,16 +118,15 @@ export default function ServerRoles({ serverId }: Props) {
       <div className="w-60 bg-[#2b2d31] flex flex-col">
         <div className="p-4 border-b border-[#1f2023]">
           <h2 className="text-xs font-bold uppercase text-zinc-400 mb-2">Rôles</h2>
-          <button
+          <button 
             onClick={handleCreateRole}
             className="flex items-center text-xs text-zinc-400 hover:text-zinc-200 transition"
           >
             <Plus className="w-4 h-4 mr-1" /> Créer un rôle
           </button>
         </div>
-
+        
         <div className="flex-1 overflow-y-auto p-2 space-y-0.5 custom-scrollbar">
-        <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
           <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="roles-list">
               {(provided) => (
@@ -182,25 +143,17 @@ export default function ServerRoles({ serverId }: Props) {
                               setSelectedRoleId(role.id);
                           }}
                           className={`
-                            group flex items-center px-2 py-1.5 rounded cursor-pointer text-sm mb-1
+                            group flex items-center px-2 py-1.5 rounded cursor-pointer text-sm mb-1 relative
                             ${selectedRoleId === role.id ? 'bg-[#404249] text-white' : 'hover:bg-[#35373c]'}
-                            ${snapshot.isDragging ? 'bg-[#404249] shadow-lg opacity-90' : ''}
+                            ${snapshot.isDragging ? 'z-50 shadow-2xl opacity-100 ring-2 ring-indigo-500' : ''}
                           `}
+                          style={provided.draggableProps.style} // Crucial for positioning
                         >
                           <div {...provided.dragHandleProps} className={`mr-2 ${role.name === '@everyone' ? 'invisible' : 'text-zinc-500 cursor-grab active:cursor-grabbing'}`}>
                              <GripVertical className="w-4 h-4" />
                           </div>
                           <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: role.color }}></div>
                           <span className="truncate flex-1 font-medium">{role.name}</span>
-                            group flex items-center px-2 py-1.5 rounded cursor-pointer text-sm
-                            ${selectedRoleId === role.id ? 'bg-[#404249] text-white' : 'hover:bg-[#35373c]'}
-                          `}
-                        >
-                          <div {...provided.dragHandleProps} className={`mr-2 ${role.name === '@everyone' ? 'invisible' : 'text-zinc-500'}`}>
-                             <GripVertical className="w-4 h-4" />
-                          </div>
-                          <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: role.color }}></div>
-                          <span className="truncate flex-1">{role.name}</span>
                         </div>
                       )}
                     </Draggable>
@@ -215,91 +168,113 @@ export default function ServerRoles({ serverId }: Props) {
 
       {/* Main Content */}
       <div className="flex-1 bg-[#313338] p-8 overflow-y-auto custom-scrollbar">
-      <div className="flex-1 bg-[#313338] p-8 overflow-y-auto">
         {selectedRole ? (
           <div className="max-w-2xl space-y-8">
             <h2 className="text-xl font-bold text-white mb-6">Modifier le rôle - {selectedRole.name}</h2>
-
-            {/* Display Settings */}
-            <div className="space-y-4">
-               <h3 className="text-xs font-bold uppercase text-zinc-400">Affichage</h3>
-
-               <div className="space-y-2">
-                   <label className="text-xs font-bold text-zinc-400">NOM DU RÔLE</label>
-                   <input
-                      type="text"
-                      value={selectedRole.name}
-                      disabled={selectedRole.name === '@everyone'}
-                      onChange={(e) => handleUpdateRole(selectedRole.id, { name: e.target.value })}
-                      className="w-full bg-[#1e1f22] border-none rounded p-2 text-white focus:ring-0"
-                   />
-               </div>
-
-               <div className="space-y-2">
-                   <label className="text-xs font-bold text-zinc-400">COULEUR DU RÔLE</label>
-                   <div className="flex gap-2">
-                       <input
-                          type="color"
-                          value={selectedRole.color}
-                          onChange={(e) => handleUpdateRole(selectedRole.id, { color: e.target.value })}
-                          className="h-10 w-16 bg-transparent cursor-pointer rounded overflow-hidden"
-                          className="h-10 w-16 bg-transparent cursor-pointer"
-                       />
-                       <div className="flex-1 bg-[#1e1f22] rounded p-2 text-zinc-400 text-sm flex items-center">
-                           {selectedRole.color}
-                       </div>
-                   </div>
-               </div>
+            
+            {/* Tabs */}
+            <div className="flex border-b border-zinc-700 mb-6">
+                <button 
+                    onClick={() => setActiveTab('settings')}
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'settings' ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+                >
+                    Paramètres
+                </button>
+                <button 
+                    onClick={() => setActiveTab('members')}
+                    className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${activeTab === 'members' ? 'border-indigo-500 text-white' : 'border-transparent text-zinc-400 hover:text-zinc-200'}`}
+                >
+                    Gérer les membres
+                </button>
             </div>
 
-            <div className="h-px bg-[#3f4147] my-8" />
+            {activeTab === 'members' ? (
+                <div className="text-center py-12 text-zinc-500">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                    <p>La liste des membres possédant ce rôle sera disponible prochainement.</p>
+                </div>
+            ) : (
+                <>
+                {/* Display Settings */}
+                <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase text-zinc-400">Affichage</h3>
+                
+                <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-400">NOM DU RÔLE</label>
+                    <input 
+                        type="text" 
+                        value={selectedRole.name}
+                        disabled={selectedRole.name === '@everyone'}
+                        onChange={(e) => handleUpdateRole(selectedRole.id, { name: e.target.value })}
+                        className="w-full bg-[#1e1f22] border-none rounded p-2 text-white focus:ring-0"
+                    />
+                </div>
+                
+                <div className="space-y-2">
+                    <label className="text-xs font-bold text-zinc-400">COULEUR DU RÔLE</label>
+                    <div className="flex gap-2">
+                        <input 
+                            type="color" 
+                            value={selectedRole.color}
+                            onChange={(e) => handleUpdateRole(selectedRole.id, { color: e.target.value })}
+                            className="h-10 w-16 bg-transparent cursor-pointer rounded overflow-hidden"
+                        />
+                        <div className="flex-1 bg-[#1e1f22] rounded p-2 text-zinc-400 text-sm flex items-center">
+                            {selectedRole.color}
+                        </div>
+                    </div>
+                </div>
+                </div>
 
-            {/* Permissions */}
-            <div className="space-y-4">
-               <h3 className="text-xs font-bold uppercase text-zinc-400">Permissions Générales</h3>
+                <div className="h-px bg-[#3f4147] my-8" />
 
-               {Object.values(Permissions).map((perm) => {
-                   const isEnabled = selectedRole.permissions.includes(perm);
-                   const isCritical = perm === Permissions.ADMINISTRATOR;
+                {/* Permissions */}
+                <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase text-zinc-400">Permissions Générales</h3>
+                
+                {Object.values(Permissions).map((perm) => {
+                    const isEnabled = selectedRole.permissions.includes(perm);
+                    const isCritical = perm === Permissions.ADMINISTRATOR;
 
-                   return (
-                       <div key={perm} className="flex items-center justify-between py-2 border-b border-[#3f4147] last:border-0 hover:bg-[#3f4147]/30 px-2 rounded">
-                       <div key={perm} className="flex items-center justify-between py-2 border-b border-[#3f4147] last:border-0">
-                           <div>
-                               <div className={`font-medium ${isCritical ? 'text-red-400' : 'text-zinc-200'}`}>
-                                   {perm.replace(/_/g, ' ')}
-                               </div>
-                               <div className="text-xs text-zinc-500">
-                                   {isCritical ? "Accès complet au serveur. Dangereux." : "Autorise l'utilisateur à effectuer cette action."}
-                               </div>
-                           </div>
-
-                           <button
-                             onClick={() => {
-                                 const newPerms = isEnabled
+                    return (
+                        <div key={perm} className="flex items-center justify-between py-2 border-b border-[#3f4147] last:border-0 hover:bg-[#3f4147]/30 px-2 rounded">
+                            <div>
+                                <div className={`font-medium ${isCritical ? 'text-red-400' : 'text-zinc-200'}`}>
+                                    {perm.replace(/_/g, ' ')}
+                                </div>
+                                <div className="text-xs text-zinc-500">
+                                    {isCritical ? "Accès complet au serveur. Dangereux." : "Autorise l'utilisateur à effectuer cette action."}
+                                </div>
+                            </div>
+                            
+                            <button
+                                onClick={() => {
+                                    const newPerms = isEnabled 
                                     ? selectedRole.permissions.filter(p => p !== perm)
                                     : [...selectedRole.permissions, perm];
-                                 handleUpdateRole(selectedRole.id, { permissions: newPerms });
-                             }}
-                             className={`
-                                w-10 h-6 rounded-full transition-colors relative
-                                ${isEnabled ? 'bg-green-500' : 'bg-zinc-500'}
-                             `}
-                           >
-                               <div className={`
-                                  absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform
-                                  ${isEnabled ? 'translate-x-4' : 'translate-x-0'}
-                               `}/>
-                           </button>
-                       </div>
-                   );
-               })}
-            </div>
-
+                                    handleUpdateRole(selectedRole.id, { permissions: newPerms });
+                                }}
+                                className={`
+                                    w-10 h-6 rounded-full transition-colors relative
+                                    ${isEnabled ? 'bg-green-500' : 'bg-zinc-500'}
+                                `}
+                            >
+                                <div className={`
+                                    absolute top-1 left-1 bg-white w-4 h-4 rounded-full transition-transform
+                                    ${isEnabled ? 'translate-x-4' : 'translate-x-0'}
+                                `}/>
+                            </button>
+                        </div>
+                    );
+                })}
+                </div>
+                </>
+            )}
+            
             <div className="h-8" />
-
+            
             {selectedRole.name !== '@everyone' && (
-                <button
+                <button 
                     onClick={() => handleDeleteRole(selectedRole.id)}
                     className="text-red-400 text-xs hover:underline flex items-center"
                 >
@@ -310,10 +285,9 @@ export default function ServerRoles({ serverId }: Props) {
             {/* Save Bar */}
             {hasChanges && (
                 <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-[#111214] px-4 py-3 rounded flex items-center gap-8 shadow-xl animate-bounce-in z-50">
-                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-[#111214] px-4 py-3 rounded flex items-center gap-8 shadow-xl animate-bounce-in">
                     <span className="text-white font-medium">Attention - Vous avez des changements non enregistrés !</span>
                     <div className="flex gap-2">
-                        <button
+                        <button 
                             onClick={() => {
                                 setHasChanges(false);
                                 loadRoles(); // Reset
@@ -322,7 +296,7 @@ export default function ServerRoles({ serverId }: Props) {
                         >
                             Réinitialiser
                         </button>
-                        <button
+                        <button 
                             onClick={saveChanges}
                             className="bg-green-600 hover:bg-green-700 text-white px-6 py-1.5 rounded text-sm font-medium transition"
                         >

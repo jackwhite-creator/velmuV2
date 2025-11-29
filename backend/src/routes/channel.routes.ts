@@ -16,7 +16,7 @@ router.put('/reorder', requireServerPermission(Permissions.MANAGE_CHANNELS), reo
 // Note: for update/delete where serverId is not in body/params but implied by channelId,
 // we rely on the service layer check or need a middleware that fetches channel first.
 // For now, let's keep it simple and rely on service layer for update/delete or add serverId to params.
-router.put('/:channelId', updateChannel);
+router.put('/:channelId', updateChannel); 
 router.delete('/:channelId', deleteChannel);
 
 // Channel messages

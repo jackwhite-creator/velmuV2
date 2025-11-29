@@ -9705,3 +9705,138 @@ TypeError: Cannot read properties of undefined (reading 'includes')
 TypeError: Cannot read properties of undefined (reading 'includes')
     at MessageService.createChannelMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\message.service.ts:55:17)
     at sendChannelMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\message.controller.ts:49:17)
+[2025-11-28 22:43:12] INFO: ✅ Velmu server started on port 4000
+[2025-11-28 22:43:12] INFO: Environment: development
+[2025-11-28 22:44:42] INFO: ✅ Velmu server started on port 4000
+[2025-11-28 22:44:42] INFO: Environment: development
+[2025-11-28 22:44:47] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:44:50] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:44:53] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:44:55] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:45:15] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:45:16] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:46:05] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at ServerService.getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:25:13)
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:18:20)
+[2025-11-28 22:46:05] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at ServerService.getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:25:13)
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:18:20)
+[2025-11-28 22:46:06] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at ServerService.leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:88:13)
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:91:20)
+[2025-11-28 22:46:08] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at ServerService.getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:25:13)
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:18:20)
+[2025-11-28 22:46:09] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:46:09] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:46:13] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:46:13] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:46:39] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:46:39] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:46:41] ERROR: Error: Permission manquante: SEND_MESSAGES
+Error: Permission manquante: SEND_MESSAGES
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\middlewares\permissions.middleware.ts:42:15
+[2025-11-28 22:46:42] ERROR: Error: Permission manquante: SEND_MESSAGES
+Error: Permission manquante: SEND_MESSAGES
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\middlewares\permissions.middleware.ts:42:15
+[2025-11-28 22:46:45] ERROR: Error: Permission manquante: SEND_MESSAGES
+Error: Permission manquante: SEND_MESSAGES
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\middlewares\permissions.middleware.ts:42:15
+[2025-11-28 22:46:56] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:46:56] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:02] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:02] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:18] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:19] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:24] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:25] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:47:29] ERROR: Error: Vous êtes déjà membre de ce serveur
+Error: Vous êtes déjà membre de ce serveur
+    at InviteService.joinServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\invite.service.ts:69:13)
+    at joinServerWithInvite (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\invite.controller.ts:32:32)
+[2025-11-28 22:48:27] INFO: ✅ Velmu server started on port 4000
+[2025-11-28 22:48:27] INFO: Environment: development
+[2025-11-28 22:48:29] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:48:29] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:48:37] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:48:38] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:48:42] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:48:42] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:48:46] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:48:47] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:49:00] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:49:00] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:49:05] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:49:05] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:52:50] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:52:50] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:55:37] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:55:42] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:55:50] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:55:50] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:55:56] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:55:56] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 22:56:40] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:56:40] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:56:57] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:56:57] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:57:17] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 22:57:17] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:11:31] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:11:32] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:11:34] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:11:34] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:11:39] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:11:39] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:15:46] INFO: ✅ Velmu server started on port 4000
+[2025-11-28 23:15:46] INFO: Environment: development
+[2025-11-28 23:15:46] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:15:46] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:16:10] INFO: ✅ Velmu server started on port 4000
+[2025-11-28 23:16:10] INFO: Environment: development
+[2025-11-28 23:16:12] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:16:13] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:16:13] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:16:13] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:16:14] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:16:14] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:16:20] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:16:20] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:16:23] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:16:26] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:17:07] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:17:07] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:17:55] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:17:55] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:18:27] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:18:27] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:18:39] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:18:40] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:51:41] INFO: ✅ Velmu server started on port 4000
+[2025-11-28 23:51:41] INFO: Environment: development
+[2025-11-28 23:51:41] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:51:46] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:52:01] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:52:02] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:52:04] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:52:04] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:52:07] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:52:07] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:52:09] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:52:09] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:52:24] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:52:24] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:55:36] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:55:36] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:55:46] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:55:46] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-28 23:55:48] INFO: User disconnected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-28 23:55:48] INFO: User connected: 45afd377-d503-443b-91ab-29b29727ca24
+[2025-11-29 00:08:19] INFO: User disconnected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee
+[2025-11-29 14:44:53] INFO: ✅ Velmu server started on port 4000
+[2025-11-29 14:44:53] INFO: Environment: development
+[2025-11-29 14:45:02] INFO: User connected: 74e326e9-6df0-40f2-a349-08ec0bc8d6ee

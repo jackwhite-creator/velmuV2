@@ -12,6 +12,7 @@ import MessageReplyHeader from './MessageReplyHeader';
 import MessageAvatar from './MessageAvatar';
 import MessageContent from './MessageContent';
 import MessageHoverActions from './MessageHoverActions';
+import UserContextMenuContent from './UserContextMenuContent';
 
 interface Props {
   msg: Message;
@@ -95,19 +96,6 @@ export default function MessageItem({
     if (msg.isPending) return; // Pas de clic droit si pas encore envoyé
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
-  };
-
-  const handleKickAction = () => {
-    setConfirmKickOpen(true);
-    setContextMenu(null);
-  };
-
-  const performKick = async () => {
-    if (!serverId) return;
-    try {
-      await api.delete(`/members/${serverId}/kick/${msg.user.id}`);
-    } catch (e) { console.error(e); }
-    setConfirmKickOpen(false);
   };
 
   return (
@@ -223,24 +211,15 @@ export default function MessageItem({
             </>
           )}
 
-          {isOwner && !isMe && serverId && (
-            <>
-              <ContextMenuSeparator />
-              <ContextMenuItem label="Exclure" variant="danger" onClick={handleKickAction} icon={Icons.Kick} />
-            </>
+          {/* User Management Actions */}
+          {!isMe && (
+              <>
+                <ContextMenuSeparator />
+                <UserContextMenuContent memberId={msg.user.id} serverId={serverId} onClose={() => setContextMenu(null)} />
+              </>
           )}
         </ContextMenu>
       )}
-
-      <ConfirmModal 
-        isOpen={confirmKickOpen}
-        onClose={() => setConfirmKickOpen(false)}
-        onConfirm={performKick}
-        title={`Exclure ${msg.user.username}`}
-        message="Voulez-vous vraiment exclure cet utilisateur ?"
-        isDestructive={true}
-        confirmText="Exclure"
-      />
     </>
   );
 }

@@ -45,7 +45,7 @@ export const deleteRole = async (req: Request, res: Response, next: NextFunction
 export const updateRolePositions = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId } = req.params;
-    const { roles } = req.body;
+    const { roles } = req.body; 
     const updatedRoles = await roleService.updateRolePositions(serverId, roles);
     res.json(updatedRoles);
   } catch (error) {

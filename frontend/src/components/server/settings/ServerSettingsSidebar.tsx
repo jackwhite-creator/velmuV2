@@ -1,4 +1,6 @@
 import { Server } from '../../store/serverStore';
+import { useAuthStore } from '../../../store/authStore';
+import { Permissions } from '@backend/shared/permissions';
 
 interface Props {
   activeTab: string;
@@ -8,11 +10,18 @@ interface Props {
 }
 
 export default function ServerSettingsSidebar({ activeTab, onTabChange, server, onDelete }: Props) {
-  // ✅ NETTOYAGE : On ne garde que les onglets actifs
+  const { user } = useAuthStore();
+  const myMember = server.members?.find(m => m.userId === user?.id);
+  const isOwner = server.ownerId === user?.id;
+
+  const hasManageServer = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.MANAGE_SERVER) || r.permissions.includes(Permissions.ADMINISTRATOR));
+  const hasManageRoles = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.MANAGE_ROLES) || r.permissions.includes(Permissions.ADMINISTRATOR));
+  const hasCreateInvite = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.CREATE_INVITES) || r.permissions.includes(Permissions.ADMINISTRATOR));
+
   const menuItems = [
-    { id: 'overview', label: "Vue d'ensemble" },
-    { id: 'roles', label: 'Rôles' },
-    { id: 'invites', label: 'Invitations' },
+    ...(hasManageServer ? [{ id: 'overview', label: "Vue d'ensemble" }] : []),
+    ...(hasManageRoles ? [{ id: 'roles', label: 'Rôles' }] : []),
+    ...(hasCreateInvite || hasManageServer ? [{ id: 'invites', label: 'Invitations' }] : []),
   ];
 
   return (
@@ -36,15 +45,18 @@ export default function ServerSettingsSidebar({ activeTab, onTabChange, server, 
           </button>
         ))}
         
-        <div className="my-2 border-t border-background-tertiary mx-2"></div>
-        
-        <button 
-            onClick={onDelete}
-            className="w-full text-left px-3 py-1.5 rounded-sm text-status-danger hover:bg-status-danger/10 text-sm font-medium transition-colors flex items-center justify-between group"
-        >
-            <span>Supprimer le serveur</span>
-            <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-        </button>
+        {isOwner && (
+            <>
+                <div className="my-2 border-t border-background-tertiary mx-2"></div>
+                <button 
+                    onClick={onDelete}
+                    className="w-full text-left px-3 py-1.5 rounded-sm text-status-danger hover:bg-status-danger/10 text-sm font-medium transition-colors flex items-center justify-between group"
+                >
+                    <span>Supprimer le serveur</span>
+                    <svg className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            </>
+        )}
       </nav>
     </div>
   );

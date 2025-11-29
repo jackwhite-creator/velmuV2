@@ -8557,3 +8557,32 @@ TypeError: Cannot read properties of undefined (reading 'includes')
 TypeError: Cannot read properties of undefined (reading 'includes')
     at MessageService.createChannelMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\message.service.ts:55:17)
     at sendChannelMessage (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\message.controller.ts:49:17)
+[2025-11-28 22:46:05] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at ServerService.getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:25:13)
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:18:20)
+[2025-11-28 22:46:05] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at ServerService.getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:25:13)
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:18:20)
+[2025-11-28 22:46:06] ERROR: Error: Serveur introuvable
+Error: Serveur introuvable
+    at ServerService.leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:88:13)
+    at leaveServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:91:20)
+[2025-11-28 22:46:08] ERROR: Error: Accès refusé
+Error: Accès refusé
+    at ServerService.getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\server.service.ts:25:13)
+    at getServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\server.controller.ts:18:20)
+[2025-11-28 22:46:41] ERROR: Error: Permission manquante: SEND_MESSAGES
+Error: Permission manquante: SEND_MESSAGES
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\middlewares\permissions.middleware.ts:42:15
+[2025-11-28 22:46:42] ERROR: Error: Permission manquante: SEND_MESSAGES
+Error: Permission manquante: SEND_MESSAGES
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\middlewares\permissions.middleware.ts:42:15
+[2025-11-28 22:46:45] ERROR: Error: Permission manquante: SEND_MESSAGES
+Error: Permission manquante: SEND_MESSAGES
+    at D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\middlewares\permissions.middleware.ts:42:15
+[2025-11-28 22:47:29] ERROR: Error: Vous êtes déjà membre de ce serveur
+Error: Vous êtes déjà membre de ce serveur
+    at InviteService.joinServer (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\services\invite.service.ts:69:13)
+    at joinServerWithInvite (D:\ProjetsDeveloppement\Backup Velmu\Backup\VelmuV\backend\src\controllers\invite.controller.ts:32:32)

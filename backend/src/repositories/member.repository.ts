@@ -138,7 +138,7 @@ export class MemberRepository extends BaseRepository<Member> {
     const member = await this.findByUserAndServer(userId, serverId, true);
     
     if (!member) return false;
-
+    
     // 1. Check owner via server repo (could be circular, so we rely on roles here OR add owner check logic if needed)
     // Ideally, owner should have an invisible 'root' permission or just check server.ownerId.
     // But for now, let's assume owner always has Admin role or we fetch server.

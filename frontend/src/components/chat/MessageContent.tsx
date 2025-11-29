@@ -67,8 +67,8 @@ export default function MessageContent({
     <div className="flex-1 min-w-0 z-10 relative pr-2">
       {!shouldGroup && (
         <div className="flex items-baseline gap-2 mb-0.5 select-none">
-          <span
-            className="font-medium hover:underline cursor-pointer"
+          <span 
+            className="font-medium hover:underline cursor-pointer" 
             style={{ color: usernameColor }}
             onClick={onUserClick}
           >

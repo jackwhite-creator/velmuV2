@@ -12,7 +12,7 @@ export class RoleService {
 
   async createRole(serverId: string) {
     const roleCount = await prisma.role.count({ where: { serverId } });
-
+    
     return prisma.role.create({
       data: {
         name: 'nouveau rôle',
@@ -53,7 +53,7 @@ export class RoleService {
   }
 
   async updateRolePositions(serverId: string, roles: { id: string; position: number }[]) {
-    const updatePromises = roles.map(r =>
+    const updatePromises = roles.map(r => 
       prisma.role.updateMany({
         where: { id: r.id, serverId },
         data: { position: r.position }
@@ -63,7 +63,7 @@ export class RoleService {
     await prisma.$transaction(updatePromises);
     return this.getServerRoles(serverId);
   }
-
+  
   async createEveryoneRole(serverId: string) {
     return prisma.role.create({
       data: {

@@ -1,10 +1,13 @@
 import { Router } from 'express';
 import { createInvite, getInvite, joinServerWithInvite } from '../controllers/invite.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
+import { requireServerPermission } from '../middlewares/permissions.middleware';
+import { Permissions } from '../shared/permissions';
 
 const router = Router();
 
-router.post('/create', authenticateToken, createInvite);
+// Require CREATE_INVITES permission
+router.post('/create', authenticateToken, requireServerPermission(Permissions.CREATE_INVITES), createInvite);
 
 // GET /api/invites/:code - Get invite information (no auth required)
 router.get('/:code', getInvite);

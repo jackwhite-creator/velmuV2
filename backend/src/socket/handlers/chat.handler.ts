@@ -8,7 +8,7 @@ export const registerChatHandlers = (io: Server, socket: AuthenticatedSocket) =>
     socket.on('typing_start', ({ channelId, conversationId, username }) => {
         // Ensure room naming consistency with room.handler.ts
         const room = channelId ? `channel_${channelId}` : `conversation_${conversationId}`;
-
+        
         if (!typingUsers.has(room)) typingUsers.set(room, new Map());
         
         typingUsers.get(room)?.set(userId, username);
