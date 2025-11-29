@@ -88,6 +88,7 @@ interface ServerState {
   closeConversation: (conversationId: string) => void;
   
   setOnlineUsers: (userIds: string[]) => void;
+  mergeOnlineUsers: (userIds: string[]) => void;
   getLastChannelId: (serverId: string) => string | null;
   handleNewMessage: (message: any) => void;
   getMemberColor: (member: Member) => string | null;
@@ -246,6 +247,12 @@ export const useServerStore = create<ServerState>((set, get) => ({
   },
 
   setOnlineUsers: (userIds) => set({ onlineUsers: new Set(userIds) }),
+
+  mergeOnlineUsers: (userIds) => set((state) => {
+      const newSet = new Set(state.onlineUsers);
+      userIds.forEach(id => newSet.add(id));
+      return { onlineUsers: newSet };
+  }),
 
   getLastChannelId: (serverId) => {
       return localStorage.getItem(`velmu_last_channel_${serverId}`);
