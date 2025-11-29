@@ -9,13 +9,21 @@ import { NotFoundError, AppError } from '../middlewares/error.middleware';
 export class UserService {
   /**
    * Récupère un utilisateur par ID
+   * @param userId ID de l'utilisateur à récupérer
+   * @param requesterId ID de l'utilisateur qui fait la requête (optionnel, pour les serveurs communs)
    */
-  async getUserById(userId: string) {
+  async getUserById(userId: string, requesterId?: string) {
     const user = await userRepository.findPublicById(userId);
     if (!user) {
       throw new NotFoundError('Utilisateur introuvable');
     }
-    return user;
+
+    let mutualServers: any[] = [];
+    if (requesterId && requesterId !== userId) {
+        mutualServers = await userRepository.getMutualServers(requesterId, userId);
+    }
+
+    return { ...user, mutualServers };
   }
 
   /**
