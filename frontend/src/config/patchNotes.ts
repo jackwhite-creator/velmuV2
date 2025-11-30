@@ -1,8 +1,8 @@
 export const PATCH_NOTE_DATA = {
   // ID unique pour forcer l'affichage
-  versionId: 'velmu-welcome-invite-27-11-2025', 
+  versionId: 'beta-1.0', 
   
-  date: '27 Novembre 2025',
+  date: '30 Novembre 2025',
   title: 'Bienvenue sur Velmu ! 👋',
   
   // Bannière élégante
