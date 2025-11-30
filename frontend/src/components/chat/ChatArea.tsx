@@ -21,7 +21,7 @@ interface Props {
   showMembers: boolean;
   socket: Socket | null;
   replyingTo: any;
-  sendMessage: (content: string, file?: File, replyToId?: string) => Promise<any>;
+  sendMessage: (content: string, files?: File[], replyToId?: string) => Promise<any>;
   setInputValue: (val: string) => void;
   setReplyingTo: (msg: any) => void;
   onScroll: () => Promise<any>; 
@@ -76,9 +76,9 @@ const ChatArea = React.memo(function ChatArea({
     return [...messages, ...filteredPending];
   }, [messages, pendingMessages]);
 
-  const handleSendMessage = async (e: React.FormEvent, file?: File | null) => {
+  const handleSendMessage = async (e: React.FormEvent, files?: File[]) => {
     e.preventDefault();
-    if (!inputValue.trim() && !file) return;
+    if (!inputValue.trim() && (!files || files.length === 0)) return;
 
     let contentToSend = inputValue.trim();
     
@@ -100,7 +100,7 @@ const ChatArea = React.memo(function ChatArea({
     const tempId = `temp-${Date.now()}-${Math.random()}`; 
     let tempMsg: Message | null = null;
 
-    if (!file && user) {
+    if ((!files || files.length === 0) && user) {
         tempMsg = {
             id: tempId,
             content: contentToSend,
@@ -121,7 +121,7 @@ const ChatArea = React.memo(function ChatArea({
     }
 
     try {
-        await sendMessage(contentToSend, file || undefined, replyToId);
+        await sendMessage(contentToSend, files, replyToId);
         if (scrollToBottomRef.current) setTimeout(() => { scrollToBottomRef.current?.(); }, 100);
     } catch (err) { 
         console.error("Erreur envoi:", err);
@@ -140,14 +140,14 @@ const ChatArea = React.memo(function ChatArea({
 
   if (!activeChannel) {
     return (
-      <div className="flex-1 flex items-center justify-center text-zinc-500 flex-col bg-[#313338] min-w-0 h-full select-none animate-in fade-in duration-300 relative">
+      <div className="flex-1 flex items-center justify-center text-zinc-500 flex-col bg-primary min-w-0 h-full select-none animate-in fade-in duration-300 relative">
         {/* Bouton Menu Mobile si pas de channel */}
         <div className="absolute top-4 left-4 md:hidden">
             <button onClick={onMobileBack} className="text-text-muted hover:text-white p-2">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
             </button>
         </div>
-        <div className="w-16 h-16 bg-[#2b2d31] rounded-full flex items-center justify-center mb-4 text-3xl grayscale opacity-50 shadow-inner">
+        <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mb-4 text-3xl grayscale opacity-50 shadow-inner">
             👋
         </div>
         <p className="text-sm font-medium">Sélectionnez un salon pour commencer.</p>
@@ -156,7 +156,7 @@ const ChatArea = React.memo(function ChatArea({
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full min-w-0 bg-[#313338] relative overflow-hidden transition-colors duration-200">
+    <div className="flex-1 flex flex-col h-full min-w-0 bg-primary relative overflow-hidden transition-colors duration-200">
        <div className="flex-shrink-0 z-30">
          <ChatHeader 
             channel={activeChannel} 
@@ -185,7 +185,7 @@ const ChatArea = React.memo(function ChatArea({
          <ChatInput 
             inputValue={inputValue}
             setInputValue={setInputValue}
-            onSendMessage={handleSendMessage}
+            onSendMessage={(e, files) => handleSendMessage(e, files)}
             replyingTo={replyingTo}
             setReplyingTo={setReplyingTo}
             socket={socket}

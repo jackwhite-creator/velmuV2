@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import api from '../lib/api';
+import { useAuthStore } from './authStore';
 
 export interface Channel {
   id: string;
@@ -40,6 +41,8 @@ export interface Server {
   name: string;
   iconUrl: string | null;
   ownerId: string;
+  systemChannelId?: string | null;
+  channels?: Channel[];
   categories?: Category[];
   members?: Member[];
   roles?: any[]; // For hierarchy checks
@@ -67,6 +70,7 @@ interface ServerState {
   onlineUsers: Set<string>;
 
   setIsLoaded: (loaded: boolean) => void;
+  fetchServers: () => Promise<void>;
   setServers: (servers: Server[]) => void;
   addServer: (server: Server) => void;
   removeServer: (serverId: string) => void;
@@ -104,6 +108,15 @@ export const useServerStore = create<ServerState>((set, get) => ({
   onlineUsers: new Set(),
 
   setIsLoaded: (isLoaded) => set({ isLoaded }),
+
+  fetchServers: async () => {
+      try {
+          const res = await api.get('/servers');
+          set({ servers: res.data, isLoaded: true });
+      } catch (err) {
+          console.error("Failed to fetch servers", err);
+      }
+  },
 
   setServers: (servers) => set({ servers }),
   addServer: (server) => set((state) => ({ servers: [...state.servers, server] })),
@@ -268,10 +281,27 @@ export const useServerStore = create<ServerState>((set, get) => ({
 
       const isActive = state.activeConversation?.id === conversationId;
       
+      // Check if message is from current user (to avoid self-notification)
+      // We need to import useAuthStore to get current user, but we can't use hook here.
+      // We can use the store instance if exported, or pass userId.
+      // Better: check if message.authorId matches user.id from authStore state.
+      // Assuming useAuthStore is available globally or we can import the store.
+      // Let's import useAuthStore at the top of the file if not present, or use require.
+      // Actually, let's just use useAuthStore.getState().
+      
+      // Wait, I need to make sure I have access to useAuthStore here.
+      // It is imported in line 2? No, line 2 is api.
+      // I will check imports.
+      
+      // Let's assume I can import it.
+      
+      const currentUserId = useAuthStore.getState().user?.id;
+      const isSelf = message.userId === currentUserId;
+
       const updatedConv = { 
           ...conversation, 
           lastMessageAt: message.createdAt,
-          unreadCount: isActive ? 0 : (conversation.unreadCount || 0) + 1
+          unreadCount: (isActive || isSelf) ? 0 : (conversation.unreadCount || 0) + 1
       };
 
       const others = state.conversations.filter(c => c.id !== conversationId);

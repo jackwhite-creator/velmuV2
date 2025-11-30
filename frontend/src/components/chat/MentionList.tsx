@@ -42,7 +42,7 @@ export default function MentionList({ users, selectedIndex, onSelect, onClose, p
   return (
     <div 
       ref={listRef}
-      className="absolute z-50 bg-[#2b2d31] border border-[#1e1f22] rounded-md shadow-lg w-64 max-h-60 overflow-y-auto custom-scrollbar flex flex-col p-1"
+      className="absolute z-50 bg-secondary border border-tertiary rounded-md shadow-lg w-64 max-h-60 overflow-y-auto custom-scrollbar flex flex-col p-1"
       style={{ bottom: position.bottom, left: position.left }}
     >
       <div className="px-2 py-1 text-xs font-bold text-zinc-400 uppercase tracking-wide mb-1">
@@ -54,11 +54,11 @@ export default function MentionList({ users, selectedIndex, onSelect, onClose, p
           onClick={() => onSelect(user)}
           className={`flex items-center gap-2 px-2 py-1.5 rounded-sm w-full text-left transition-colors ${
             index === selectedIndex 
-              ? 'bg-[#404249] text-zinc-100' 
-              : 'text-zinc-300 hover:bg-[#35373c]'
+              ? 'bg-modifier-selected text-zinc-100' 
+              : 'text-zinc-300 hover:bg-modifier-hover'
           }`}
         >
-          <div className="w-6 h-6 rounded-full bg-[#1e1f22] flex items-center justify-center overflow-hidden flex-shrink-0">
+          <div className="w-6 h-6 rounded-full bg-tertiary flex items-center justify-center overflow-hidden flex-shrink-0">
             {user.avatarUrl ? (
               <img src={user.avatarUrl} alt={user.username} className="w-full h-full object-cover" />
             ) : (

@@ -143,11 +143,11 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     }
   }, [targetId, isDm, isLoadingMore, hasMore, messages]);
 
-  const sendMessage = useCallback(async (content: string, file?: File, replyToId?: string) => {
+  const sendMessage = useCallback(async (content: string, files?: File[], replyToId?: string) => {
     if (!targetId) return;
 
     let res;
-    if (!file) {
+    if (!files || files.length === 0) {
       const payload: any = {
         content,
         replyToId,
@@ -156,7 +156,10 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
       res = await api.post('/messages', payload);
     } else {
       const formData = new FormData();
-      formData.append('file', file); 
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+      
       if (content) formData.append('content', content);
       if (replyToId) formData.append('replyToId', replyToId);
       if (isDm) formData.append('conversationId', targetId);

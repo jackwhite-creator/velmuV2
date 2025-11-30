@@ -29,25 +29,25 @@ const PortalTooltip = ({ text, rect, side }: { text: string; rect: DOMRect; side
       top = rect.top + rect.height / 2;
       left = rect.right + gap;
       animClass = 'animate-[tooltip-slide-right_0.15s_ease-out_forwards] origin-left';
-      arrowClass = 'border-r-[#111214] border-y-transparent border-l-0 border-y-[6px] border-r-[6px] -left-[6px] top-1/2 -translate-y-1/2';
+      arrowClass = 'border-r-background-floating border-y-transparent border-l-0 border-y-[6px] border-r-[6px] -left-[6px] top-1/2 -translate-y-1/2';
       break;
     case 'left':
       top = rect.top + rect.height / 2;
       left = rect.left - gap;
       animClass = 'animate-[tooltip-slide-left_0.15s_ease-out_forwards] origin-right';
-      arrowClass = 'border-l-[#111214] border-y-transparent border-r-0 border-y-[6px] border-l-[6px] -right-[6px] top-1/2 -translate-y-1/2';
+      arrowClass = 'border-l-background-floating border-y-transparent border-r-0 border-y-[6px] border-l-[6px] -right-[6px] top-1/2 -translate-y-1/2';
       break;
     case 'top':
       top = rect.top - gap;
       left = rect.left + rect.width / 2;
       animClass = 'animate-[tooltip-slide-top_0.15s_ease-out_forwards] origin-bottom';
-      arrowClass = 'border-t-[#111214] border-x-transparent border-b-0 border-x-[6px] border-t-[6px] -bottom-[6px] left-1/2 -translate-x-1/2';
+      arrowClass = 'border-t-background-floating border-x-transparent border-b-0 border-x-[6px] border-t-[6px] -bottom-[6px] left-1/2 -translate-x-1/2';
       break;
     case 'bottom':
       top = rect.bottom + gap;
       left = rect.left + rect.width / 2;
       animClass = 'animate-[tooltip-slide-bottom_0.15s_ease-out_forwards] origin-top';
-      arrowClass = 'border-b-[#111214] border-x-transparent border-t-0 border-x-[6px] border-b-[6px] -top-[6px] left-1/2 -translate-x-1/2';
+      arrowClass = 'border-b-background-floating border-x-transparent border-t-0 border-x-[6px] border-b-[6px] -top-[6px] left-1/2 -translate-x-1/2';
       break;
   }
 
@@ -71,7 +71,7 @@ const PortalTooltip = ({ text, rect, side }: { text: string; rect: DOMRect; side
         style={containerStyle}
       >
         <div className={`absolute w-0 h-0 ${arrowClass}`} />
-        <div className="bg-[#111214] text-white text-[12px] font-bold px-2.5 py-1.5 rounded shadow-xl whitespace-nowrap">
+        <div className="bg-background-floating text-text-normal border border-background-tertiary text-[12px] font-bold px-2.5 py-1.5 rounded shadow-xl whitespace-nowrap">
           {text}
         </div>
       </div>

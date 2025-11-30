@@ -48,7 +48,7 @@ export default function MemberList({ onUserClick }: Props) {
             )}
           </div>
           {isOnline && (
-            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-[2.5px] border-[#2b2d31] rounded-full bg-emerald-500"></div>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-[2.5px] border-secondary rounded-full bg-emerald-500"></div>
           )}
         </div>
 

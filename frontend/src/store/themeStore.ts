@@ -1,21 +1,21 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-type Theme = 'dark' | 'light' | 'amoled';
+export type Theme = 'dark' | 'light' | 'amoled' | 'christmas';
 
 interface ThemeState {
   theme: Theme;
   setTheme: (theme: Theme) => void;
 }
 
-export const useThemeStore = create<ThemeState>((set) => ({
-  theme: (localStorage.getItem('velmu-theme') as Theme) || 'dark',
-  setTheme: (theme) => {
-    localStorage.setItem('velmu-theme', theme);
-    document.documentElement.className = `theme-${theme}`;
-    set({ theme });
-  },
-}));
-
-// Initialize theme on load
-const storedTheme = localStorage.getItem('velmu-theme') || 'dark';
-document.documentElement.className = `theme-${storedTheme}`;
+export const useThemeStore = create<ThemeState>()(
+  persist(
+    (set) => ({
+      theme: 'dark',
+      setTheme: (theme) => set({ theme }),
+    }),
+    {
+      name: 'theme-storage',
+    }
+  )
+);

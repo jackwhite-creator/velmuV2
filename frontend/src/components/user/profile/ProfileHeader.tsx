@@ -41,15 +41,15 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, a
     const btnBase = "px-4 py-1.5 rounded-sm font-medium text-sm transition shadow-sm flex items-center justify-center gap-2 min-w-[100px]";
 
     switch (friendStatus) {
-      case 'ME': return <button onClick={actions.openSettings} className={`${btnBase} bg-[#2b2d31] hover:bg-[#3f4147] text-zinc-200`}> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Modifier </button>;
+      case 'ME': return <button onClick={actions.openSettings} className={`${btnBase} bg-secondary hover:bg-modifier-selected text-zinc-200`}> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Modifier </button>;
       case 'FRIEND': return <button onClick={actions.startDM} className={`${btnBase} bg-brand hover:bg-brand-hover text-white flex-1 md:w-auto`}> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Message </button>;
       case 'RECEIVED': return (
           <div className="flex gap-2">
             <button onClick={actions.acceptRequest} disabled={actionLoading} className={`${btnBase} bg-status-green text-white hover:opacity-90`}>{actionLoading ? '...' : 'Accepter'}</button>
-            <button onClick={actions.declineRequest} className={`${btnBase} bg-[#2b2d31] hover:bg-status-danger hover:text-white text-zinc-300`}>Refuser</button>
+            <button onClick={actions.declineRequest} className={`${btnBase} bg-secondary hover:bg-status-danger hover:text-white text-zinc-300`}>Refuser</button>
           </div>
       );
-      case 'SENT': return <button disabled className={`${btnBase} bg-[#2b2d31] text-zinc-500 cursor-default`}>Envoyée</button>;
+      case 'SENT': return <button disabled className={`${btnBase} bg-secondary text-zinc-500 cursor-default`}>Envoyée</button>;
       case 'NONE': default: return <button onClick={actions.sendRequest} disabled={actionLoading} className={`${btnBase} bg-status-green hover:opacity-90 text-white`}>Ajouter</button>;
     }
   };
@@ -57,11 +57,11 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, a
   return (
     <>
       {/* BANNIÈRE */}
-      <div className="h-32 w-full bg-[#232428] relative">
+      <div className="h-32 w-full bg-tertiary relative">
          {profile.bannerUrl ? (
             <img src={profile.bannerUrl} className="w-full h-full object-cover animate-in fade-in duration-300" alt="Bannière" />
          ) : (
-            <div className="w-full h-full bg-gradient-to-r from-[#232428] to-[#2b2d31]"></div>
+            <div className="w-full h-full bg-gradient-to-r from-tertiary to-secondary"></div>
          )}
          
          <button onClick={onClose} className="absolute top-3 right-3 bg-black/40 hover:bg-black/60 text-white/80 hover:text-white p-1.5 rounded-full transition backdrop-blur-sm z-10">
@@ -73,20 +73,20 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, a
          {/* HEADER AVEC AVATAR ET BOUTONS */}
          <div className="flex justify-between items-end -mt-14 mb-3">
             <div className="relative">
-                {/* Bordure de l'avatar : #18191c (couleur du fond modal) pour la découpe */}
-                <div className="w-28 h-28 rounded-full bg-[#18191c] p-[6px]">
-                    <div className="w-full h-full rounded-full bg-[#2b2d31] flex items-center justify-center text-3xl font-bold text-zinc-300 overflow-hidden shadow-inner">
-                        {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : profile.username[0].toUpperCase()}
+                {/* Bordure de l'avatar : bg-floating (couleur du fond modal) pour la découpe */}
+                <div className="w-28 h-28 rounded-full bg-floating p-[6px]">
+                    <div className="w-full h-full rounded-full bg-secondary flex items-center justify-center text-3xl font-bold text-zinc-300 overflow-hidden shadow-inner">
+                        {profile.avatarUrl ? <img src={profile.avatarUrl} alt="Avatar" className="w-full h-full object-cover" /> : <img src="/default_avatar.png" alt="Avatar" className="w-full h-full object-cover" />}
                     </div>
                 </div>
-                <div className={`absolute bottom-2 right-2 w-7 h-7 border-[5px] border-[#18191c] rounded-full ${isOnline ? 'bg-status-green' : 'bg-zinc-500'}`} />
+                <div className={`absolute bottom-2 right-2 w-7 h-7 border-[5px] border-floating rounded-full ${isOnline ? 'bg-status-green' : 'bg-zinc-500'}`} />
             </div>
 
             <div className="flex gap-2 mb-1">
                 {renderActionButton()}
                 {!isMe && (
                   <Tooltip text="Plus d'actions" side="top">
-                    <button ref={menuButtonRef} onClick={handleToggleMenu} className="bg-[#2b2d31] hover:bg-[#3f4147] text-zinc-300 p-2 rounded-sm transition shadow-sm">
+                    <button ref={menuButtonRef} onClick={handleToggleMenu} className="bg-secondary hover:bg-modifier-selected text-zinc-300 p-2 rounded-sm transition shadow-sm">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
                     </button>
                   </Tooltip>

@@ -89,7 +89,7 @@ export default function ServerChannels({
     return () => window.removeEventListener('click', handleClick);
   }, []);
 
-  if (!activeServer) return <div className="w-60 bg-[#2b2d31] h-full" />;
+  if (!activeServer) return <div className="w-60 bg-secondary h-full" />;
 
   const isOwner = activeServer.ownerId === user?.id;
 
@@ -145,7 +145,7 @@ export default function ServerChannels({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#2b2d31] select-none font-sans" onContextMenu={handleContextMenuGlobal}>
+    <div className="flex flex-col h-full bg-secondary select-none font-sans" onContextMenu={handleContextMenuGlobal}>
         
         <ServerHeader 
             server={activeServer} 

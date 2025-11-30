@@ -39,7 +39,7 @@ export default function ConfirmModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size={modalSize}>
-      <div className="bg-[#313338] text-zinc-200 font-sans flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-primary text-zinc-200 font-sans flex flex-col shadow-2xl overflow-hidden">
         
         <div className="p-4 pb-2">
           <h2 className="text-xl font-bold text-white mb-2 flex-shrink-0 uppercase tracking-wide text-[15px]">
@@ -51,7 +51,7 @@ export default function ConfirmModal({
           </div>
 
           {messageData && (
-            <div className="mt-2 mb-4 border border-[#1e1f22] bg-[#2b2d31] rounded-[3px] shadow-inner overflow-hidden">
+            <div className="mt-2 mb-4 border border-tertiary bg-secondary rounded-[3px] shadow-inner overflow-hidden">
               
               {/* En-tête : Padding-bottom à 0 pour coller le texte */}
               <div className="px-4 pt-3 pb-0 flex items-center gap-3">
@@ -92,7 +92,7 @@ export default function ConfirmModal({
                                     className="max-h-60 w-auto max-w-full rounded-[4px] cursor-default object-contain"
                                 />
                             ) : (
-                                <div key={att.id} className="flex items-center gap-2 bg-[#1e1f22] p-3 rounded-[4px] border border-zinc-700/50 w-fit max-w-full">
+                                <div key={att.id} className="flex items-center gap-2 bg-tertiary p-3 rounded-[4px] border border-zinc-700/50 w-fit max-w-full">
                                     <div className="text-brand">📄</div>
                                     <span className="text-sm text-zinc-300 truncate font-medium">{att.filename}</span>
                                 </div>
@@ -105,7 +105,7 @@ export default function ConfirmModal({
           )}
         </div>
 
-        <div className="bg-[#2b2d31] p-3 flex justify-end gap-2 border-t border-[#1e1f22]">
+        <div className="bg-secondary p-3 flex justify-end gap-2 border-t border-tertiary">
           <button
             onClick={onClose}
             className="px-5 py-2 rounded-[3px] text-sm font-medium text-zinc-300 hover:underline transition-all"

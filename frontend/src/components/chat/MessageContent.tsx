@@ -6,6 +6,7 @@ import { formatDiscordDate } from '../../lib/dateUtils';
 import Tooltip from '../ui/Tooltip';
 import { useServerStore, Member } from '../../store/serverStore';
 import { processMentionsForFrontend } from '../../lib/mentionUtils';
+import InviteEmbed from './InviteEmbed';
 
 interface Props {
   msg: any;
@@ -32,6 +33,10 @@ export default function MessageContent({
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { activeServer, activeConversation, getMemberColor } = useServerStore();
+
+  // Extract invite code
+  const inviteCodeMatch = msg.content?.match(/(?:https?:\/\/)?(?:localhost:\d+|velmu\.com)\/invite\/([a-zA-Z0-9]+)/);
+  const inviteCode = inviteCodeMatch ? inviteCodeMatch[1] : null;
 
   useEffect(() => {
     if (isEditing && textareaRef.current) {
@@ -61,7 +66,7 @@ export default function MessageContent({
     : '';
 
   const member = activeServer?.members?.find(m => m.userId === msg.user.id);
-  const usernameColor = member ? (getMemberColor(member) || '#e0e1e5') : '#e0e1e5';
+  const usernameColor = member ? (getMemberColor(member) || 'var(--text-normal)') : 'var(--text-normal)';
 
   return (
     <div className="flex-1 min-w-0 z-10 relative pr-2">
@@ -74,7 +79,7 @@ export default function MessageContent({
           >
             {msg.user.username}
           </span>
-          <span className="text-[11px] text-zinc-500 font-medium">
+          <span className="text-[11px] text-text-muted font-medium">
             {formatDiscordDate(msg.createdAt)}
           </span>
         </div>
@@ -82,12 +87,12 @@ export default function MessageContent({
 
       {isEditing ? (
         <div className="w-full mt-1">
-          <div className="bg-[#2b2d31] p-2.5 rounded-sm w-full">
+          <div className="bg-background-secondary p-2.5 rounded-sm w-full">
             <textarea 
               ref={textareaRef}
               autoFocus
               rows={1}
-              className="w-full bg-[#383a40] text-zinc-200 p-3 rounded-[3px] outline-none border-none resize-none font-normal text-[15px] leading-relaxed custom-scrollbar overflow-hidden"
+              className="w-full bg-background-tertiary text-text-normal p-3 rounded-[3px] outline-none border-none resize-none font-normal text-[15px] leading-relaxed custom-scrollbar overflow-hidden"
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               onKeyDown={handleKeyDown}
@@ -95,21 +100,21 @@ export default function MessageContent({
             />
             
             <div className="text-[11px] mt-2 flex justify-between items-center select-none font-medium">
-                <div className="flex gap-1 text-zinc-400">
+                <div className="flex gap-1 text-text-muted">
                     <span className="hidden sm:inline">échap pour</span> 
                     <span className="text-brand hover:underline cursor-pointer" onClick={onCancelEdit}>annuler</span> 
                     <span className="mx-1">•</span> 
                     <span className="hidden sm:inline">entrée pour</span> 
                     <span className="text-brand hover:underline cursor-pointer" onClick={onSaveEdit}>enregistrer</span>
                 </div>
-                <span className={`${editContent.length >= 2000 ? 'text-status-danger font-bold' : 'text-zinc-500'}`}>
+                <span className={`${editContent.length >= 2000 ? 'text-status-danger font-bold' : 'text-text-muted'}`}>
                     {editContent.length}/2000
                 </span>
             </div>
           </div>
         </div>
       ) : (
-        <div className={`leading-relaxed break-words -mt-1 select-text cursor-default ${isMentioningMe ? 'text-zinc-100' : 'text-zinc-300'}`}>
+        <div className={`leading-relaxed break-words -mt-1 select-text cursor-default text-text-normal`}>
           
           <div className="flex flex-wrap items-baseline gap-x-1">
               {msg.content && (
@@ -138,7 +143,7 @@ export default function MessageContent({
                                                 e.stopPropagation(); 
                                                 onMentionClick(e, userId);
                                             }}
-                                            className="bg-[#3c4270] text-[#c9cdfb] px-1 rounded-[3px] font-medium cursor-pointer hover:bg-[#5865f2] hover:text-white transition-colors select-none"
+                                            className="bg-brand/10 text-brand px-1 rounded-[3px] font-medium cursor-pointer hover:bg-brand hover:text-white transition-colors select-none"
                                             data-user-id={userId}
                                         >
                                             {children}
@@ -161,16 +166,16 @@ export default function MessageContent({
                                 <ol className="list-decimal list-inside ml-1 mb-1 cursor-text w-fit max-w-full" {...props} />
                             ),
                             blockquote: ({node, ...props}) => (
-                                <blockquote className="border-l-[4px] border-zinc-600 pl-3 py-0.5 text-zinc-400 my-1 cursor-text w-fit max-w-full bg-[#2b2d31]/30 rounded-r-sm" {...props} />
+                                <blockquote className="border-l-[4px] border-background-tertiary pl-3 py-0.5 text-text-muted my-1 cursor-text w-fit max-w-full bg-background-secondary/30 rounded-r-sm" {...props} />
                             ),
                             code({node, inline, className, children, ...props}: any) {
                                 return inline ? (
-                                    <code className="bg-[#2b2d31] px-1.5 py-0.5 rounded-[3px] text-[85%] font-mono text-zinc-200 cursor-text" {...props}>
+                                    <code className="bg-background-secondary px-1.5 py-0.5 rounded-[3px] text-[85%] font-mono text-text-normal cursor-text" {...props}>
                                         {children}
                                     </code>
                                 ) : (
-                                    <div className="my-2 bg-[#2b2d31] rounded-[4px] border border-[#1e1f22] overflow-hidden cursor-text w-fit max-w-full">
-                                        <pre className="p-3 overflow-x-auto custom-scrollbar font-mono text-sm text-zinc-300">
+                                    <div className="my-2 bg-background-secondary rounded-[4px] border border-background-tertiary overflow-hidden cursor-text w-fit max-w-full">
+                                        <pre className="p-3 overflow-x-auto custom-scrollbar font-mono text-sm text-text-normal">
                                             <code {...props}>{children}</code>
                                         </pre>
                                     </div>
@@ -185,14 +190,72 @@ export default function MessageContent({
               
               {isModified && (
                   <Tooltip text={new Date(msg.updatedAt).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })} side="top">
-                    <span className="text-[10px] text-zinc-500 select-none cursor-default hover:text-zinc-400 transition-colors self-end pb-[2px]">
+                    <span className="text-[10px] text-text-muted select-none cursor-default hover:text-text-normal transition-colors self-end pb-[2px]">
                         (modifié)
                     </span>
                   </Tooltip>
               )}
           </div>
+
+          {/* Invite Embed */}
+          {inviteCode && (
+            <InviteEmbed code={inviteCode} onLoad={onImageLoad} />
+          )}
           
-          {msg.fileUrl && (
+          {/* Attachments Rendering */}
+          {msg.attachments && msg.attachments.length > 0 && (
+            <div className="mt-2 flex flex-col gap-2 select-none cursor-default">
+              {msg.attachments.map((att: any, idx: number) => {
+                const isImage = (att.type?.startsWith('image/')) || 
+                                /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(att.filename) ||
+                                /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(att.url);
+                
+                if (isImage) {
+                  return (
+                    <div key={idx} className="group/image">
+                      <img 
+                        src={att.url} 
+                        alt={att.filename} 
+                        onLoad={onImageLoad}
+                        className="max-w-full md:max-w-sm max-h-[350px] rounded-[4px] shadow-sm cursor-pointer hover:shadow-md transition"
+                        onClick={() => onImageClick(att.url)}
+                        onError={(e) => console.error("Erreur chargement image", att.url)}
+                      />
+                    </div>
+                  );
+                }
+
+                return (
+                  <div key={idx} className="flex items-center gap-3 bg-background-secondary border border-background-tertiary p-3 rounded-[4px] max-w-sm hover:bg-background-tertiary transition-colors group">
+                    <div className="text-brand">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="text-[#00a8fc] font-medium truncate group-hover:underline cursor-pointer">
+                            <a href={att.url} target="_blank" rel="noopener noreferrer">{att.filename}</a>
+                        </div>
+                        <div className="text-xs text-text-muted">
+                            {att.size ? `${(att.size / 1024).toFixed(2)} KB` : 'Fichier'}
+                        </div>
+                    </div>
+                    <a href={att.url} download target="_blank" rel="noopener noreferrer" className="text-text-muted hover:text-text-normal">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </a>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          
+          {/* Legacy support for old messages with fileUrl */}
+          {msg.fileUrl && !msg.attachments?.length && (
             <div className="mt-2 group/image select-none cursor-default"> 
               <img 
                 src={msg.fileUrl} 

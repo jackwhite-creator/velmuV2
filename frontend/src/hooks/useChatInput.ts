@@ -3,8 +3,8 @@ import { Socket } from 'socket.io-client';
 
 interface UseChatInputProps {
   inputValue: string;
-  setInputValue: (val: string | ((prev: string) => string)) => void; // Mise à jour du type pour accepter la fonction callback
-  onSendMessage: (e: React.FormEvent, file?: File | null) => void;
+  setInputValue: (val: string | ((prev: string) => string)) => void;
+  onSendMessage: (e: React.FormEvent, files?: File[]) => void;
   setReplyingTo: (msg: any) => void;
   socket: Socket | null;
 }
@@ -20,42 +20,72 @@ export const useChatInput = ({
   const textInputRef = useRef<HTMLTextAreaElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef<any>(null);
 
   // --- GESTION DES FICHIERS ---
 
-  const processFile = useCallback((file: File) => {
-    if (!file.type.startsWith('image/')) {
-        alert("Seules les images sont supportées pour le moment.");
+  const processFiles = useCallback((files: File[]) => {
+    if (selectedFiles.length + files.length > 10) {
+        alert("Tu ne peux pas envoyer plus de 10 images à la fois !");
         return;
     }
-    const url = URL.createObjectURL(file);
-    setSelectedFile(file);
-    setPreviewUrl(url);
-    textInputRef.current?.focus();
-  }, []);
+
+    const validFiles: File[] = [];
+    const newPreviewUrls: string[] = [];
+
+    files.forEach(file => {
+        if (!file.type.startsWith('image/')) {
+            alert(`Le fichier ${file.name} n'est pas une image valide.`);
+            return;
+        }
+        const url = URL.createObjectURL(file);
+        validFiles.push(file);
+        newPreviewUrls.push(url);
+    });
+
+    if (validFiles.length > 0) {
+        setSelectedFiles(prev => [...prev, ...validFiles]);
+        setPreviewUrls(prev => [...prev, ...newPreviewUrls]);
+        textInputRef.current?.focus();
+    }
+  }, [selectedFiles]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(Array.from(e.target.files));
     }
     e.target.value = '';
   };
 
   const handlePasteFile = useCallback((file: File) => {
-    processFile(file);
-  }, [processFile]);
+    processFiles([file]);
+  }, [processFiles]);
 
-  const clearFile = useCallback(() => {
-    setSelectedFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
+  const removeFile = useCallback((index: number) => {
+    setSelectedFiles(prev => {
+        const newFiles = [...prev];
+        newFiles.splice(index, 1);
+        return newFiles;
+    });
+    setPreviewUrls(prev => {
+        const newUrls = [...prev];
+        URL.revokeObjectURL(newUrls[index]);
+        newUrls.splice(index, 1);
+        return newUrls;
+    });
+  }, []);
+
+  const clearFiles = useCallback(() => {
+    // Revoke all URLs
+    previewUrls.forEach(url => URL.revokeObjectURL(url));
+    setSelectedFiles([]);
+    setPreviewUrls([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
-  }, [previewUrl]);
+  }, [previewUrls]);
 
   // --- GESTION GLOBALE (FOCUS & PASTE) ---
   
@@ -145,13 +175,13 @@ export const useChatInput = ({
   const triggerSend = (e: React.FormEvent | React.KeyboardEvent) => {
     e.preventDefault();
     // On vérifie juste s'il y a du contenu OU un fichier
-    if (!inputValue.trim() && !selectedFile) return;
+    if (!inputValue.trim() && selectedFiles.length === 0) return;
     
-    onSendMessage(e as any, selectedFile);
+    onSendMessage(e as any, selectedFiles);
     
     // Reset
     setInputValue('');
-    clearFile();
+    clearFiles();
     setReplyingTo(null);
     setShowEmojiPicker(false);
     setIsTyping(false);
@@ -174,16 +204,17 @@ export const useChatInput = ({
     fileInputRef,
     textInputRef,
     emojiPickerRef,
-    selectedFile,
-    previewUrl,
+    selectedFiles,
+    previewUrls,
     showEmojiPicker,
     setShowEmojiPicker,
     handleFileSelect,
     handlePasteFile,
-    clearFile,
+    clearFiles,
+    removeFile,
     triggerSend,
     handleTyping,
     addEmoji,
-    canSend: inputValue.trim().length > 0 || !!selectedFile
+    canSend: inputValue.trim().length > 0 || selectedFiles.length > 0
   };
 };

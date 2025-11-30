@@ -57,9 +57,8 @@ export default function ServerOverview({ server }: Props) {
       if (selectedFile) {
         formData.append('icon', selectedFile);
       }
-      if (systemChannelId) {
-          formData.append('systemChannelId', systemChannelId);
-      }
+      // Always append systemChannelId (even if empty string)
+      formData.append('systemChannelId', systemChannelId);
 
       const res = await api.put(`/servers/${server.id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }

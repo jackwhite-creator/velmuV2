@@ -59,10 +59,11 @@ export default function MessageItem({
     const member = activeServer.members?.find(m => m.userId === currentUser.id);
     if (!member) return false;
 
-    return member.roles?.some(r => 
-      r.permissions.includes(Permissions.ADMINISTRATOR) || 
-      r.permissions.includes(Permissions.MENTION_EVERYONE)
-    ) || false;
+    return member.roles?.some(memberRole => {
+      const serverRole = activeServer.roles?.find((r: any) => r.id === memberRole.id);
+      return serverRole?.permissions?.includes(Permissions.ADMINISTRATOR) || 
+             serverRole?.permissions?.includes(Permissions.MENTION_EVERYONE);
+    }) || false;
   }, [activeServer, currentUser]);
 
   const isMentioningMe = (msg.replyTo?.user?.id === currentUser?.id) || 
@@ -119,11 +120,11 @@ export default function MessageItem({
                 <div className="flex items-center gap-2 text-text-muted text-base font-medium">
                     <span>
                         <span className="font-bold text-text-normal cursor-pointer hover:underline" onClick={(e) => onUserClick(e, msg.user.id)}>
-                            {msg.content.split(' est arrivé !')[0]}
+                            {msg.content}
                         </span> 
                         <span> est arrivé !</span>
                     </span>
-                    <span className="text-[11px] text-zinc-500 font-medium ml-1">
+                    <span className="text-[11px] text-text-muted font-medium ml-1">
                         {formatDiscordDate(msg.createdAt)}
                     </span>
                 </div>
@@ -160,28 +161,7 @@ export default function MessageItem({
                 canMentionEveryone={canMentionEveryone}
             />
 
-            {msg.attachments && msg.attachments.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                    {msg.attachments.map((att) => (
-                        <div key={att.id} className="relative group/img cursor-pointer">
-                            {att.type === 'IMAGE' ? (
-                                <img 
-                                    src={att.url} 
-                                    alt={att.filename} 
-                                    onLoad={onImageLoad}
-                                    onClick={() => onImageClick(att.url)}
-                                    className="max-w-md max-h-80 rounded-md border border-background-secondary hover:border-brand/50 transition object-contain bg-background-tertiary"
-                                />
-                            ) : (
-                                <a href={att.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-background-secondary p-3 rounded-md border border-background-tertiary hover:bg-background-tertiary transition">
-                                    <div className="text-brand">📄</div>
-                                    <span className="text-sm text-text-normal underline">{att.filename}</span>
-                                </a>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            )}
+
           </div>
         </div>
         

@@ -1,5 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Server } from '../../../store/serverStore';
+import { Server, useServerStore } from '../../../store/serverStore';
+import { useFriendStore } from '../../../store/friendStore';
+import { useAuthStore } from '../../../store/authStore';
 import api from '../../../lib/api';
 import Modal from '../../ui/Modal';
 
@@ -30,13 +32,36 @@ const USES_OPTIONS = [
 ];
 
 export default function InviteModal({ isOpen, server, onClose }: Props) {
+  const { user } = useAuthStore();
+  const { requests } = useFriendStore();
+  const { onlineUsers } = useServerStore();
+  
   const [inviteCode, setInviteCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [copied, setCopied] = useState(false);
   const [permissionDenied, setPermissionDenied] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   const [expiresIn, setExpiresIn] = useState(604800);
   const [maxUses, setMaxUses] = useState(0);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [invitedFriends, setInvitedFriends] = useState<Set<string>>(new Set());
+
+  // Friend list logic
+  const friends = requests
+    .filter(req => req.status === 'ACCEPTED')
+    .map(req => {
+      const friend = req.senderId === user?.id ? req.receiver : req.sender;
+      return {
+        ...friend,
+        isOnline: onlineUsers.has(friend.id)
+      };
+    })
+    .filter(friend => 
+      friend.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      friend.discriminator.includes(searchTerm)
+    );
 
   const generateInvite = useCallback(async () => {
     if (!server) return;
@@ -62,6 +87,9 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
   useEffect(() => {
     if (isOpen && server) {
       generateInvite();
+      setInvitedFriends(new Set());
+      setSearchTerm('');
+      setShowSettings(false);
     } else {
       setInviteCode('');
       setCopied(false);
@@ -69,6 +97,48 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
       setMaxUses(0);
     }
   }, [isOpen, server, generateInvite]);
+
+  const handleInviteFriend = async (friendId: string) => {
+    if (!server || invitedFriends.has(friendId)) return;
+
+    try {
+      // 1. Create invite link (standard 24h, 1 use for direct invite)
+      const inviteRes = await api.post('/invites/create', { 
+        serverId: server.id, 
+        maxUses: 1, 
+        expiresIn: 86400 
+      });
+      const code = inviteRes.data.code;
+      const link = `${window.location.origin}/invite/${code}`;
+
+      // 2. Get or create conversation
+      const convRes = await api.post('/conversations', { targetUserId: friendId });
+      const conversationId = convRes.data.id;
+
+      // 3. Send message
+      await api.post('/messages', {
+        conversationId,
+        content: `Rejoins-moi sur **${server.name}** !\n${link}`
+      });
+
+      // 4. Update state
+      setInvitedFriends(prev => {
+        const newSet = new Set(prev);
+        newSet.add(friendId);
+        return newSet;
+      });
+
+    } catch (err) {
+      console.error("Erreur invitation ami", err);
+    }
+  };
+
+  const handleCopy = () => {
+    if (!inviteCode) return;
+    navigator.clipboard.writeText(`${window.location.origin}/invite/${inviteCode}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   if (!server) return null;
 
@@ -94,112 +164,134 @@ export default function InviteModal({ isOpen, server, onClose }: Props) {
       );
   }
 
-  const fullLink = inviteCode ? `${window.location.origin}/invite/${inviteCode}` : '';
-
-  const handleCopy = () => {
-    if (!inviteCode) return;
-    navigator.clipboard.writeText(fullLink);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const fullLink = inviteCode ? `${window.location.origin}/invite/${inviteCode}` : 'Chargement...';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm">
-      <div className="relative p-6 flex flex-col items-center bg-background-floating font-sans">
+    <Modal isOpen={isOpen} onClose={onClose} size="md">
+      <div className="flex flex-col h-[550px] bg-background-primary rounded-lg overflow-hidden font-sans text-text-normal">
         
-        <button 
-            onClick={onClose}
-            className="absolute top-4 right-4 text-text-muted hover:text-text-header p-1 rounded-sm hover:bg-background-modifier-hover transition-all"
-            title="Fermer"
-        >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-
-        {/* ✅ ICÔNE REVENUE : Cercle avec bonhomme + plus */}
-        <div className="w-14 h-14 bg-brand/10 rounded-full flex items-center justify-center mb-4 text-brand mt-2 shadow-sm ring-1 ring-brand/20">
-            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+        {/* Header */}
+        <div className="p-4 pb-4">
+          <h2 className="text-xl font-bold text-text-header mb-1">Inviter des amis sur {server.name}</h2>
+          <div className="mt-4 relative">
+            <input
+              type="text"
+              placeholder="Rechercher des amis"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-background-tertiary border border-background-secondary rounded-sm py-2 px-3 text-sm focus:outline-none focus:border-brand transition-colors placeholder-text-muted"
+            />
+            <div className="absolute right-3 top-2.5 text-text-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+          </div>
         </div>
 
-        <h2 className="text-lg font-bold text-text-header mb-1 uppercase tracking-wide text-center">
-          Inviter des amis
-        </h2>
-        {/* ✅ NOM DU SERVEUR : Sans le #, en gras */}
-        <p className="text-text-muted text-xs mb-6 px-4 text-center">
-          Partage ce lien pour qu'ils rejoignent <strong className="text-text-normal">{server.name}</strong>.
-        </p>
-
-        <div className="w-full grid grid-cols-2 gap-4 mb-6">
-            <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Expire après</label>
-                <div className="relative">
-                    <select 
-                        value={expiresIn}
-                        onChange={(e) => setExpiresIn(parseInt(e.target.value))}
-                        className="w-full appearance-none bg-background-tertiary border border-background-secondary text-text-normal text-sm px-3 py-2 rounded-sm focus:outline-none focus:border-brand cursor-pointer font-medium"
-                    >
-                        {EXPIRE_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        {/* Friend List */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-2">
+          {friends.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-text-muted opacity-70">
+              <p className="text-sm font-medium">Aucun ami trouvé...</p>
+            </div>
+          ) : (
+            <div className="space-y-1">
+              {friends.map(friend => {
+                const isInvited = invitedFriends.has(friend.id);
+                return (
+                  <div key={friend.id} className="flex items-center justify-between p-2 hover:bg-background-modifier-hover rounded-sm group transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <div className="w-8 h-8 rounded-full bg-background-secondary flex items-center justify-center overflow-hidden">
+                          {friend.avatarUrl ? (
+                            <img src={friend.avatarUrl} alt={friend.username} className="w-full h-full object-cover" />
+                          ) : (
+                            <span className="text-xs font-bold text-text-header">{friend.username[0].toUpperCase()}</span>
+                          )}
+                        </div>
+                        <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-background-primary ${friend.isOnline ? 'bg-status-green' : 'bg-text-muted'}`}></div>
+                      </div>
+                      <div>
+                        <div className="font-semibold text-text-header text-sm flex items-center gap-1">
+                            {friend.username}
+                            <span className="text-xs text-text-muted font-normal opacity-0 group-hover:opacity-100 transition-opacity">#{friend.discriminator}</span>
+                        </div>
+                      </div>
                     </div>
+
+                    <button
+                      onClick={() => handleInviteFriend(friend.id)}
+                      disabled={isInvited}
+                      className={`px-4 py-1.5 rounded-sm text-xs font-medium transition-all border ${
+                        isInvited
+                          ? 'bg-transparent border-status-green text-status-green cursor-default'
+                          : 'bg-brand border-brand text-white hover:bg-brand-hover hover:border-brand-hover'
+                      }`}
+                    >
+                      {isInvited ? 'Invité' : 'Inviter'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Footer - Link Generation */}
+        <div className="p-4 bg-background-secondary border-t border-background-tertiary">
+            <h3 className="text-xs font-bold text-text-muted uppercase mb-2">Ou envoyer un lien d'invitation au serveur</h3>
+            <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 bg-background-tertiary border border-background-secondary rounded-sm px-3 py-2 text-sm text-text-normal truncate select-all">
+                    {fullLink}
                 </div>
+                <button 
+                    onClick={handleCopy}
+                    className={`px-4 py-2 rounded-sm text-sm font-medium transition-colors min-w-[80px] ${copied ? 'bg-status-green text-white' : 'bg-brand text-white hover:bg-brand-hover'}`}
+                >
+                    {copied ? 'Copié' : 'Copier'}
+                </button>
+            </div>
+            
+            <div className="flex items-center justify-between">
+                <div className="text-xs text-text-muted">
+                    Ton lien d'invitation expire dans <span className="font-bold text-text-normal">{EXPIRE_OPTIONS.find(o => o.value === expiresIn)?.label}</span>.
+                </div>
+                <button 
+                    onClick={() => setShowSettings(!showSettings)}
+                    className="text-xs text-brand hover:underline"
+                >
+                    Modifier le lien d'invitation
+                </button>
             </div>
 
-            <div className="flex flex-col gap-1.5">
-                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Nombre max.</label>
-                <div className="relative">
-                    <select 
-                        value={maxUses}
-                        onChange={(e) => setMaxUses(parseInt(e.target.value))}
-                        className="w-full appearance-none bg-background-tertiary border border-background-secondary text-text-normal text-sm px-3 py-2 rounded-sm focus:outline-none focus:border-brand cursor-pointer font-medium"
-                    >
-                        {USES_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                    </select>
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            {/* Settings Toggle */}
+            {showSettings && (
+                <div className="mt-4 pt-4 border-t border-background-modifier-accent grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
+                    <div>
+                        <label className="block text-xs font-bold text-text-muted uppercase mb-1.5">Expire après</label>
+                        <select 
+                            value={expiresIn}
+                            onChange={(e) => setExpiresIn(Number(e.target.value))}
+                            className="w-full bg-background-tertiary border border-background-secondary rounded-sm p-2 text-sm text-text-normal focus:outline-none focus:border-brand"
+                        >
+                            {EXPIRE_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-xs font-bold text-text-muted uppercase mb-1.5">Nombre max. d'utilisations</label>
+                        <select 
+                            value={maxUses}
+                            onChange={(e) => setMaxUses(Number(e.target.value))}
+                            className="w-full bg-background-tertiary border border-background-secondary rounded-sm p-2 text-sm text-text-normal focus:outline-none focus:border-brand"
+                        >
+                            {USES_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <div className="w-full bg-background-tertiary p-1.5 rounded-sm border border-background-secondary flex items-center relative overflow-hidden shadow-inner group transition-colors focus-within:border-brand">
-           
-           {isLoading ? (
-             <div className="flex-1 h-9 mx-2 flex items-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-text-muted" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                <span className="text-xs text-text-muted font-medium">Génération...</span>
-             </div>
-           ) : (
-             <input 
-               readOnly 
-               value={fullLink}
-               className="bg-transparent text-text-normal font-medium text-sm outline-none w-full px-3 py-2 truncate selection:bg-brand/30 cursor-text placeholder-text-muted"
-               onFocus={(e) => e.target.select()} 
-             />
-           )}
-           
-           <button 
-             onClick={handleCopy} 
-             disabled={isLoading}
-             className={`
-                flex-shrink-0 px-6 py-2 rounded-[2px] text-sm font-bold text-white transition-all duration-200 shadow-sm
-                ${copied 
-                    ? 'bg-status-green w-[100px]' 
-                    : 'bg-brand hover:bg-brand-hover w-[100px]'
-                }
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}
-             `}
-           >
-             {copied ? 'Copié' : 'Copier'}
-           </button>
-        </div>
-
-        <div className="mt-4 text-[10px] text-text-muted">
-            <p>Le lien expirera dans <span className="text-text-normal font-bold">{EXPIRE_OPTIONS.find(o => o.value === expiresIn)?.label}</span>.</p>
+            )}
         </div>
 
       </div>

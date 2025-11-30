@@ -28,7 +28,7 @@ const ActionButton = ({
         flex items-center justify-center w-8 h-8 rounded-sm transition-all duration-100
         ${danger 
           ? 'text-status-danger hover:bg-status-danger hover:text-white' 
-          : 'text-zinc-400 hover:text-zinc-200 hover:bg-[#404249]'
+          : 'text-zinc-400 hover:text-zinc-200 hover:bg-modifier-selected'
         }
       `}
     >
@@ -44,7 +44,7 @@ export default function MessageHoverActions({ isMe, onReply, onEdit, onDelete }:
     <div className="absolute -top-4 right-4 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
       
       {/* CONTENEUR : Fond Zinc #2b2d31 + Bordure sombre #1e1f22 + Shadow */}
-      <div className="flex items-center bg-[#2b2d31] border border-[#1e1f22] rounded-sm shadow-sm p-[1px] select-none">
+      <div className="flex items-center bg-secondary border border-tertiary rounded-sm shadow-sm p-[1px] select-none">
         
         <ActionButton 
           label="Répondre" 

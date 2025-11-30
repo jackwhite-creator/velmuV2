@@ -74,7 +74,7 @@ export default function InviteEmbed({ code }: { code: string }) {
         Tu as été invité à rejoindre un serveur
       </h3>
       
-      <div className="flex items-center gap-4 bg-[#2b2d31] p-4 rounded-[4px] border border-[#1e1f22] w-full">
+      <div className="flex items-center gap-4 bg-secondary p-4 rounded-[4px] border border-tertiary w-full">
         
         <div className="flex-shrink-0">
             {info.server.iconUrl ? (

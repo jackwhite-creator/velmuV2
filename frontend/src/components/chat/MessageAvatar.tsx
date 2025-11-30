@@ -18,7 +18,7 @@ export default function MessageAvatar({ user, createdAt, shouldGroup, onClick }:
           {user.avatarUrl ? (
             <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
           ) : (
-            user.username.substring(0, 2).toUpperCase()
+            <img src="/default_avatar.png" alt="" className="w-full h-full object-cover" />
           )}
         </div>
       ) : (

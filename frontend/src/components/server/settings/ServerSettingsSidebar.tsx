@@ -1,4 +1,4 @@
-import { Server } from '../../store/serverStore';
+import { Server } from '../../../store/serverStore';
 import { useAuthStore } from '../../../store/authStore';
 import { Permissions } from '@backend/shared/permissions';
 
@@ -14,9 +14,19 @@ export default function ServerSettingsSidebar({ activeTab, onTabChange, server, 
   const myMember = server.members?.find(m => m.userId === user?.id);
   const isOwner = server.ownerId === user?.id;
 
-  const hasManageServer = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.MANAGE_SERVER) || r.permissions.includes(Permissions.ADMINISTRATOR));
-  const hasManageRoles = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.MANAGE_ROLES) || r.permissions.includes(Permissions.ADMINISTRATOR));
-  const hasCreateInvite = isOwner || myMember?.roles.some(r => r.permissions.includes(Permissions.CREATE_INVITES) || r.permissions.includes(Permissions.ADMINISTRATOR));
+  const hasPermission = (permission: Permissions) => {
+    if (isOwner) return true;
+    if (!myMember) return false;
+    
+    return myMember.roles.some((memberRole: any) => {
+      const serverRole = server.roles?.find((r: any) => r.id === memberRole.id);
+      return serverRole?.permissions?.includes(Permissions.ADMINISTRATOR) || serverRole?.permissions?.includes(permission);
+    });
+  };
+
+  const hasManageServer = hasPermission(Permissions.MANAGE_SERVER);
+  const hasManageRoles = hasPermission(Permissions.MANAGE_ROLES);
+  const hasCreateInvite = hasPermission(Permissions.CREATE_INVITES);
 
   const menuItems = [
     ...(hasManageServer ? [{ id: 'overview', label: "Vue d'ensemble" }] : []),

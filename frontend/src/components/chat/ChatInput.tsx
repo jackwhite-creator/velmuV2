@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Socket } from 'socket.io-client';
 import data from '@emoji-mart/data';
 import Picker from '@emoji-mart/react';
@@ -14,31 +14,50 @@ import { usePermission } from '../../hooks/usePermission';
 interface Props {
   inputValue: string;
   setInputValue: (val: string) => void;
-  onSendMessage: (e: React.FormEvent, file?: File | null) => void;
+  onSendMessage: (e: React.FormEvent, files?: File[]) => void;
   replyingTo: any;
   setReplyingTo: (msg: any) => void;
   socket: Socket | null;
   activeChannel: Channel;
-  isSending?: boolean;
 }
 
 const MAX_LENGTH = 2000;
 
 export default function ChatInput(props: Props) {
   const { 
-    inputValue, setInputValue, replyingTo, setReplyingTo, 
-    socket, activeChannel, isSending 
+    inputValue, setInputValue, onSendMessage, 
+    replyingTo, setReplyingTo, socket, activeChannel 
   } = props;
 
-  const {
-    fileInputRef, textInputRef, emojiPickerRef,
-    previewUrl, showEmojiPicker, setShowEmojiPicker,
-    handleFileSelect, handlePasteFile, clearFile,
-    triggerSend, handleTyping, addEmoji, canSend
-  } = useChatInput(props);
-
   const { activeServer, activeConversation } = useServerStore();
-  const hasSendPermission = usePermission(Permissions.SEND_MESSAGES);
+  
+  // Use the custom hook for input logic
+  const {
+    fileInputRef,
+    textInputRef,
+    emojiPickerRef,
+    selectedFiles,
+    previewUrls,
+    showEmojiPicker,
+    setShowEmojiPicker,
+    handleFileSelect,
+    handlePasteFile,
+    removeFile,
+    triggerSend,
+    handleTyping,
+    addEmoji,
+    canSend
+  } = useChatInput({
+    inputValue,
+    setInputValue,
+    onSendMessage,
+    setReplyingTo,
+    socket
+  });
+
+  // Permission check
+  const canSendMessages = usePermission(Permissions.SEND_MESSAGES);
+  const hasSendPermission = activeChannel.type === 'dm' || canSendMessages;
 
   // Mention State
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
@@ -54,9 +73,9 @@ export default function ChatInput(props: Props) {
 
     let users: any[] = [];
     if (activeChannel.type === 'dm' && activeConversation) {
-        users = activeConversation.users;
+        users = activeConversation.users || [];
     } else if (activeServer?.members) {
-        users = activeServer.members.map(m => m.user);
+        users = activeServer.members.map((m: any) => m.user);
     }
 
     const lowerQuery = mentionQuery.toLowerCase();
@@ -98,60 +117,50 @@ export default function ChatInput(props: Props) {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      const newVal = e.target.value;
-      setInputValue(newVal);
-      handleTyping();
+    const val = e.target.value;
+    setInputValue(val);
+    handleTyping();
 
-      const cursor = e.target.selectionStart;
-      const textBefore = newVal.slice(0, cursor);
-      const lastAt = textBefore.lastIndexOf('@');
+    // Mention logic
+    const cursor = e.target.selectionStart;
+    const textBeforeCursor = val.slice(0, cursor);
+    const lastAt = textBeforeCursor.lastIndexOf('@');
 
-      if (lastAt !== -1) {
-          const query = textBefore.slice(lastAt + 1);
-          // Check if query contains spaces (end of mention attempt)
-          if (!query.includes(' ')) {
-              setMentionQuery(query);
-              
-              // Calculate position (approximate)
-              // Ideally use a library like textarea-caret, but for now simple offset
-              // Or just fixed position above input
-              setMentionPosition({ bottom: 60, left: 20 + (lastAt * 8) }); 
-              return;
-          }
-      }
-      setMentionQuery(null);
+    if (lastAt !== -1) {
+        const query = textBeforeCursor.slice(lastAt + 1);
+        if (!query.includes(' ') && query.length > 0) {
+            setMentionQuery(query);
+            
+            // Calculate position
+            // This is a simplified calculation. For production, use a library like textarea-caret
+            setMentionPosition({ bottom: 60, left: 20 }); 
+        } else {
+            setMentionQuery(null);
+        }
+    } else {
+        setMentionQuery(null);
+    }
+    
+    // Auto-resize
+    e.target.style.height = 'auto';
+    e.target.style.height = `${Math.min(e.target.scrollHeight, 400)}px`;
   };
 
   const selectUser = (user: any) => {
-      if (!textInputRef.current) return;
-      
-      const cursor = textInputRef.current.selectionStart;
-      const textBefore = inputValue.slice(0, cursor);
-      const lastAt = textBefore.lastIndexOf('@');
-      
-      const prefix = inputValue.slice(0, lastAt);
-      const suffix = inputValue.slice(cursor);
-      
-      // Insert @username instead of <@id>
-      const mentionText = `@${user.username} `;
-      const newValue = prefix + mentionText + suffix;
-      
-      setInputValue(newValue);
-      setMentionQuery(null);
-      
-      // Restore focus and cursor
-      setTimeout(() => {
-          if (textInputRef.current) {
-              textInputRef.current.focus();
-              const newCursorPos = prefix.length + mentionText.length;
-              textInputRef.current.setSelectionRange(newCursorPos, newCursorPos);
-          }
-      }, 10);
+    if (!user) return;
+    const cursor = textInputRef.current?.selectionStart || 0;
+    const text = inputValue;
+    const lastAt = text.lastIndexOf('@', cursor - 1);
+    
+    const newText = text.substring(0, lastAt) + `@${user.username} ` + text.substring(cursor);
+    setInputValue(newText);
+    setMentionQuery(null);
+    textInputRef.current?.focus();
   };
 
   const handleManualSend = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (inputValue.trim() || previewUrl) {
+    if (inputValue.trim() || previewUrls.length > 0) {
         triggerSend(e);
     }
   };
@@ -174,7 +183,7 @@ export default function ChatInput(props: Props) {
   const showCounter = inputValue.length > 1500;
 
   return (
-    <div className="bg-[#313338] flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
+    <div className="bg-background-primary flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
         
         {filteredUsers.length > 0 && (
             <MentionList 
@@ -192,28 +201,30 @@ export default function ChatInput(props: Props) {
             conversationId={activeChannel.type === 'dm' ? activeChannel.id : undefined}
         />
 
-        {previewUrl && (
-            <div className="flex items-start mb-2 p-4 bg-[#2b2d31] rounded-md border border-[#383a40] relative w-fit animate-in slide-in-from-bottom-2 fade-in duration-200">
-                <div className="relative group">
-                    <img src={previewUrl} alt="Preview" className="max-h-48 rounded-sm object-contain border border-[#383a40] bg-[#1e1f22]" />
-                    <button 
-                        onClick={clearFile}
-                        className="absolute -top-2 -right-2 bg-status-danger text-white rounded-full p-1 shadow-md hover:scale-110 transition-transform"
-                        title="Supprimer l'image"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                </div>
+        {previewUrls.length > 0 && (
+            <div className="flex items-start gap-2 mb-2 p-4 bg-background-secondary rounded-md border border-background-tertiary relative w-fit max-w-full overflow-x-auto animate-in slide-in-from-bottom-2 fade-in duration-200 custom-scrollbar">
+                {previewUrls.map((url, index) => (
+                    <div key={index} className="relative group flex-shrink-0">
+                        <img src={url} alt={`Preview ${index}`} className="h-48 rounded-sm object-contain border border-background-tertiary bg-background-tertiary" />
+                        <button 
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-2 -right-2 bg-status-danger text-white rounded-full p-1 shadow-md hover:scale-110 transition-transform"
+                            title="Supprimer l'image"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                        </button>
+                    </div>
+                ))}
             </div>
         )}
 
         {replyingTo && (
-            <div className="flex items-center justify-between bg-[#2b2d31] px-4 py-2 rounded-t-md border-t border-x border-[#383a40] text-xs font-bold text-text-muted uppercase tracking-wide animate-in slide-in-from-bottom-1">
+            <div className="flex items-center justify-between bg-background-secondary px-4 py-2 rounded-t-md border-t border-x border-background-tertiary text-xs font-bold text-text-muted uppercase tracking-wide animate-in slide-in-from-bottom-1">
                 <div className="flex items-center gap-2 truncate">
-                    <span className="text-zinc-400">Réponse à</span>
-                    <span className="text-zinc-200">@{replyingTo.user.username}</span>
+                    <span className="text-text-muted">Réponse à</span>
+                    <span className="text-text-normal">@{replyingTo.user.username}</span>
                 </div>
-                <button onClick={() => setReplyingTo(null)} className="text-zinc-400 hover:text-zinc-200 transition-colors">
+                <button onClick={() => setReplyingTo(null)} className="text-text-muted hover:text-text-normal transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
             </div>
@@ -221,14 +232,14 @@ export default function ChatInput(props: Props) {
 
         <div 
           onClick={() => textInputRef.current?.focus()}
-          className={`bg-[#383a40] relative px-4 py-3 flex items-start gap-3 transition-all cursor-text ${replyingTo ? 'rounded-b-md' : 'rounded-md'}`}
+          className={`bg-background-tertiary relative px-4 py-3 flex items-start gap-3 transition-all cursor-text ${replyingTo ? 'rounded-b-md' : 'rounded-md'}`}
         >
-            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept="image/*" />
+            <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept="image/*" multiple />
 
             <Tooltip text="Envoyer un fichier" side="top">
                 <button 
                     onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    className="text-zinc-400 hover:text-zinc-200 transition p-1 rounded-full hover:bg-[#313338] mt-0.5 flex-shrink-0"
+                    className="text-text-muted hover:text-text-normal transition p-1 rounded-full hover:bg-background-primary mt-0.5 flex-shrink-0"
                     type="button"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
@@ -239,7 +250,7 @@ export default function ChatInput(props: Props) {
                 ref={textInputRef}
                 rows={1}
                 disabled={!hasSendPermission}
-                className={`flex-1 bg-transparent outline-none font-normal text-[15px] resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed ${!hasSendPermission ? 'text-zinc-500 cursor-not-allowed placeholder-zinc-500' : 'text-zinc-200 placeholder-zinc-400'}`}
+                className={`flex-1 bg-transparent outline-none font-normal text-[15px] resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed ${!hasSendPermission ? 'text-text-muted cursor-not-allowed placeholder-text-muted' : 'text-text-normal placeholder-text-muted'}`}
                 placeholder={!hasSendPermission ? "Tu n'as pas la permission d'envoyer des messages dans ce salon" : `Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`}
                 value={inputValue} 
                 onChange={handleChange} 
@@ -251,7 +262,7 @@ export default function ChatInput(props: Props) {
             
             <div className={`absolute right-3 top-2.5 flex items-center gap-2 ${!hasSendPermission ? 'opacity-50 pointer-events-none' : ''}`}>
                 {showCounter && (
-                    <span className={`text-[10px] font-bold mr-1 ${remaining < 0 ? 'text-status-danger' : remaining < 200 ? 'text-status-warning' : 'text-zinc-500'}`}>
+                    <span className={`text-[10px] font-bold mr-1 ${remaining < 0 ? 'text-status-danger' : remaining < 200 ? 'text-status-warning' : 'text-text-muted'}`}>
                         {remaining}
                     </span>
                 )}
@@ -259,7 +270,7 @@ export default function ChatInput(props: Props) {
                 <div className="relative" ref={emojiPickerRef}>
                     {showEmojiPicker && (
                         <div 
-                            className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-lg overflow-hidden border border-[#1e1f22]"
+                            className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-lg overflow-hidden border border-background-tertiary"
                             onClick={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
                         >
@@ -269,20 +280,20 @@ export default function ChatInput(props: Props) {
                     
                     <button 
                         onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(!showEmojiPicker); }}
-                        className={`transition p-1.5 text-zinc-400 hover:text-yellow-400 ${showEmojiPicker ? 'text-yellow-400' : ''}`}
+                        className={`transition p-1.5 text-text-muted hover:text-yellow-400 ${showEmojiPicker ? 'text-yellow-400' : ''}`}
                     >
                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
                     </button>
                 </div>
 
-                <div className={`border-l border-zinc-600 pl-2 ml-1 ${canSend ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}>
+                <div className={`border-l border-background-modifier-accent pl-2 ml-1 ${canSend ? 'opacity-100' : 'opacity-50 cursor-not-allowed'}`}>
                     <button
                         onClick={handleManualSend}
                         disabled={!canSend}
                         className={`p-1.5 rounded-sm transition-all duration-200 ${
                             canSend 
                             ? 'text-brand hover:text-white' 
-                            : 'text-zinc-500'
+                            : 'text-text-muted'
                         }`}
                         title="Envoyer"
                     >

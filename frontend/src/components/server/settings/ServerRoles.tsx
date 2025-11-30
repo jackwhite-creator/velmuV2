@@ -115,7 +115,7 @@ export default function ServerRoles({ serverId }: Props) {
   return (
     <div className="flex h-full text-zinc-300">
       {/* Sidebar List */}
-      <div className="w-60 bg-[#2b2d31] flex flex-col">
+      <div className="w-60 bg-secondary flex flex-col">
         <div className="p-4 border-b border-[#1f2023]">
           <h2 className="text-xs font-bold uppercase text-zinc-400 mb-2">Rôles</h2>
           <button 
@@ -167,7 +167,7 @@ export default function ServerRoles({ serverId }: Props) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 bg-[#313338] p-8 overflow-y-auto custom-scrollbar">
+      <div className="flex-1 bg-primary p-8 overflow-y-auto custom-scrollbar">
         {selectedRole ? (
           <div className="max-w-2xl space-y-8">
             <h2 className="text-xl font-bold text-white mb-6">Modifier le rôle - {selectedRole.name}</h2>
@@ -206,7 +206,7 @@ export default function ServerRoles({ serverId }: Props) {
                         value={selectedRole.name}
                         disabled={selectedRole.name === '@everyone'}
                         onChange={(e) => handleUpdateRole(selectedRole.id, { name: e.target.value })}
-                        className="w-full bg-[#1e1f22] border-none rounded p-2 text-white focus:ring-0"
+                        className="w-full bg-tertiary border-none rounded p-2 text-white focus:ring-0"
                     />
                 </div>
                 
@@ -219,7 +219,7 @@ export default function ServerRoles({ serverId }: Props) {
                             onChange={(e) => handleUpdateRole(selectedRole.id, { color: e.target.value })}
                             className="h-10 w-16 bg-transparent cursor-pointer rounded overflow-hidden"
                         />
-                        <div className="flex-1 bg-[#1e1f22] rounded p-2 text-zinc-400 text-sm flex items-center">
+                        <div className="flex-1 bg-tertiary rounded p-2 text-zinc-400 text-sm flex items-center">
                             {selectedRole.color}
                         </div>
                     </div>
@@ -284,7 +284,7 @@ export default function ServerRoles({ serverId }: Props) {
 
             {/* Save Bar */}
             {hasChanges && (
-                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-[#111214] px-4 py-3 rounded flex items-center gap-8 shadow-xl animate-bounce-in z-50">
+                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 bg-quaternary px-4 py-3 rounded flex items-center gap-8 shadow-xl animate-bounce-in z-50">
                     <span className="text-white font-medium">Attention - Vous avez des changements non enregistrés !</span>
                     <div className="flex gap-2">
                         <button 

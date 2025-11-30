@@ -37,7 +37,10 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
       const isOwner = activeServer.ownerId === currentUser.id;
 
       // Filter roles lower than mine
-      const myHighestPos = Math.max(...(myMember.roles.map(r => r.position) || [0]));
+      const myHighestPos = Math.max(...(myMember.roles.map(memberRole => {
+          const serverRole = activeServer.roles?.find((r: any) => r.id === memberRole.id);
+          return serverRole?.position || 0;
+      }) || [0]));
       
       return activeServer.roles.filter(r => {
           if (r.name === '@everyone') return false;
@@ -57,7 +60,7 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
       }
 
       try {
-          const res = await api.put(`/members/${serverId}/${member.id}`, { roleIds: newRoleIds });
+          const res = await api.put(`/members/${serverId}/update/${member.id}`, { roleIds: newRoleIds });
           updateMember(serverId, res.data);
       } catch (err) {
           console.error("Failed to update roles", err);
@@ -68,7 +71,7 @@ export default function UserContextMenuContent({ memberId, serverId, onClose }: 
       if (!serverId || !member) return;
       if (!confirm(`Voulez-vous vraiment expulser ${member.user.username} ?`)) return;
       try {
-          await api.delete(`/members/${serverId}/kick/${member.id}`);
+          await api.delete(`/members/${serverId}/kick/${member.userId}`);
           onClose();
       } catch (err) { console.error(err); }
   };

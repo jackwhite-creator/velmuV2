@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #36393f;
-  --bg-secondary: #2f3136;
-  --bg-tertiary: #202225;
+  --bg-primary: #313338;
+  --bg-secondary: #2b2d31;
+  --bg-tertiary: #1e1f22;
   --bg-quaternary: #111214;
   --bg-floating: #18191c;
-  
+
   --bg-modifier-hover: rgba(79, 84, 92, 0.16);
   --bg-modifier-selected: rgba(79, 84, 92, 0.32);
 
@@ -16,9 +16,9 @@
   --text-normal: #dbdee1;
   --text-muted: #949ba4;
 
-  --brand: #5865F2;
-  --brand-hover: #4752C4;
-  
+  --brand: #5865f2;
+  --brand-hover: #4752c4;
+
   --green: #23a559;
   --red: #da373c;
   --yellow: #f0b232;
@@ -52,24 +52,75 @@
   --bg-modifier-selected: rgba(255, 255, 255, 0.2);
 }
 
+/* Christmas Theme */
+.theme-christmas {
+  --bg-primary: #1a2f23;
+  --bg-secondary: #13241b;
+  --bg-tertiary: #0d1a13;
+  --bg-quaternary: #08100c;
+  --bg-floating: #1a2f23;
+
+  --bg-modifier-hover: rgba(212, 36, 44, 0.16); /* Red tint */
+  --bg-modifier-selected: rgba(212, 36, 44, 0.32);
+
+  --text-header: #f0e6d2;
+  --text-normal: #e0dcd5;
+  --text-muted: #a3b3a8;
+
+  --brand: #d4242c;
+  --brand-hover: #b01e25;
+}
+
 body {
   background-color: var(--bg-primary);
   color: var(--text-normal);
-  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
 }
 
 @layer utilities {
-  .bg-primary { background-color: var(--bg-primary); }
-  .bg-secondary { background-color: var(--bg-secondary); }
-  .bg-tertiary { background-color: var(--bg-tertiary); }
-  .bg-quaternary { background-color: var(--bg-quaternary); }
-  .bg-floating { background-color: var(--bg-floating); }
+  .bg-primary {
+    background-color: var(--bg-primary);
+  }
+  .bg-secondary {
+    background-color: var(--bg-secondary);
+  }
+  .bg-tertiary {
+    background-color: var(--bg-tertiary);
+  }
+  .bg-quaternary {
+    background-color: var(--bg-quaternary);
+  }
+  .bg-floating {
+    background-color: var(--bg-floating);
+  }
 
-  .text-header { color: var(--text-header); }
-  .text-normal { color: var(--text-normal); }
-  .text-muted { color: var(--text-muted); }
+  .border-primary {
+    border-color: var(--bg-primary);
+  }
+  .border-secondary {
+    border-color: var(--bg-secondary);
+  }
+  .border-tertiary {
+    border-color: var(--bg-tertiary);
+  }
+  .border-quaternary {
+    border-color: var(--bg-quaternary);
+  }
+  .border-floating {
+    border-color: var(--bg-floating);
+  }
+
+  .text-header {
+    color: var(--text-header);
+  }
+  .text-normal {
+    color: var(--text-normal);
+  }
+  .text-muted {
+    color: var(--text-muted);
+  }
 
   .custom-scrollbar::-webkit-scrollbar {
     width: 8px;
@@ -77,12 +128,12 @@ body {
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background-color: var(--bg-secondary); 
+    background-color: var(--bg-secondary);
     border-radius: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: var(--bg-quaternary); 
+    background-color: var(--bg-quaternary);
     border-radius: 4px;
   }
 

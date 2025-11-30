@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, BrowserRouter } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useSocketStore } from './store/socketStore';
 import { useServerStore } from './store/serverStore';
 import { useFriendStore } from './store/friendStore';
+import { useThemeStore } from './store/themeStore';
 import { useTitleNotifications } from './hooks/useTitleNotifications';
 import api from './lib/api';
 
@@ -13,12 +14,15 @@ import ChatPage from './pages/ChatPage';
 import InvitePage from './pages/InvitePage';
 import PatchNotesModal from './components/shared/modals/PatchNotesModal';
 import UserProfileModal from './components/server/modals/UserProfileModal';
+import GlobalSocketListener from './components/chat/GlobalSocketListener';
+import SnowEffect from './components/effects/SnowEffect';
 import { PATCH_NOTE_DATA } from './config/patchNotes';
 
 function App() {
   const location = useLocation();
   const { token } = useAuthStore();
   const { connect, disconnect, socket } = useSocketStore();
+  const { theme } = useThemeStore();
 
   const { setOnlineUsers, addConversation, setServers, setIsLoaded, isLoaded, setConversations } = useServerStore();
   const { addRequest, updateRequest, removeRequest, setRequests } = useFriendStore(); 
@@ -26,6 +30,15 @@ function App() {
   const [showPatchNotes, setShowPatchNotes] = useState(false);
 
   useTitleNotifications();
+
+  // Theme Effect
+  useEffect(() => {
+    document.body.className = ''; // Reset classes
+    if (theme === 'light') document.body.classList.add('theme-light');
+    if (theme === 'amoled') document.body.classList.add('theme-amoled');
+    if (theme === 'christmas') document.body.classList.add('theme-christmas');
+    // Default 'dark' has no class
+  }, [theme]);
 
   useEffect(() => {
     if (token) connect();
@@ -146,6 +159,8 @@ function App() {
 
   return (
     <>
+      {theme === 'christmas' && <SnowEffect />}
+      <GlobalSocketListener />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />

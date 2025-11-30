@@ -8,7 +8,8 @@ export function usePermission(permission: Permissions | Permissions[]) {
   const { activeServer } = useServerStore();
 
   return useMemo(() => {
-    if (!user || !activeServer) return false;
+    if (!user) return false;
+    if (!activeServer) return true; // DM Mode or no server selected -> Allow by default (or handle differently)
 
     // 1. Owner Override
     if (activeServer.ownerId === user.id) return true;
@@ -18,18 +19,19 @@ export function usePermission(permission: Permissions | Permissions[]) {
     if (!member) return false;
 
     // 3. Flatten all permissions from all roles
-    // member.roles is populated in the store
+    // The backend returns member.roleIds (array of IDs), not member.roles (full objects)
+    // We need to join roleIds with activeServer.roles to get the full Role objects
     const allPermissions = new Set<string>();
 
-    member.roles.forEach(role => {
-        // Parse permissions from the role (assuming they are stored as strings in the DB/Store)
-        // Adjust based on your actual data structure.
-        // If the store has permissions as an array of strings:
-        if (Array.isArray(role.permissions)) {
-             role.permissions.forEach(p => allPermissions.add(p));
-        } else if (typeof role.permissions === 'string') {
-             // If stored as JSON string or comma separated (unlikely based on Prisma schema but possible in legacy)
-             // Prisma schema says String[] so it should be array.
+    // Get role IDs from member (could be in roleIds or roles depending on data structure)
+    const memberRoleIds = (member as any).roleIds || [];
+    
+    memberRoleIds.forEach((roleId: string) => {
+        // Find the full role definition in the server's roles list
+        const serverRole = activeServer.roles?.find((r: any) => r.id === roleId);
+        
+        if (serverRole && Array.isArray(serverRole.permissions)) {
+             serverRole.permissions.forEach((p: string) => allPermissions.add(p));
         }
     });
 

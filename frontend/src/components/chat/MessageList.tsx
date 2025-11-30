@@ -25,9 +25,9 @@ interface Props {
 const DateSeparator = ({ date }: { date: Date }) => (
   <div className="relative flex items-center justify-center my-6 select-none group px-4">
     <div className="absolute inset-0 flex items-center px-4">
-        <div className="w-full border-t border-zinc-700/70"></div>
+        <div className="w-full border-t border-background-modifier-hover"></div>
     </div>
-    <span className="relative bg-[#313338] px-2 text-[11px] font-semibold text-zinc-400">
+    <span className="relative bg-background-primary px-2 text-[11px] font-semibold text-text-muted">
         {date.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long' })}
     </span>
   </div>

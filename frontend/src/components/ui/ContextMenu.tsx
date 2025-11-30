@@ -77,7 +77,7 @@ export function ContextMenu({ position, onClose, children, items }: ContextMenuP
       />
       <div 
         ref={menuRef}
-        className="fixed z-[9999] bg-[#111214] border border-zinc-900 rounded-md shadow-xl p-1.5 min-w-[188px] animate-in fade-in duration-75 zoom-in-95 text-zinc-300"
+        className="fixed z-[9999] bg-background-floating border border-background-tertiary rounded-md shadow-xl p-1.5 min-w-[188px] animate-in fade-in duration-75 zoom-in-95 text-text-normal"
         style={style}
         onClick={(e) => e.stopPropagation()} 
         onContextMenu={(e) => e.preventDefault()} 
@@ -96,8 +96,8 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
 
   const baseClass = "flex justify-between items-center px-2 py-1.5 rounded-sm cursor-pointer text-xs font-medium transition group w-full text-left select-none relative";
   const variantClass = variant === 'danger' 
-    ? "hover:bg-red-500 text-red-400 hover:text-white" 
-    : "hover:bg-indigo-500 text-zinc-300 hover:text-white";
+    ? "hover:bg-status-danger text-status-danger hover:text-white" 
+    : "hover:bg-brand text-text-normal hover:text-white";
   const disabledClass = disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : "";
 
   return (
@@ -110,7 +110,7 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
             ref={itemRef}
             onClick={() => { onClick?.(); }}
             disabled={disabled}
-            className={`${baseClass} ${variantClass} ${disabledClass} ${isSubMenuOpen ? 'bg-indigo-500 text-white' : ''}`}
+            className={`${baseClass} ${variantClass} ${disabledClass} ${isSubMenuOpen ? 'bg-brand text-white' : ''}`}
         >
           <span className="truncate flex-1">{label}</span>
           {children ? (
@@ -121,8 +121,26 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
         </button>
 
         {children && isSubMenuOpen && (
-             <div className="absolute left-full top-0 -ml-1 pl-2 w-48 z-50">
-                 <div className="bg-[#111214] border border-zinc-900 rounded-md shadow-xl p-1.5 animate-in fade-in duration-75">
+             <div 
+                className={`absolute top-0 -ml-1 w-48 z-50 ${
+                    // Simple check: if parent is close to right edge, show on left
+                    // Since we don't have easy access to parent rect here without ref measurement on hover,
+                    // we can use a CSS class or a more robust portal approach.
+                    // For now, let's try a CSS-only approach using group-hover or just assume right unless specified.
+                    // Better: Use a ref to measure position when opening.
+                    'left-full pl-2' 
+                }`}
+                ref={(el) => {
+                    if (el) {
+                        const rect = el.getBoundingClientRect();
+                        if (rect.right > window.innerWidth) {
+                            el.classList.remove('left-full', 'pl-2');
+                            el.classList.add('right-full', 'pr-2');
+                        }
+                    }
+                }}
+             >
+                 <div className="bg-background-floating border border-background-tertiary rounded-md shadow-xl p-1.5 animate-in fade-in duration-75">
                      {children}
                  </div>
              </div>
@@ -133,10 +151,10 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
 
 // --- COMPOSANT SÉPARATEUR ---
 export function ContextMenuSeparator() {
-  return <div className="h-[1px] bg-zinc-700/30 my-1 mx-1"></div>;
+  return <div className="h-[1px] bg-background-modifier-accent my-1 mx-1"></div>;
 }
 
 // --- COMPOSANT LABEL (Pour les titres de section dans les sous-menus) ---
 export function ContextMenuLabel({ label }: { label: string }) {
-    return <div className="px-2 py-1 text-[10px] font-bold text-zinc-500 uppercase tracking-wider select-none">{label}</div>
+    return <div className="px-2 py-1 text-[10px] font-bold text-text-muted uppercase tracking-wider select-none">{label}</div>
 }

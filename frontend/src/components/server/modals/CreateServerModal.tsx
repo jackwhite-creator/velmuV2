@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServerStore } from '../../../store/serverStore';
 import api from '../../../lib/api';
@@ -7,20 +7,35 @@ import Modal from '../../ui/Modal';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onServerCreated?: (serverId: string) => void;
 }
 
-export default function CreateServerModal({ isOpen, onClose }: Props) {
+export default function CreateServerModal({ isOpen, onClose, onServerCreated }: Props) {
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [iconFile, setIconFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const { addServer, setActiveServer, setActiveChannel, setActiveConversation } = useServerStore();
 
   const handleClose = () => {
     setName('');
     setError('');
+    setIconFile(null);
+    setPreviewUrl(null);
     onClose();
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setIconFile(file);
+      setPreviewUrl(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,7 +46,17 @@ export default function CreateServerModal({ isOpen, onClose }: Props) {
     setError('');
 
     try {
-      const res = await api.post('/servers', { name });
+      const formData = new FormData();
+      formData.append('name', name);
+      if (iconFile) {
+        formData.append('icon', iconFile);
+      }
+
+      const res = await api.post('/servers', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
       const fullServer = res.data;
 
       addServer(fullServer);
@@ -48,6 +73,7 @@ export default function CreateServerModal({ isOpen, onClose }: Props) {
       }
 
       handleClose();
+      if (onServerCreated) onServerCreated(fullServer.id);
     } catch (err: any) {
       console.error(err);
       setError(err.response?.data?.error || "Erreur lors de la création");
@@ -81,10 +107,31 @@ export default function CreateServerModal({ isOpen, onClose }: Props) {
             </p>
 
             <div className="my-8 flex flex-col items-center gap-3">
-                <div className="w-24 h-24 rounded-md bg-brand flex items-center justify-center text-4xl font-bold text-text-header shadow-lg ring-4 ring-background-tertiary">
-                    {getInitials()}
+                <div 
+                    className="w-24 h-24 rounded-full bg-brand flex items-center justify-center text-4xl font-bold text-text-header shadow-lg ring-4 ring-background-tertiary relative group cursor-pointer overflow-hidden"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    {previewUrl ? (
+                        <img src={previewUrl} alt="Server Icon" className="w-full h-full object-cover" />
+                    ) : (
+                        getInitials()
+                    )}
+                    
+                    <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-[10px] font-bold text-white uppercase tracking-wider mb-1">UPLOAD</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    </div>
                 </div>
-                <span className="text-xs text-text-muted font-bold uppercase tracking-wide">Aperçu</span>
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*" 
+                    onChange={handleFileSelect} 
+                />
+                <span className="text-xs text-text-muted font-bold uppercase tracking-wide">
+                    {previewUrl ? 'Modifier l\'icône' : 'Ajouter une icône'}
+                </span>
             </div>
 
             <div className="w-full text-left">

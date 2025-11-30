@@ -72,32 +72,31 @@ export default function JoinServerModal({ isOpen, onClose }: Props) {
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="sm">
-      <div className="relative p-6 flex flex-col items-center text-center bg-background-floating font-sans">
+      <form onSubmit={handleSubmit} className="relative font-sans text-text-normal">
         
-        {/* Bouton Fermer avec z-index élevé pour être sûr qu'il est cliquable */}
+        {/* Bouton Fermer */}
         <button 
-            onClick={handleClose}
-            className="absolute top-4 right-4 text-text-muted hover:text-text-header p-1 rounded-sm hover:bg-background-modifier-hover transition-all z-50"
-            title="Fermer"
             type="button"
+            onClick={handleClose}
+            className="absolute top-4 right-4 text-text-muted hover:text-text-normal p-1 rounded-sm hover:bg-background-modifier-hover transition-all z-50"
+            title="Fermer"
         >
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
-        <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4 text-brand mt-2 shadow-sm ring-1 ring-brand/20">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
-        </div>
+        <div className="p-8 flex flex-col items-center text-center bg-background-floating">
+            <div className="w-16 h-16 bg-brand/10 rounded-full flex items-center justify-center mb-4 text-brand mt-2 shadow-sm ring-1 ring-brand/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+            </div>
 
-        <h2 className="text-2xl font-bold text-text-header mb-2">
-          Rejoindre un serveur
-        </h2>
-        <p className="text-text-muted text-sm mb-8 px-2 leading-relaxed">
-          Saisis le code d'invitation ci-dessous pour rejoindre une nouvelle communauté.
-        </p>
+            <h2 className="text-2xl font-bold text-text-header mb-2">
+              Rejoindre un serveur
+            </h2>
+            <p className="text-text-muted text-sm mb-8 px-2 leading-relaxed">
+              Saisis le code d'invitation ci-dessous pour rejoindre une nouvelle communauté.
+            </p>
 
-        <form onSubmit={handleSubmit} className="w-full flex flex-col gap-6">
-            
-            <div className="text-left w-full">
+            <div className="w-full text-left">
                 <label className="block text-xs font-bold text-text-muted uppercase mb-2 ml-1 tracking-wide">
                     Code d'invitation ou Lien
                 </label>
@@ -123,24 +122,26 @@ export default function JoinServerModal({ isOpen, onClose }: Props) {
                     </div>
                 )}
             </div>
+        </div>
 
-            <button 
+        <div className="bg-background-secondary p-4 flex justify-between items-center border-t border-background-tertiary">
+             <button
+                type="button"
+                onClick={handleClose}
+                className="text-sm font-medium text-text-normal hover:underline px-2"
+             >
+                Retour
+             </button>
+             <button 
                 type="submit"
                 disabled={loading || !code}
-                className={`
-                    w-full py-3 rounded-sm text-sm font-bold text-white transition-all duration-200 shadow-md
-                    ${(loading || !code) 
-                        ? 'bg-background-secondary text-text-muted cursor-not-allowed' 
-                        : 'bg-brand hover:bg-brand-hover active:translate-y-[1px]'
-                    }
-                `}
+                className="bg-brand hover:bg-brand-hover text-white px-6 py-2.5 rounded-sm text-sm font-semibold transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {loading ? 'Connexion...' : 'Rejoindre le serveur'}
             </button>
+        </div>
 
-        </form>
-
-      </div>
+      </form>
     </Modal>
   );
 }

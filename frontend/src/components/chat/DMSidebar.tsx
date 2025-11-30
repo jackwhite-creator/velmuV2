@@ -23,7 +23,10 @@ export default function DMSidebar({ onUserContextMenu }: DMSidebarProps) {
   const pendingCount = requests.filter(r => r.status === 'PENDING' && r.receiverId === user?.id).length;
 
   const getOtherUser = (conversation: Conversation) => {
-    return conversation.users.find(u => u.id !== user?.id) || conversation.users[0];
+    if (!conversation?.users || !Array.isArray(conversation.users)) {
+        return { id: 'unknown', username: 'Utilisateur Inconnu', discriminator: '0000' } as any;
+    }
+    return conversation.users.find(u => u.id !== user?.id) || conversation.users[0] || { id: 'unknown', username: 'Inconnu', discriminator: '0000' };
   };
 
   const handleFriendClick = () => {

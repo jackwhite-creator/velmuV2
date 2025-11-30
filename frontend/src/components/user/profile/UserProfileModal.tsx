@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useServerStore } from '../../../store/serverStore';
@@ -24,15 +23,21 @@ export interface FullProfile {
   bannerUrl?: string | null;
   bio?: string | null;
   createdAt?: string;
+  mutualServers?: {
+    id: string;
+    name: string;
+    iconUrl: string | null;
+  }[];
 }
 
 export default function UserProfileModal({ userId, onClose, onOpenSettings }: UserProfileProps) {
   const navigate = useNavigate();
-  const { onlineUsers, addConversation, setActiveConversation, setActiveServer, activeServer, conversations } = useServerStore();
+  const { onlineUsers, addConversation, conversations, activeServer } = useServerStore();
   const { requests, addRequest, updateRequest, removeRequest } = useFriendStore(); 
   const { user: currentUser } = useAuthStore();
 
   const [profile, setProfile] = useState<FullProfile | null>(null);
+  const [badges, setBadges] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
@@ -54,15 +59,20 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
             discriminator: cachedUser.discriminator,
             avatarUrl: cachedUser.avatarUrl,
             bannerUrl: (cachedUser as any).bannerUrl || null,
-            bio: null,
-            createdAt: undefined
+            bio: (cachedUser as any).bio || null,
+            createdAt: (cachedUser as any).createdAt || undefined
         });
       } else {
         setProfile(null);
       }
 
       setLoading(true);
-      api.get(`/users/${userId}`).then(res => setProfile(res.data)).catch(console.error).finally(() => setLoading(false));
+      Promise.all([
+        api.get(`/users/${userId}`).then(res => {
+            setProfile(prev => ({ ...prev, ...res.data }));
+        }),
+        api.get(`/badges/users/${userId}`).then(res => setBadges(res.data))
+      ]).catch(console.error).finally(() => setLoading(false));
     }
   }, [userId, activeServer, conversations, currentUser, isMe]);
 
@@ -78,16 +88,42 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
 
   const actions = {
     startDM: async () => {
-        if (!profile) return;
+        if (!profile || !currentUser) return;
         setActionLoading(true);
         try {
             const res = await api.post('/conversations', { targetUserId: profile.id });
-            addConversation(res.data);
-            setActiveServer(null);
-            setActiveConversation(res.data);
+            let conversation = res.data;
+
+            // Check if conversation exists in store to avoid overwriting valid data with potentially incomplete API response
+            const exists = conversations.some(c => c.id === conversation.id);
+
+            if (!exists) {
+                // Fallback: Ensure users array exists (fixes issue if backend returns incomplete data)
+                if (!conversation.users || !Array.isArray(conversation.users)) {
+                    conversation = {
+                        ...conversation,
+                        users: [
+                            { 
+                                id: currentUser.id, 
+                                username: currentUser.username, 
+                                discriminator: currentUser.discriminator, 
+                                avatarUrl: currentUser.avatarUrl 
+                            },
+                            { 
+                                id: profile.id, 
+                                username: profile.username, 
+                                discriminator: profile.discriminator, 
+                                avatarUrl: profile.avatarUrl 
+                            }
+                        ]
+                    };
+                }
+                addConversation(conversation);
+            }
+
             onClose();
-            // ✅ CORRECTION : On navigue vers l'URL précise de la conversation
-            navigate(`/channels/@me/${res.data.id}`);
+            // Let useChatPageNavigation handle the state switch based on URL
+            navigate(`/channels/@me/${conversation.id}`);
         } catch (err) { console.error(err); } finally { setActionLoading(false); }
     },
     sendRequest: async () => {
@@ -127,17 +163,18 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
     const request = requests.find(r => friendStatus === 'FRIEND' && ((r.senderId === currentUser?.id && r.receiverId === userId) || (r.senderId === userId && r.receiverId === currentUser?.id)));
     if (!request) return;
     removeRequest(request.id);
+
     try { await api.delete(`/friends/${request.id}`); } catch(err) { console.error(err); }
   };
 
   if (loading && !profile) {
       return (
           <Modal isOpen={!!userId} onClose={onClose} size="lg">
-              <div className="bg-[#18191c] h-[500px] animate-pulse flex flex-col">
-                  <div className="h-32 bg-[#232428] w-full" />
+              <div className="bg-floating h-[500px] animate-pulse flex flex-col">
+                  <div className="h-32 bg-secondary w-full" />
                   <div className="px-6 -mt-14">
-                      <div className="w-28 h-28 rounded-full bg-[#232428] border-[6px] border-[#18191c]" />
-                      <div className="mt-4 h-8 w-40 bg-[#232428] rounded" />
+                      <div className="w-28 h-28 rounded-full bg-secondary border-[6px] border-floating" />
+                      <div className="mt-4 h-8 w-40 bg-secondary rounded" />
                   </div>
               </div>
           </Modal>
@@ -148,7 +185,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
 
   return (
     <Modal isOpen={!!userId} onClose={onClose} size="lg">
-      <div className="bg-[#18191c] flex flex-col text-zinc-100 min-h-[460px] animate-in fade-in duration-200 font-sans shadow-2xl rounded-lg overflow-hidden relative">
+      <div className="bg-floating flex flex-col text-zinc-100 min-h-[460px] animate-in fade-in duration-200 font-sans shadow-2xl rounded-lg overflow-hidden relative">
          <ProfileHeader 
             profile={profile} 
             isOnline={isOnline} 
@@ -161,6 +198,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
          <ProfileInfo 
             profile={profile} 
             isMe={isMe}
+            badges={badges}
          />
       </div>
 

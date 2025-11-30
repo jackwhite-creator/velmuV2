@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Server, Channel, Category, useServerStore } from '../../store/serverStore';
 import api from '../../lib/api';
@@ -17,15 +18,15 @@ interface Props {
 }
 
 const HashIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
 );
 
 const SpeakerIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
 );
 
 const CameraIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
 );
 
 const ChevronIcon = ({ isOpen }: { isOpen: boolean }) => (
@@ -54,6 +55,7 @@ export default function ChannelList({
   onContextMenuGlobal,
   onContextMenuChannel, onContextMenuCategory 
 }: Props) {
+  const navigate = useNavigate();
   const { setActiveServer } = useServerStore();
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
@@ -112,7 +114,7 @@ export default function ChannelList({
     } catch (err) { console.error(err); }
   };
 
-  if (!server.categories) return <div className="text-center mt-4 text-zinc-500 text-xs px-2 font-mono">...</div>;
+  if (!server.categories) return <div className="text-center mt-4 text-text-muted text-xs px-2 font-mono">...</div>;
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -136,32 +138,36 @@ export default function ChannelList({
                                     >
                                         <div 
                                             {...provided.dragHandleProps}
-                                            className="flex items-center justify-between px-1 mb-1 group cursor-pointer hover:text-zinc-300 text-zinc-500 select-none pt-1"
-                                            onContextMenu={(e) => { e.stopPropagation(); onContextMenuCategory(e, cat); }}
-                                            onClick={() => toggleCategory(cat.id)}
+                                            className="relative"
                                         >
-                                            <div className="font-bold text-xs uppercase tracking-wide flex items-center gap-1 truncate flex-1 group-hover:text-zinc-300 transition-colors" title={cat.name}>
-                                                <div className="text-zinc-500 transition-transform duration-100">
-                                                    <ChevronIcon isOpen={!isCollapsed} />
+                                            <div 
+                                                className="flex items-center justify-between px-1 mb-1 group cursor-pointer hover:text-text-normal text-text-muted select-none pt-1"
+                                                onContextMenu={(e) => { e.stopPropagation(); onContextMenuCategory(e, cat); }}
+                                                onClick={() => toggleCategory(cat.id)}
+                                            >
+                                                <div className="font-bold text-xs uppercase tracking-wide flex items-center gap-1 truncate flex-1 group-hover:text-text-normal transition-colors" title={cat.name}>
+                                                    <div className="text-text-muted transition-transform duration-100">
+                                                        <ChevronIcon isOpen={!isCollapsed} />
+                                                    </div>
+                                                    <span className="truncate mt-[1px] font-bold">{cat.name}</span>
                                                 </div>
-                                                <span className="truncate mt-[1px] font-bold">{cat.name}</span>
+                                                {isOwner && (
+                                                    <Tooltip text="Créer un salon" side="top">
+                                                        <span 
+                                                            className="opacity-0 group-hover:opacity-100 text-text-muted hover:text-text-normal transition cursor-pointer"
+                                                            onClick={(e) => { e.stopPropagation(); onCreateChannel(cat.id); }}
+                                                        >
+                                                            <PlusIcon />
+                                                        </span>
+                                                    </Tooltip>
+                                                )}
                                             </div>
-                                            {isOwner && (
-                                                <Tooltip text="Créer un salon" side="top">
-                                                    <span 
-                                                        className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-zinc-200 transition cursor-pointer"
-                                                        onClick={(e) => { e.stopPropagation(); onCreateChannel(cat.id); }}
-                                                    >
-                                                        <PlusIcon />
-                                                    </span>
-                                                </Tooltip>
-                                            )}
                                         </div>
 
                                         {!isCollapsed && (
                                             <Droppable droppableId={cat.id} type="CHANNEL">
                                                 {(provided, snapshot) => (
-                                                    <div {...provided.droppableProps} ref={provided.innerRef} className={`space-y-[2px] min-h-[2px] ${snapshot.isDraggingOver ? 'bg-zinc-800/30 rounded' : ''}`}>
+                                                    <div {...provided.droppableProps} ref={provided.innerRef} className={`space-y-[2px] min-h-[2px] ${snapshot.isDraggingOver ? 'bg-background-modifier-selected rounded' : ''}`}>
                                                         {cat.channels?.map((channel, index) => {
                                                             const isActive = activeChannel?.id === channel.id;
                                                             return (
@@ -170,28 +176,36 @@ export default function ChannelList({
                                                                         <div 
                                                                             ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} 
                                                                             style={{ ...provided.draggableProps.style }} 
-                                                                            onClick={() => onChannelSelect(channel)} 
                                                                             onContextMenu={(e) => { e.stopPropagation(); onContextMenuChannel(e, channel); }}
                                                                             className={`
-                                                                                relative px-2 py-1.5 rounded-[4px] flex items-center gap-2 cursor-pointer group transition-colors mx-0.5
+                                                                                relative rounded-[4px] group transition-colors mx-0.5
                                                                                 ${isActive 
-                                                                                    ? 'bg-zinc-700/60 text-white' 
-                                                                                    : 'text-zinc-400 hover:bg-zinc-700/40 hover:text-zinc-200'} 
-                                                                                ${snapshot.isDragging ? 'bg-zinc-800 shadow-lg opacity-100 z-50 scale-105' : ''}
+                                                                                    ? 'bg-background-modifier-selected text-text-header' 
+                                                                                    : 'text-text-muted hover:bg-background-modifier-hover hover:text-text-normal'} 
+                                                                                ${snapshot.isDragging ? 'bg-background-floating shadow-lg opacity-100 z-50 scale-105' : ''}
                                                                             `}
                                                                         >
-                                                                            <div className="flex-shrink-0 opacity-70 group-hover:opacity-100">
-                                                                                {channel.type === 'VIDEO' ? <CameraIcon /> : channel.type === 'AUDIO' ? <SpeakerIcon /> : <HashIcon />}
+                                                                            <div 
+                                                                                className="px-2 py-1.5 flex items-center gap-2 cursor-pointer w-full h-full"
+                                                                                onClick={(e) => {
+                                                                                    // Try both methods
+                                                                                    onChannelSelect(channel);
+                                                                                    navigate(`/channels/${server.id}/${channel.id}`);
+                                                                                }}
+                                                                            >
+                                                                                <div className="flex-shrink-0 opacity-70 group-hover:opacity-100">
+                                                                                    {channel.type === 'VIDEO' ? <CameraIcon /> : channel.type === 'AUDIO' ? <SpeakerIcon /> : <HashIcon />}
+                                                                                </div>
+                                                                                
+                                                                                <span className={`font-medium text-[15px] truncate flex-1 leading-normal select-none ${isActive ? 'text-text-header font-semibold' : ''}`}>
+                                                                                    {channel.name}
+                                                                                </span>
                                                                             </div>
-                                                                            
-                                                                            <span className={`font-medium text-[15px] truncate flex-1 leading-normal select-none ${isActive ? 'text-white font-semibold' : ''}`}>
-                                                                                {channel.name}
-                                                                            </span>
                                                                             
                                                                             {isOwner && (
                                                                                 <Tooltip text="Modifier" side="top">
                                                                                     <div 
-                                                                                        className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-zinc-200 flex-shrink-0 transition-opacity p-0.5"
+                                                                                        className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 text-text-muted hover:text-text-normal flex-shrink-0 transition-opacity p-0.5"
                                                                                         onClick={(e) => { e.stopPropagation(); onEditChannel(channel); }}
                                                                                     >
                                                                                         <SettingsIcon />

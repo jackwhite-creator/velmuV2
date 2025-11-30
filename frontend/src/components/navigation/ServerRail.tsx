@@ -38,8 +38,8 @@ const RailTooltip = ({ text, rect }: { text: string, rect: DOMRect }) => {
     <>
       <style>{styles}</style>
       <div className="fixed z-[9999] flex items-center animate-tooltip-rail origin-left" style={style}>
-        <div className="absolute -left-1.5 w-0 h-0 border-y-[6px] border-y-transparent border-r-[6px] border-r-black" style={{ top: '50%', marginTop: '-6px' }} />
-        <div className="bg-black text-white text-[14px] font-bold px-3 py-2 rounded-md shadow-xl whitespace-nowrap leading-none">
+        <div className="absolute -left-1.5 w-0 h-0 border-y-[6px] border-y-transparent border-r-[6px] border-r-background-floating" style={{ top: '50%', marginTop: '-6px' }} />
+        <div className="bg-background-floating text-text-normal border border-background-tertiary text-[14px] font-bold px-3 py-2 rounded-md shadow-xl whitespace-nowrap leading-none">
           {text}
         </div>
       </div>
@@ -113,6 +113,7 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
   
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; server: Server } | null>(null);
   const [serverToLeave, setServerToLeave] = useState<Server | null>(null);
+  const [serverToDelete, setServerToDelete] = useState<Server | null>(null); // <--- New state
   const [serverToInvite, setServerToInvite] = useState<Server | null>(null);
 
   const unreadDMs = conversations.filter(c => c.unreadCount > 0);
@@ -149,6 +150,17 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
     finally { setServerToLeave(null); }
   };
 
+  // <--- New function
+  const handleDeleteServer = async () => {
+    if (!serverToDelete) return;
+    try {
+        await api.delete(`/servers/${serverToDelete.id}`);
+        removeServer(serverToDelete.id);
+        if (activeServer?.id === serverToDelete.id) { setActiveServer(null); navigate('/channels/@me'); }
+    } catch (err) { console.error("Erreur delete server:", err); alert("Impossible de supprimer le serveur"); }
+    finally { setServerToDelete(null); }
+  };
+
   const openCreate = onOpenCreateServer || (() => setLocalCreateOpen(true));
   const openJoin = onOpenJoinServer || (() => setLocalJoinOpen(true));
 
@@ -157,7 +169,7 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
   };
 
   return (
-    <div className="w-[72px] bg-background-quaternary flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none border-r border-[#1e1f22]/50">
+    <div className="w-[72px] bg-background-quaternary flex flex-col items-center py-3 overflow-y-auto custom-scrollbar flex-shrink-0 z-30 scrollbar-none border-r border-background-tertiary">
       
       <RailItem 
         label="Messages Privés"
@@ -237,17 +249,26 @@ export default function ServerRail({ onOpenCreateServer, onOpenJoinServer }: Ser
             <ContextMenuItem label="Inviter des gens" icon={Icons.Invite} onClick={() => { setServerToInvite(contextMenu.server); setContextMenu(null); }} />
             <ContextMenuSeparator />
             {user?.id !== contextMenu.server.ownerId && <ContextMenuItem label="Quitter le serveur" variant="danger" icon={Icons.Leave} onClick={() => { setServerToLeave(contextMenu.server); setContextMenu(null); }} />}
-            {user?.id === contextMenu.server.ownerId && <ContextMenuItem label="Supprimer le serveur" variant="danger" icon={Icons.Leave} onClick={() => { alert("À venir !"); setContextMenu(null); }} />}
+            {user?.id === contextMenu.server.ownerId && <ContextMenuItem label="Supprimer le serveur" variant="danger" icon={Icons.Leave} onClick={() => { setServerToDelete(contextMenu.server); setContextMenu(null); }} />} 
         </ContextMenu>
       )}
 
       <CreateServerModal isOpen={localCreateOpen} onClose={() => setLocalCreateOpen(false)} />
       <JoinServerModal isOpen={localJoinOpen} onClose={() => setLocalJoinOpen(false)} />
       <InviteModal isOpen={!!serverToInvite} onClose={() => setServerToInvite(null)} server={serverToInvite} />
+      
       <ConfirmModal 
         isOpen={!!serverToLeave} onClose={() => setServerToLeave(null)} onConfirm={handleLeaveServer}
         title={`Quitter ${serverToLeave?.name}`} message={<span>Êtes-vous sûr de vouloir quitter <strong>{serverToLeave?.name}</strong> ?</span>}
         isDestructive={true} confirmText="Quitter"
+      />
+
+      {/* <--- New ConfirmModal for deletion */}
+      <ConfirmModal 
+        isOpen={!!serverToDelete} onClose={() => setServerToDelete(null)} onConfirm={handleDeleteServer}
+        title={`Supprimer ${serverToDelete?.name}`} 
+        message={<span>Êtes-vous sûr de vouloir supprimer <strong>{serverToDelete?.name}</strong> ? Cette action est <strong className="text-red-400">irréversible</strong>.</span>}
+        isDestructive={true} confirmText="Supprimer"
       />
     </div>
   );
