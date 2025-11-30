@@ -25,7 +25,7 @@ router.get('/', getMessages);
 
 // POST /api/messages
 // Check SEND_MESSAGES. Note: Middleware handles DMs gracefully (skips check if no server context)
-router.post('/', messageLimiter, requireServerPermission(Permissions.SEND_MESSAGES), upload.single('file'), createMessage);
+router.post('/', messageLimiter, requireServerPermission(Permissions.SEND_MESSAGES), upload.array('files', 10), createMessage);
 
 // PUT & DELETE
 router.put('/:messageId', updateMessage);

@@ -12,3 +12,4 @@ export * from './user.repository';
 export * from './friend.repository';
 export * from './invite.repository';
 export * from './role.repository';
+export * from './badge.repository';

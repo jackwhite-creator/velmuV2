@@ -27,15 +27,17 @@ export class MemberService {
    */
   async updateMember(
     serverId: string,
-    targetUserId: string,
+    targetMemberId: string,
     requestUserId: string,
     data: { nickname?: string | null; roleIds?: string[] }
   ) {
     const isMember = await memberRepository.isMember(requestUserId, serverId);
     if (!isMember) throw new AuthorizationError('Accès refusé');
 
-    const targetMember = await memberRepository.findByUserAndServer(targetUserId, serverId);
-    if (!targetMember) throw new NotFoundError('Membre introuvable');
+    const targetMember = await memberRepository.findById(targetMemberId);
+    if (!targetMember || targetMember.serverId !== serverId) throw new NotFoundError('Membre introuvable');
+
+    const targetUserId = targetMember.userId;
 
     // Role assignment logic with hierarchy check
     if (data.roleIds) {

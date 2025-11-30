@@ -49,7 +49,7 @@ export class MessageService {
       throw new AuthorizationError('Accès refusé');
     }
 
-    let content = data.content;
+    let content = data.content || '';
 
     // Vérifier la permission @everyone
     if (content.includes('@everyone')) {
@@ -103,7 +103,7 @@ export class MessageService {
 
     // Créer le message
     const message = await messageRepository.createMessage({
-      content: data.content,
+      content: data.content || '',
       userId,
       conversationId,
       replyToId: data.replyToId,
@@ -112,6 +112,9 @@ export class MessageService {
 
     // Mettre à jour lastMessageAt de la conversation
     await conversationRepository.updateLastMessageAt(conversationId);
+
+    // Mark as read for sender to avoid self-notification
+    await conversationRepository.markAsRead(conversationId, userId);
 
     return message;
   }

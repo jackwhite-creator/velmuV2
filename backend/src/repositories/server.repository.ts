@@ -55,7 +55,17 @@ export class ServerRepository extends BaseRepository<Server> {
   async findByUserId(userId: string): Promise<Server[]> {
     const members = await this.prisma.member.findMany({
       where: { userId },
-      include: { server: true }
+      include: { 
+        server: {
+          include: {
+            roles: true,
+            members: {
+              where: { userId },
+              include: { roles: true }
+            }
+          }
+        } 
+      }
     });
     return members.map(m => m.server);
   }

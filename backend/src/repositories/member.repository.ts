@@ -83,11 +83,22 @@ export class MemberRepository extends BaseRepository<Member> {
    * Ajoute un membre à un serveur
    */
   async addMember(userId: string, serverId: string, roleIds: string[] = []): Promise<MemberWithUser> {
+    // If no roles provided, automatically assign @everyone role
+    let finalRoleIds = roleIds;
+    if (roleIds.length === 0) {
+      const everyoneRole = await this.prisma.role.findFirst({
+        where: { serverId, name: '@everyone' }
+      });
+      if (everyoneRole) {
+        finalRoleIds = [everyoneRole.id];
+      }
+    }
+
     return this.prisma.member.create({
       data: {
         userId,
         serverId,
-        roleIds
+        roleIds: finalRoleIds
       },
       include: {
         user: {
@@ -120,11 +131,34 @@ export class MemberRepository extends BaseRepository<Member> {
     userId: string,
     serverId: string,
     data: { nickname?: string | null; roleIds?: string[] }
-  ): Promise<Member> {
+  ): Promise<MemberWithUser> {
+    const updateData: any = { ...data };
+    
+    // Handle roles relation if roleIds is present
+    if (data.roleIds) {
+        updateData.roles = {
+            set: data.roleIds.map(id => ({ id }))
+        };
+        // Keep the scalar roleIds in sync if it exists in schema
+        updateData.roleIds = data.roleIds;
+    }
+
     return this.prisma.member.update({
       where: { userId_serverId: { userId, serverId } },
-      data
-    });
+      data: updateData,
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            discriminator: true,
+            avatarUrl: true,
+            bio: true
+          }
+        },
+        roles: true
+      }
+    }) as unknown as Promise<MemberWithUser>;
   }
 
   /**
@@ -169,6 +203,17 @@ export class MemberRepository extends BaseRepository<Member> {
     return this.prisma.member.count({
       where: { serverId }
     });
+  }
+
+  /**
+   * Récupère tous les serveurs dont l'utilisateur est membre
+   */
+  async findUserServers(userId: string): Promise<string[]> {
+    const members = await this.prisma.member.findMany({
+      where: { userId },
+      select: { serverId: true }
+    });
+    return members.map(m => m.serverId);
   }
 }
 

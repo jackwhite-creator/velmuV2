@@ -27,7 +27,13 @@ export class InviteRepository extends BaseRepository<Invite> {
             avatarUrl: true
           }
         },
-        server: true
+        server: {
+          include: {
+            _count: {
+              select: { members: true }
+            }
+          }
+        }
       }
     });
 

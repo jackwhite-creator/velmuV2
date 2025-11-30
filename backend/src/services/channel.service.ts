@@ -66,7 +66,7 @@ export class ChannelService {
     }
 
     await channelRepository.deleteChannel(channelId);
-    return { message: 'Channel supprimé' };
+    return { message: 'Channel supprimé', serverId: channel.serverId };
   }
 
   /**
@@ -117,7 +117,7 @@ export class ChannelService {
     }
 
     await channelRepository.deleteCategory(categoryId);
-    return { message: 'Catégorie supprimée' };
+    return { message: 'Catégorie supprimée', serverId: category.serverId };
   }
 
   /**

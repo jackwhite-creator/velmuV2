@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { friendService } from '../services/friend.service';
 import { RequestStatus } from '@prisma/client';
+import { onlineUsers } from '../socket';
 
 export const getFriendRequests = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -58,6 +59,17 @@ export const updateFriendRequest = async (req: Request, res: Response, next: Nex
     if (io && status === 'ACCEPTED') {
       io.to(`user_${request.senderId}`).emit('friend_request_accepted', request);
       io.to(`user_${request.receiverId}`).emit('friend_request_accepted', request);
+
+      // <--- Sync Online Status
+      const isSenderOnline = onlineUsers.has(request.senderId);
+      const isReceiverOnline = onlineUsers.has(request.receiverId);
+
+      if (isSenderOnline) {
+          io.to(`user_${request.receiverId}`).emit('user_status_change', { userId: request.senderId, status: 'online' });
+      }
+      if (isReceiverOnline) {
+          io.to(`user_${request.senderId}`).emit('user_status_change', { userId: request.receiverId, status: 'online' });
+      }
     }
 
     res.json(request);

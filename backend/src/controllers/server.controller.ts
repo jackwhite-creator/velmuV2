@@ -55,7 +55,9 @@ export const updateServer = async (req: Request, res: Response, next: NextFuncti
 
     let updateData: any = {};
     if (name) updateData.name = name;
-    if (systemChannelId !== undefined) updateData.systemChannelId = systemChannelId;
+    if (systemChannelId !== undefined) {
+      updateData.systemChannelId = systemChannelId === '' ? null : systemChannelId;
+    }
     if (file) {
       updateData.iconUrl = (file as any).path || (file as any).secure_url;
     }

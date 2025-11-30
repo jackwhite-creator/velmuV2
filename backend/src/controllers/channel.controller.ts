@@ -44,6 +44,12 @@ export const deleteChannel = async (req: Request, res: Response, next: NextFunct
     const { channelId } = req.params;
     const userId = req.user!.userId;
     const result = await channelService.deleteChannel(channelId, userId);
+    
+    const io = req.app.get('io');
+    if (io && result.serverId) {
+        io.to(`server_${result.serverId}`).emit('refresh_server_ui', result.serverId);
+    }
+
     res.json(result);
   } catch (error) {
     next(error);

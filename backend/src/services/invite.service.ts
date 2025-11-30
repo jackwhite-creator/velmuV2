@@ -82,24 +82,28 @@ export class InviteService {
     }
 
     // Créer un message système de bienvenue
+    let welcomeMessage = null;
     try {
-        const defaultChannel = server.categories?.[0]?.channels?.[0];
-        if (defaultChannel) {
-             // Import messageRepository dynamically or ensure it's imported at top
+        const systemChannelId = server.systemChannelId;
+        // Si un salon de bienvenue est configuré, on l'utilise
+        // Sinon, on n'envoie rien (ou on garde le comportement par défaut si désiré, mais l'utilisateur veut que ce soit lié à l'option)
+        if (systemChannelId) {
              const { messageRepository } = await import('../repositories/message.repository');
-             await messageRepository.createMessage({
-                 content: `👋 Bienvenue ${member.user.username} !`,
-                 userId: member.userId, // Or a system ID if available, using user ID for now
-                 channelId: defaultChannel.id,
-                 type: 'SYSTEM' // Ensure MessageType has SYSTEM or use TEXT
+             welcomeMessage = await messageRepository.createMessage({
+                 content: `${member.user.username}#${member.user.discriminator}`,
+                 userId: member.userId, 
+                 channelId: systemChannelId,
+                 type: 'SYSTEM'
              });
         }
     } catch (e) {
         console.error("Failed to create welcome message", e);
     }
 
-    return { server, member };
+    return { server, member, welcomeMessage };
   }
+
+
 
   /**
    * Récupère une invitation par son code (avec infos du serveur)

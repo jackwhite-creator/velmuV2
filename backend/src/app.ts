@@ -19,8 +19,10 @@ import conversationRoutes from './routes/conversation.routes';
 import friendRoutes from './routes/friend.routes';
 import messageRoutes from './routes/message.routes';
 import roleRoutes from './routes/role.routes';
+import badgeRoutes from './routes/badge.routes';
 
 const app = express();
+// Force restart for route update
 
 // Trust proxy for rate limiting behind Render/Vercel
 app.set('trust proxy', 1);
@@ -86,6 +88,7 @@ app.use('/api/members', memberRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/friends', friendRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/badges', badgeRoutes);
 app.use('/api', roleRoutes); // roleRoutes are prefixed inside the router with /:serverId/roles or similar, or we can mount it at /api/roles if we change structure. But looking at route file, it expects /:serverId/roles.
 // Let's check role.routes.ts export. It has router.get('/:serverId/roles'). So mounting at /api works.
 

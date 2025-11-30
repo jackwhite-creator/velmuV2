@@ -118,7 +118,10 @@ export class ConversationRepository extends BaseRepository<Conversation> {
       }
     });
 
-    return conversation as ConversationWithMembers;
+    return {
+      ...conversation,
+      users: conversation.members.map(m => m.user)
+    } as any;
   }
 
   /**
@@ -195,7 +198,7 @@ export class ConversationRepository extends BaseRepository<Conversation> {
    * Récupère une conversation avec toutes ses relations
    */
   async findWithRelations(conversationId: string): Promise<ConversationWithMembers | null> {
-    return this.prisma.conversation.findUnique({
+    const conversation = await this.prisma.conversation.findUnique({
       where: { id: conversationId },
       include: {
         members: {
@@ -226,7 +229,14 @@ export class ConversationRepository extends BaseRepository<Conversation> {
           }
         }
       }
-    }) as Promise<ConversationWithMembers | null>;
+    });
+
+    if (!conversation) return null;
+
+    return {
+      ...conversation,
+      users: conversation.members.map(m => m.user)
+    } as any;
   }
 }
 

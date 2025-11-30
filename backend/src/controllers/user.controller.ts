@@ -4,7 +4,8 @@ import { userService } from '../services/user.service';
 export const getUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = req.params;
-    const user = await userService.getUserById(userId);
+    const requesterId = (req as any).user?.userId;
+    const user = await userService.getUserById(userId, requesterId);
     res.json(user);
   } catch (error) {
     next(error);

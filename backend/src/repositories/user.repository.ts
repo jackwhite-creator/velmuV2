@@ -92,7 +92,9 @@ export class UserRepository extends BaseRepository<User> {
         username: true,
         discriminator: true,
         avatarUrl: true,
-        bio: true
+        bannerUrl: true,
+        bio: true,
+        createdAt: true
       }
     });
 

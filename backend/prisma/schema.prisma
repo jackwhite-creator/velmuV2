@@ -43,6 +43,7 @@ model User {
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
   
   conversations    ConversationMember[]
+  badges           UserBadge[]
   
   @@unique([username, discriminator])
   @@index([email])
@@ -213,4 +214,27 @@ model FriendRequest {
   receiver   User         @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
+}
+
+model Badge {
+  id          String      @id @default(uuid())
+  name        String      @unique
+  description String?
+  iconUrl     String
+  createdAt   DateTime    @default(now())
+
+  users       UserBadge[]
+}
+
+model UserBadge {
+  id         String   @id @default(uuid())
+  assignedAt DateTime @default(now())
+
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  badgeId    String
+  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeId])
 }

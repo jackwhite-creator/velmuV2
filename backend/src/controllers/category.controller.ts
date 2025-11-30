@@ -44,6 +44,12 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
     const { categoryId } = req.params;
     const userId = req.user!.userId;
     const result = await channelService.deleteCategory(categoryId, userId);
+    
+    const io = req.app.get('io');
+    if (io && result.serverId) {
+        io.to(`server_${result.serverId}`).emit('refresh_server_ui', result.serverId);
+    }
+
     res.json(result);
   } catch (error) {
     next(error);

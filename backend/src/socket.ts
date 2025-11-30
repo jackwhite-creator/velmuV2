@@ -6,6 +6,7 @@ import logger from './lib/logger';
 import { registerRoomHandlers } from './socket/handlers/room.handler';
 import { registerChatHandlers } from './socket/handlers/chat.handler';
 import { AuthenticatedSocket } from './types';
+import { friendRepository, memberRepository } from './repositories';
 
 // Shared state
 export const typingUsers = new Map<string, Map<string, string>>();
@@ -60,7 +61,7 @@ export const initSocket = (httpServer: HttpServer) => {
     });
   });
 
-  io.on('connection', (rawSocket: Socket) => {
+  io.on('connection', async (rawSocket: Socket) => {
     const socket = rawSocket as AuthenticatedSocket;
     const userId = socket.userId;
     logger.info(`User connected: ${userId}`);
@@ -70,32 +71,93 @@ export const initSocket = (httpServer: HttpServer) => {
     
     if (!onlineUsers.has(userId)) {
         onlineUsers.set(userId, new Set());
-        // Do not emit immediately here. We wait until they join server rooms in `join_server` handler
-        // OR we track their servers here if we had access to DB.
-        // Better approach: Let `join_server` trigger the "I am here" presence for that specific server.
-        // BUT `onlineUsers` is global.
-        // So we just mark them online globally here. The broadcast happens when they join rooms or we can try to broadcast now if we knew rooms.
-        // Since we don't know rooms yet, we rely on `join_server` to add them to rooms,
-        // AND we rely on `join_server` to emit "Hey I'm online" to that room?
-        // No, standard Discord behavior: You are online. If you share a server, you see it.
-        // So when `join_server` happens, we should emit "User X is online" to that server room.
     }
     onlineUsers.get(userId)?.add(socket.id);
     if (!userServerRooms.has(userId)) userServerRooms.set(userId, new Set());
+
+    // --- MUTUAL SERVER & FRIEND PRESENCE LOGIC START ---
+    try {
+        const [friends, serverIds] = await Promise.all([
+            friendRepository.findFriends(userId),
+            memberRepository.findUserServers(userId)
+        ]);
+
+        const onlineUserIds = new Set<string>();
+
+        // 1. Handle Friends
+        friends.forEach(friend => {
+            const friendId = friend.senderId === userId ? friend.receiverId : friend.senderId;
+            if (onlineUsers.has(friendId)) {
+                onlineUserIds.add(friendId);
+                // Notify friend
+                io.to(`user_${friendId}`).emit('user_status_change', { userId, status: 'online' });
+            }
+        });
+
+        // 2. Handle Mutual Servers
+        // Automatically join all server rooms to receive status updates and emit presence
+        serverIds.forEach(serverId => {
+            const roomName = `server_${serverId}`;
+            socket.join(roomName);
+            
+            // Track that we are in this server room
+            userServerRooms.get(userId)?.add(serverId);
+
+            // Notify everyone in this server that I am online
+            socket.to(roomName).emit('user_status_change', { userId, status: 'online' });
+
+            // Collect online users from this server
+            const roomSockets = io.sockets.adapter.rooms.get(roomName);
+            if (roomSockets) {
+                roomSockets.forEach(socketId => {
+                    const remoteSocket = io.sockets.sockets.get(socketId) as AuthenticatedSocket;
+                    if (remoteSocket && remoteSocket.userId && remoteSocket.userId !== userId) {
+                        onlineUserIds.add(remoteSocket.userId);
+                    }
+                });
+            }
+        });
+
+        // Send me the list of ALL online users (friends + mutual server members)
+        if (onlineUserIds.size > 0) {
+            socket.emit('online_users_update', Array.from(onlineUserIds));
+        }
+
+    } catch (err) {
+        logger.error('Error handling connection presence', err);
+    }
+    // --- MUTUAL SERVER & FRIEND PRESENCE LOGIC END ---
     
     // Register handlers
     registerRoomHandlers(io, socket);
     registerChatHandlers(io, socket);
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
       const userSockets = onlineUsers.get(userId);
       if (userSockets) {
         userSockets.delete(socket.id);
         if (userSockets.size === 0) {
           // User is fully offline
           onlineUsers.delete(userId);
+          
+          // Broadcast to servers (handled by broadcastUserStatus via userServerRooms)
           broadcastUserStatus(userId, 'offline');
+          
           userServerRooms.delete(userId);
+
+          // --- FRIEND PRESENCE LOGIC START (DISCONNECT) ---
+          try {
+              const friends = await friendRepository.findFriends(userId);
+              friends.forEach(friend => {
+                  const friendId = friend.senderId === userId ? friend.receiverId : friend.senderId;
+                  if (onlineUsers.has(friendId)) {
+                      io.to(`user_${friendId}`).emit('user_status_change', { userId, status: 'offline' });
+                  }
+              });
+          } catch (err) {
+              logger.error('Error fetching friends for disconnect presence', err);
+          }
+          // --- FRIEND PRESENCE LOGIC END ---
         }
       }
 

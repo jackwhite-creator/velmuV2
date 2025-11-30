@@ -49,7 +49,7 @@ export class AuthService {
         email: user.email, 
         username: user.username, 
         discriminator: user.discriminator,
-        avatarUrl: user.avatarUrl
+        avatarUrl: user.avatarUrl || '/default_avatar.png' // <--- Set default avatar
       }
     };
   }

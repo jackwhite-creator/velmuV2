@@ -46,24 +46,60 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
 
     // Handle potential file upload for message
     let finalAttachments = attachments;
-    if (req.file) {
+    
+    // Initialize finalAttachments if it's a string or undefined
+    if (typeof finalAttachments === 'string') {
+      try {
+        finalAttachments = JSON.parse(finalAttachments);
+      } catch (e) {
+        finalAttachments = [];
+      }
+    }
+    if (!Array.isArray(finalAttachments)) finalAttachments = [];
+
+    // Process uploaded files
+    if (req.files && Array.isArray(req.files)) {
+      const files = req.files as any[];
+      
+      files.forEach(file => {
+        let fileUrl = file.path;
+        
+        // Check if it's a remote URL (Cloudinary) or local path
+        if (file.path && (file.path.startsWith('http') || file.path.startsWith('https'))) {
+            fileUrl = file.path;
+        } else {
+            // Local upload fallback
+            const filename = file.filename;
+            fileUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+        }
+
+        const newAttachment = {
+          url: fileUrl,
+          filename: file.originalname,
+          type: file.mimetype,
+          size: file.size
+        };
+        
+        finalAttachments.push(newAttachment);
+      });
+    } else if (req.file) {
+      // Fallback for single file upload (legacy support)
       const file = req.file as any;
-      const newAttachment = {
-        url: file.path || file.secure_url,
+      let fileUrl = file.path;
+      
+      if (file.path && (file.path.startsWith('http') || file.path.startsWith('https'))) {
+          fileUrl = file.path;
+      } else {
+          const filename = file.filename;
+          fileUrl = `${req.protocol}://${req.get('host')}/uploads/${filename}`;
+      }
+
+      finalAttachments.push({
+        url: fileUrl,
         filename: file.originalname,
         type: file.mimetype,
         size: file.size
-      };
-      // If attachments is a string (JSON), parse it, otherwise default to array
-      if (typeof finalAttachments === 'string') {
-        try {
-          finalAttachments = JSON.parse(finalAttachments);
-        } catch (e) {
-          finalAttachments = [];
-        }
-      }
-      if (!Array.isArray(finalAttachments)) finalAttachments = [];
-      finalAttachments.push(newAttachment);
+      });
     }
 
     let message: any;
@@ -155,5 +191,6 @@ export const deleteMessage = async (req: Request, res: Response, next: NextFunct
     next(error);
   }
 };
+
 export const getMessages = getChannelMessages;
 export const createMessage = sendChannelMessage;
