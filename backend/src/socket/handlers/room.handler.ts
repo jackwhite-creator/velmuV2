@@ -72,7 +72,7 @@ export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) =>
              socket.emit('server_online_users', { serverId, userIds: Array.from(onlineUserIdsInServer) });
 
              // Send current voice states for this server
-             const voiceStatesInServer: { userId: string, channelId: string }[] = [];
+             const voiceStatesInServer: { userId: string, channelId: string, isMuted?: boolean, isDeafened?: boolean, isCameraOn?: boolean, isScreenShareOn?: boolean }[] = [];
              
              voiceStates.forEach((state: { channelId: string, serverId: string, isMuted?: boolean, isDeafened?: boolean, isCameraOn?: boolean, isScreenShareOn?: boolean }, uId: string) => {
                  if (state.serverId === serverId) {

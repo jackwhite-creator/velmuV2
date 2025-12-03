@@ -172,7 +172,6 @@ export const initSocket = (httpServer: HttpServer) => {
         // Broadcast to NEW server members that user joined voice with state
         io.to(`server_${serverId}`).emit('voice_state_update', { 
             userId, 
-            channelId,
             ...newState
         });
     });

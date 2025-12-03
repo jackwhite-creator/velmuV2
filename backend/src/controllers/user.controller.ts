@@ -15,7 +15,7 @@ export const getUser = async (req: Request, res: Response, next: NextFunction) =
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.userId;
-    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const files = req.files as { [fieldname: string]: any[] };
     
     let updateData = { ...req.body };
 

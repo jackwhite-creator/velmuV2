@@ -35368,3 +35368,19 @@ Server has closed the connection.
 [2025-12-03 21:45:53] INFO: User connected: cl-velmu-demo-user-0001 (user)
 [2025-12-03 21:45:53] INFO: User connected: cl-velmu-demo-user-0001 (user)
 [2025-12-03 21:45:53] INFO: User connected: 06406d42-27a5-4a52-b9a2-869b6a0cf00e (user)
+[2025-12-03 21:52:41] INFO: User disconnected: cl-velmu-demo-user-0001
+[2025-12-03 21:52:41] INFO: User disconnected: 06406d42-27a5-4a52-b9a2-869b6a0cf00e
+[2025-12-03 21:52:41] INFO: User disconnected: cl-velmu-demo-user-0001
+[2025-12-03 21:52:41] INFO: User connected: 06406d42-27a5-4a52-b9a2-869b6a0cf00e (user)
+[2025-12-03 21:52:41] INFO: User connected: cl-velmu-demo-user-0001 (user)
+[2025-12-03 21:52:41] INFO: User connected: cl-velmu-demo-user-0001 (user)
+[2025-12-03 21:58:14] INFO: User disconnected: cl-velmu-demo-user-0001
+[2025-12-03 21:59:17] INFO: User disconnected: 06406d42-27a5-4a52-b9a2-869b6a0cf00e
+[2025-12-03 22:06:08] INFO: ✅ Velmu server started on port 4000
+[2025-12-03 22:06:08] INFO: Environment: development
+[2025-12-03 22:06:10] INFO: User connected: cl-velmu-demo-user-0001 (user)
+[2025-12-03 22:06:12] INFO: ✅ Velmu server started on port 4000
+[2025-12-03 22:06:12] INFO: Environment: development
+[2025-12-03 22:06:13] INFO: User connected: cl-velmu-demo-user-0001 (user)
+[2025-12-03 22:06:16] INFO: ✅ Velmu server started on port 4000
+[2025-12-03 22:06:16] INFO: Environment: development
