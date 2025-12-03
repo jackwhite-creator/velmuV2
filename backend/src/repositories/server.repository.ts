@@ -111,7 +111,10 @@ export class ServerRepository extends BaseRepository<Server> {
         data: {
           userId: ownerId,
           serverId: newServer.id,
-          roleIds: [adminRole.id]
+          roleIds: [adminRole.id],
+          roles: {
+            connect: [{ id: adminRole.id }]
+          }
         }
       });
 
