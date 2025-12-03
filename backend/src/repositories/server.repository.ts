@@ -78,71 +78,76 @@ export class ServerRepository extends BaseRepository<Server> {
     ownerId: string,
     iconUrl: string | null = null
   ): Promise<ServerWithRelations> {
-    const server = await this.prisma.$transaction(async (tx) => {
-      // 1. Créer le serveur
-      const newServer = await tx.server.create({
-        data: { name, iconUrl, ownerId }
-      });
+    try {
+      const server = await this.prisma.$transaction(async (tx) => {
+        // 1. Créer le serveur
+        const newServer = await tx.server.create({
+          data: { name, iconUrl, ownerId }
+        });
 
-      // 2a. Créer le rôle @everyone (position 0)
-      const everyoneRole = await tx.role.create({
-        data: {
-          name: "@everyone",
-          color: "#99aab5",
-          permissions: DEFAULT_PERMISSIONS,
-          serverId: newServer.id,
-          position: 0
-        }
-      });
-
-      // 2b. Créer le rôle Admin (position 999)
-      const adminRole = await tx.role.create({
-        data: {
-          name: "Admin",
-          color: "#E91E63",
-          permissions: [Permissions.ADMINISTRATOR],
-          serverId: newServer.id,
-          position: 999
-        }
-      });
-
-      // 3. Ajouter le owner comme membre avec le rôle admin
-      await tx.member.create({
-        data: {
-          userId: ownerId,
-          serverId: newServer.id,
-          roleIds: [adminRole.id],
-          roles: {
-            connect: [{ id: adminRole.id }]
+        // 2a. Créer le rôle @everyone (position 0)
+        const everyoneRole = await tx.role.create({
+          data: {
+            name: "@everyone",
+            color: "#99aab5",
+            permissions: DEFAULT_PERMISSIONS,
+            serverId: newServer.id,
+            position: 0
           }
-        }
+        });
+
+        // 2b. Créer le rôle Admin (position 999)
+        const adminRole = await tx.role.create({
+          data: {
+            name: "Admin",
+            color: "#E91E63",
+            permissions: [Permissions.ADMINISTRATOR],
+            serverId: newServer.id,
+            position: 999
+          }
+        });
+
+        // 3. Ajouter le owner comme membre avec le rôle admin
+        await tx.member.create({
+          data: {
+            userId: ownerId,
+            serverId: newServer.id,
+            roleIds: [adminRole.id],
+            roles: {
+              connect: [{ id: adminRole.id }]
+            }
+          }
+        });
+
+        // 4. Créer une catégorie par défaut
+        const category = await tx.category.create({
+          data: {
+            name: "Salons textuels",
+            serverId: newServer.id,
+            order: 0
+          }
+        });
+
+        // 5. Créer un channel général
+        await tx.channel.create({
+          data: {
+            name: "général",
+            type: "TEXT",
+            serverId: newServer.id,
+            categoryId: category.id,
+            order: 0
+          }
+        });
+
+        return newServer;
       });
 
-      // 4. Créer une catégorie par défaut
-      const category = await tx.category.create({
-        data: {
-          name: "Salons textuels",
-          serverId: newServer.id,
-          order: 0
-        }
-      });
-
-      // 5. Créer un channel général
-      await tx.channel.create({
-        data: {
-          name: "général",
-          type: "TEXT",
-          serverId: newServer.id,
-          categoryId: category.id,
-          order: 0
-        }
-      });
-
-      return newServer;
-    });
-
-    // Retourner le serveur complet avec relations
-    return this.findByIdWithRelations(server.id) as Promise<ServerWithRelations>;
+      // Retourner le serveur complet avec relations
+      return this.findByIdWithRelations(server.id) as Promise<ServerWithRelations>;
+    } catch (error) {
+      console.error('❌ Error creating server:', error);
+      throw error;
+    }
   }
 
   /**
