@@ -35365,3 +35365,6 @@ Server has closed the connection.
 [2025-12-03 21:44:56] INFO: User disconnected: cl-velmu-demo-user-0001
 [2025-12-03 21:45:52] INFO: ✅ Velmu server started on port 4000
 [2025-12-03 21:45:52] INFO: Environment: development
+[2025-12-03 21:45:53] INFO: User connected: cl-velmu-demo-user-0001 (user)
+[2025-12-03 21:45:53] INFO: User connected: cl-velmu-demo-user-0001 (user)
+[2025-12-03 21:45:53] INFO: User connected: 06406d42-27a5-4a52-b9a2-869b6a0cf00e (user)
