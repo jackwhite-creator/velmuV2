@@ -23,6 +23,7 @@ export interface FullProfile {
   bannerUrl?: string | null;
   bio?: string | null;
   createdAt?: string;
+  isBot?: boolean;
   mutualServers?: {
     id: string;
     name: string;
@@ -60,7 +61,8 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
             avatarUrl: cachedUser.avatarUrl,
             bannerUrl: (cachedUser as any).bannerUrl || null,
             bio: (cachedUser as any).bio || null,
-            createdAt: (cachedUser as any).createdAt || undefined
+            createdAt: (cachedUser as any).createdAt || undefined,
+            isBot: (cachedUser as any).isBot || false
         });
       } else {
         setProfile(null);
@@ -191,6 +193,7 @@ export default function UserProfileModal({ userId, onClose, onOpenSettings }: Us
             isOnline={isOnline} 
             friendStatus={friendStatus}
             isMe={isMe}
+            isBot={profile.isBot}
             actions={actions}
             actionLoading={actionLoading}
             onClose={onClose}

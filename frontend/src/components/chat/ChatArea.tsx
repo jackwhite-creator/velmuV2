@@ -22,23 +22,31 @@ interface Props {
   socket: Socket | null;
   replyingTo: any;
   sendMessage: (content: string, files?: File[], replyToId?: string) => Promise<any>;
-  setInputValue: (val: string) => void;
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
   setReplyingTo: (msg: any) => void;
   onScroll: () => Promise<any>; 
   onUserClick: (e: React.MouseEvent, userId: string) => void;
   onToggleMembers: () => void;
   onMobileBack?: () => void; 
+  onAddReaction: (messageId: string, emoji: string) => Promise<void>;
+  onRemoveReaction: (messageId: string, emoji: string) => Promise<void>;
 }
 
 const ChatArea = React.memo(function ChatArea({
   activeChannel, messages, isLoadingMore, hasMore, 
   inputValue, showMembers, socket, replyingTo,
   sendMessage, setInputValue, setReplyingTo, 
-  onScroll, onUserClick, onToggleMembers, onMobileBack
+  onScroll, onUserClick, onToggleMembers, onMobileBack,
+  onAddReaction, onRemoveReaction
 }: Props) {
   
   const { user } = useAuthStore();
-  const { markConversationAsRead, activeServer, activeConversation } = useServerStore();
+  
+  // Optimized selectors
+  const markConversationAsRead = useServerStore(state => state.markConversationAsRead);
+  const activeServer = useServerStore(state => state.activeServer);
+  const activeConversation = useServerStore(state => state.activeConversation);
+
   const [messageToDelete, setMessageToDelete] = useState<Message | null>(null);
   const [viewingImage, setViewingImage] = useState<string | null>(null);
   
@@ -46,6 +54,48 @@ const ChatArea = React.memo(function ChatArea({
   
   const [showSkeleton, setShowSkeleton] = useState(false);
   const scrollToBottomRef = useRef<(() => void) | null>(null);
+
+  // Track initial unread count for the current channel
+  const [initialUnreadCount, setInitialUnreadCount] = useState(0);
+  const prevChannelIdRef = useRef<string | null>(null);
+  const isWindowFocused = useRef(document.hasFocus());
+
+  // Handle window focus/blur
+  useEffect(() => {
+      const onFocus = () => {
+          isWindowFocused.current = true;
+          // If we have unread messages when focusing, show the divider
+          if (activeChannel?.type === 'dm' && activeConversation && activeConversation.unreadCount > 0) {
+              setInitialUnreadCount(activeConversation.unreadCount);
+              // Mark as read after a short delay to allow user to see the divider
+              setTimeout(() => {
+                  if (activeChannel) {
+                      api.post(`/conversations/${activeChannel.id}/read`).catch(console.error);
+                      markConversationAsRead(activeChannel.id);
+                  }
+              }, 1000);
+          }
+      };
+      
+      const onBlur = () => {
+          isWindowFocused.current = false;
+      };
+
+      window.addEventListener('focus', onFocus);
+      window.addEventListener('blur', onBlur);
+      return () => {
+          window.removeEventListener('focus', onFocus);
+          window.removeEventListener('blur', onBlur);
+      };
+  }, [activeChannel?.id, activeConversation?.unreadCount]);
+
+  // Update initial unread count when channel changes
+  const currentChannelId = activeChannel?.id || null;
+  if (currentChannelId !== prevChannelIdRef.current) {
+      prevChannelIdRef.current = currentChannelId;
+      const count = (activeChannel?.type === 'dm' && activeConversation) ? activeConversation.unreadCount : 0;
+      setInitialUnreadCount(count);
+  }
 
   useEffect(() => {
     let timeout: any;
@@ -58,7 +108,8 @@ const ChatArea = React.memo(function ChatArea({
   }, [isLoadingMore]);
 
   useEffect(() => {
-      if (activeChannel && activeChannel.type === 'dm') {
+      // Only mark as read if window is focused
+      if (activeChannel && activeChannel.type === 'dm' && isWindowFocused.current) {
           api.post(`/conversations/${activeChannel.id}/read`).catch(console.error);
           markConversationAsRead(activeChannel.id);
       }
@@ -69,7 +120,7 @@ const ChatArea = React.memo(function ChatArea({
         const isAlreadyReceived = messages.slice(-10).some(real => 
             real.content === pending.content &&
             real.user.id === pending.user.id &&
-            Math.abs(new Date(real.createdAt).getTime() - new Date(pending.createdAt).getTime()) < 5000
+            Math.abs(new Date(real.createdAt).getTime() - new Date(pending.createdAt).getTime()) < 60000
         );
         return !isAlreadyReceived;
     });
@@ -79,6 +130,9 @@ const ChatArea = React.memo(function ChatArea({
   const handleSendMessage = async (e: React.FormEvent, files?: File[]) => {
     e.preventDefault();
     if (!inputValue.trim() && (!files || files.length === 0)) return;
+
+    // Clear unread divider when sending a message
+    setInitialUnreadCount(0);
 
     let contentToSend = inputValue.trim();
     
@@ -117,12 +171,11 @@ const ChatArea = React.memo(function ChatArea({
             isPending: true
         };
         setPendingMessages(prev => [...prev, tempMsg!]);
-        if (scrollToBottomRef.current) setTimeout(() => { scrollToBottomRef.current?.(); }, 10);
+        // Note: We rely on MessageList's followOutput to scroll to bottom
     }
 
     try {
         await sendMessage(contentToSend, files, replyToId);
-        if (scrollToBottomRef.current) setTimeout(() => { scrollToBottomRef.current?.(); }, 100);
     } catch (err) { 
         console.error("Erreur envoi:", err);
     } finally { 
@@ -178,6 +231,9 @@ const ChatArea = React.memo(function ChatArea({
             onUserClick={onUserClick}
             onImageClick={setViewingImage}
             onScrollToBottom={(fn) => { scrollToBottomRef.current = fn; }}
+            onAddReaction={onAddReaction}
+            onRemoveReaction={onRemoveReaction}
+            unreadCount={initialUnreadCount}
          />
        </div>
 
@@ -186,6 +242,7 @@ const ChatArea = React.memo(function ChatArea({
             inputValue={inputValue}
             setInputValue={setInputValue}
             onSendMessage={(e, files) => handleSendMessage(e, files)}
+            onSendGif={(url) => sendMessage(url)}
             replyingTo={replyingTo}
             setReplyingTo={setReplyingTo}
             socket={socket}

@@ -11,14 +11,14 @@ export interface ContextMenuProps {
 }
 
 export type ContextMenuItemData =
-  | { type: 'item'; label: string; icon?: React.ReactNode; onClick?: () => void; variant?: 'default' | 'danger'; disabled?: boolean; children?: ContextMenuItemData[] }
+  | { type: 'item'; label: string; icon?: React.ReactNode; onClick?: (e?: React.MouseEvent) => void; variant?: 'default' | 'danger'; disabled?: boolean; children?: ContextMenuItemData[] }
   | { type: 'separator' }
   | { type: 'label'; label: string };
 
 interface ContextMenuItemProps {
   label: string;
   icon?: React.ReactNode;
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   variant?: 'default' | 'danger';
   children?: React.ReactNode; // For nested menus
   disabled?: boolean;
@@ -108,7 +108,7 @@ export function ContextMenuItem({ label, icon, onClick, variant = 'default', chi
     >
         <button 
             ref={itemRef}
-            onClick={() => { onClick?.(); }}
+            onClick={(e) => { onClick?.(e); }}
             disabled={disabled}
             className={`${baseClass} ${variantClass} ${disabledClass} ${isSubMenuOpen ? 'bg-brand text-white' : ''}`}
         >

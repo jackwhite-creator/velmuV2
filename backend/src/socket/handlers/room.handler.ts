@@ -1,7 +1,7 @@
 import { Server } from 'socket.io';
 import { AuthenticatedSocket } from '../../types';
 import { memberRepository, conversationRepository, channelRepository } from '../../repositories';
-import { typingUsers, onlineUsers, userServerRooms } from '../../socket';
+import { typingUsers, onlineUsers, userServerRooms, voiceStates } from '../../socket';
 
 export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) => {
     const { userId } = socket;
@@ -70,6 +70,26 @@ export const registerRoomHandlers = (io: Server, socket: AuthenticatedSocket) =>
              }
 
              socket.emit('server_online_users', { serverId, userIds: Array.from(onlineUserIdsInServer) });
+
+             // Send current voice states for this server
+             const voiceStatesInServer: { userId: string, channelId: string }[] = [];
+             
+             voiceStates.forEach((state: { channelId: string, serverId: string, isMuted?: boolean, isDeafened?: boolean, isCameraOn?: boolean, isScreenShareOn?: boolean }, uId: string) => {
+                 if (state.serverId === serverId) {
+                     voiceStatesInServer.push({ 
+                         userId: uId, 
+                         channelId: state.channelId,
+                         isMuted: state.isMuted,
+                         isDeafened: state.isDeafened,
+                         isCameraOn: state.isCameraOn,
+                         isScreenShareOn: state.isScreenShareOn
+                     });
+                 }
+             });
+             
+             if (voiceStatesInServer.length > 0) {
+                 socket.emit('server_voice_states', { serverId, states: voiceStatesInServer });
+             }
          }
     });
 

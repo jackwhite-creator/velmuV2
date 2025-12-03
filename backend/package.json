@@ -18,6 +18,7 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.0.0",
+    "@types/uuid": "^10.0.0",
     "bcrypt": "^5.1.0",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^1.41.3",
@@ -27,9 +28,11 @@
     "express-rate-limit": "^8.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.0",
+    "livekit-server-sdk": "^2.14.2",
     "multer": "^2.0.2",
     "multer-storage-cloudinary": "^4.0.0",
     "socket.io": "^4.7.0",
+    "uuid": "^13.0.0",
     "winston": "^3.18.3",
     "zod": "^4.1.13"
   },

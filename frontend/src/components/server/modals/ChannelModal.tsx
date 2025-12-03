@@ -18,12 +18,14 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
   const { serverId } = useParams();
   
   const [name, setName] = useState('');
+  const [type, setType] = useState<'TEXT' | 'AUDIO'>('TEXT');
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       setName(channel ? channel.name : '');
+      setType(channel ? (channel.type as 'TEXT' | 'AUDIO') : 'TEXT');
     }
   }, [isOpen, channel]);
 
@@ -39,7 +41,7 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
         await api.put(`/channels/${channel.id}`, { name });
       } else if (categoryId) {
         if (!serverId) return;
-        await api.post('/channels', { name, categoryId, type: 'TEXT', serverId });
+        await api.post('/channels', { name, categoryId, type, serverId });
         if (onSuccess) onSuccess();
       }
       onClose();
@@ -95,25 +97,76 @@ export default function ChannelModal({ isOpen, onClose, categoryId, onSuccess, c
 
             <div className="px-6 py-4">
                 <form id="channel-form" onSubmit={handleSubmit}>
-                    <div className="space-y-3">
-                        <label className="block text-xs font-bold text-text-muted uppercase tracking-wide ml-1">
-                            Nom du salon
-                        </label>
-                        
-                        <div className="relative group">
-                            <div className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center text-text-muted pointer-events-none text-lg font-medium transition-colors group-focus-within:text-text-normal">
-                                #
-                            </div>
+                    <div className="space-y-4">
+                        {!isEditMode && (
+                            <div className="space-y-2">
+                                <label className="block text-xs font-bold text-text-muted uppercase tracking-wide ml-1">
+                                    Type de salon
+                                </label>
+                                <div className="space-y-2">
+                                    <label className={`flex items-center p-3 rounded cursor-pointer transition-colors border ${type === 'TEXT' ? 'bg-background-modifier-selected border-brand' : 'bg-background-secondary border-transparent hover:bg-background-modifier-hover'}`}>
+                                        <input 
+                                            type="radio" 
+                                            name="channelType" 
+                                            value="TEXT" 
+                                            checked={type === 'TEXT'} 
+                                            onChange={() => setType('TEXT')}
+                                            className="mr-3 accent-brand w-4 h-4"
+                                        />
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 font-medium text-text-normal">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                                                Textuel
+                                            </div>
+                                            <p className="text-xs text-text-muted mt-0.5 ml-7">Envoyez des messages, images, GIFs, émojis...</p>
+                                        </div>
+                                    </label>
 
-                            <input 
-                                autoFocus={!isEditMode}
-                                value={name}
-                                onChange={(e) => handleNameChange(e.target.value)}
-                                className="w-full bg-background-tertiary border border-background-secondary text-text-normal text-sm p-3 pl-10 rounded-sm focus:border-brand outline-none font-medium transition-all placeholder-text-muted shadow-inner"
-                                placeholder="nouveau-salon"
-                                maxLength={32}
-                                autoComplete="off"
-                            />
+                                    <label className={`flex items-center p-3 rounded cursor-pointer transition-colors border ${type === 'AUDIO' ? 'bg-background-modifier-selected border-brand' : 'bg-background-secondary border-transparent hover:bg-background-modifier-hover'}`}>
+                                        <input 
+                                            type="radio" 
+                                            name="channelType" 
+                                            value="AUDIO" 
+                                            checked={type === 'AUDIO'} 
+                                            onChange={() => setType('AUDIO')}
+                                            className="mr-3 accent-brand w-4 h-4"
+                                        />
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 font-medium text-text-normal">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-muted"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                                Vocal
+                                            </div>
+                                            <p className="text-xs text-text-muted mt-0.5 ml-7">Discutez en vocal, vidéo, partage d'écran...</p>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wide ml-1">
+                                Nom du salon
+                            </label>
+                            
+                            <div className="relative group">
+                                <div className="absolute left-0 top-0 bottom-0 w-10 flex items-center justify-center text-text-muted pointer-events-none text-lg font-medium transition-colors group-focus-within:text-text-normal">
+                                    {type === 'AUDIO' ? (
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                                    ) : (
+                                        '#'
+                                    )}
+                                </div>
+
+                                <input 
+                                    autoFocus={!isEditMode}
+                                    value={name}
+                                    onChange={(e) => handleNameChange(e.target.value)}
+                                    className="w-full bg-background-tertiary border border-background-secondary text-text-normal text-sm p-3 pl-10 rounded-sm focus:border-brand outline-none font-medium transition-all placeholder-text-muted shadow-inner"
+                                    placeholder="nouveau-salon"
+                                    maxLength={32}
+                                    autoComplete="off"
+                                />
+                            </div>
                         </div>
                     </div>
                 </form>

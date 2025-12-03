@@ -2,7 +2,7 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
-import { updateMessage, deleteMessage, createMessage, getMessages } from '../controllers/message.controller';
+import { updateMessage, deleteMessage, createMessage, getMessages, addReaction, removeReaction, getMessage } from '../controllers/message.controller';
 import { requireServerPermission } from '../middlewares/permissions.middleware';
 import { Permissions } from '../shared/permissions';
 
@@ -28,7 +28,14 @@ router.get('/', getMessages);
 router.post('/', messageLimiter, requireServerPermission(Permissions.SEND_MESSAGES), upload.array('files', 10), createMessage);
 
 // PUT & DELETE
+// GET /api/messages/:messageId
+router.get('/:messageId', getMessage);
+
 router.put('/:messageId', updateMessage);
 router.delete('/:messageId', deleteMessage);
+
+// Reactions
+router.post('/:messageId/reactions', addReaction);
+router.delete('/:messageId/reactions/:emoji', removeReaction);
 
 export default router;

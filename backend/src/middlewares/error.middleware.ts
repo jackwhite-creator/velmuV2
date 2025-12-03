@@ -87,6 +87,13 @@ export const errorHandler = (
 
   // Erreur inattendue
   logger.error('Unexpected error:', err);
+  logger.error('Error details:', {
+    name: err.name,
+    constructor: err.constructor.name,
+    message: err.message,
+    stack: err.stack
+  });
+  
   return res.status(500).json({
     error: "Une erreur interne est survenue"
   });

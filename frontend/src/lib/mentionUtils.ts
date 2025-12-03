@@ -22,15 +22,21 @@ export const processMentionsForFrontend = (
   content: string, 
   activeConversation: any, 
   activeServer: Server | null,
-  processEveryone: boolean = true
+  processEveryone: boolean = true,
+  currentUser: any = null
 ): string => {
   if (!content) return '';
 
   return content.replace(/<@([a-zA-Z0-9-]+)>/g, (match, userId) => {
       let username = "Utilisateur inconnu";
       
+      // Check if it's the current user
+      if (currentUser && currentUser.id === userId) {
+          username = currentUser.username;
+      }
+
       // Recherche dans la conversation active (DM)
-      if (activeConversation && activeConversation.users) {
+      if (username === "Utilisateur inconnu" && activeConversation && activeConversation.users) {
           const user = activeConversation.users.find((u: any) => u.id === userId);
           if (user) username = user.username;
       } 

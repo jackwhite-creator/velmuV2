@@ -15,10 +15,10 @@ export default function ProfileInfo({ profile, isMe, badges = [] }: Props) {
     <>
       {/* NOM ET DISCRIMINATOR */}
       <div className="px-6 mb-4">
-         <div className="flex items-center gap-2">
+         <div className="flex items-center gap-3">
              <div className="flex items-baseline gap-1">
-                 <h2 className="text-2xl font-bold text-text-header leading-tight">{profile.username}</h2>
-                 <span className="text-xl text-text-muted font-medium">#{profile.discriminator}</span>
+                 <h2 className="text-2xl font-bold text-text-header leading-none">{profile.username}</h2>
+                 <span className="text-xl text-text-muted font-medium leading-none">#{profile.discriminator}</span>
              </div>
              
              {/* BADGES */}
@@ -29,7 +29,7 @@ export default function ProfileInfo({ profile, isMe, badges = [] }: Props) {
                              key={badge.id} 
                              name={badge.name} 
                              iconUrl={badge.iconUrl} 
-                             size="sm"
+                             size="md"
                          />
                      ))}
                  </div>

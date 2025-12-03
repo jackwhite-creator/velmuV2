@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+
+
+
 :root {
   --bg-primary: #313338;
   --bg-secondary: #2b2d31;
@@ -69,6 +72,25 @@
 
   --brand: #d4242c;
   --brand-hover: #b01e25;
+}
+
+/* Pink Theme (Original) */
+.theme-pink {
+  --bg-primary: #fff0f5; /* Lavender Blush */
+  --bg-secondary: #ffe4e1; /* Misty Rose */
+  --bg-tertiary: #ffc0cb; /* Pink */
+  --bg-quaternary: #ffb6c1; /* Light Pink */
+  --bg-floating: #fff0f5;
+
+  --bg-modifier-hover: rgba(255, 105, 180, 0.16); /* Hot Pink tint */
+  --bg-modifier-selected: rgba(255, 105, 180, 0.32);
+
+  --text-header: #880e4f; /* Dark Pink/Purple */
+  --text-normal: #ad1457; /* Medium Pink/Purple */
+  --text-muted: #d81b60; /* Light Pink/Purple */
+
+  --brand: #ff69b4; /* Hot Pink */
+  --brand-hover: #ff1493; /* Deep Pink */
 }
 
 body {

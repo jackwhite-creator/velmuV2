@@ -43,6 +43,8 @@ export class UserRepository extends BaseRepository<User> {
     passwordHash: string;
     username: string;
     discriminator: string;
+    isBot?: boolean;
+    avatarUrl?: string;
   }): Promise<User> {
     return this.create(data);
   }
@@ -94,7 +96,8 @@ export class UserRepository extends BaseRepository<User> {
         avatarUrl: true,
         bannerUrl: true,
         bio: true,
-        createdAt: true
+        createdAt: true,
+        isBot: true
       }
     });
 
@@ -117,7 +120,8 @@ export class UserRepository extends BaseRepository<User> {
         username: true,
         discriminator: true,
         avatarUrl: true,
-        bio: true
+        bio: true,
+        isBot: true
       },
       take: limit
     });
@@ -163,6 +167,34 @@ export class UserRepository extends BaseRepository<User> {
     });
 
     return mutualMembers.map(m => m.server);
+  }
+  /**
+   * Supprime un utilisateur
+   */
+  async deleteUser(userId: string): Promise<void> {
+    await this.prisma.user.delete({
+      where: { id: userId }
+    });
+  }
+  /**
+   * Récupère les serveurs d'un utilisateur
+   */
+  async getUserServers(userId: string) {
+    const members = await this.prisma.member.findMany({
+      where: { userId },
+      include: {
+        server: {
+          select: {
+            id: true,
+            name: true,
+            iconUrl: true,
+            ownerId: true
+          }
+        }
+      }
+    });
+
+    return members.map(m => m.server);
   }
 }
 

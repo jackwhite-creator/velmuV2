@@ -6,11 +6,16 @@ import logger from '../lib/logger';
 
 export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // "Bearer TOKEN"
-
-  if (!token) {
+  
+  if (!authHeader) {
     logger.warn('Auth attempt without token', { path: req.path });
     return next(new AuthenticationError('Token manquant'));
+  }
+
+  const [scheme, token] = authHeader.split(' ');
+
+  if (!token || (scheme !== 'Bearer' && scheme !== 'Bot')) {
+    return next(new AuthenticationError('Format de token invalide (Bearer ou Bot attendu)'));
   }
 
   jwt.verify(token, config.jwtSecret, (err: any, decoded: any) => {

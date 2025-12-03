@@ -34,7 +34,8 @@ export class MessageService {
     channelId: string,
     userId: string,
     data: {
-      content: string;
+      content?: string;
+      embed?: any;
       replyToId?: string;
       attachments?: { url: string; filename: string; type: string; size: number }[];
     }
@@ -65,6 +66,7 @@ export class MessageService {
 
     return messageRepository.createMessage({
       content: content,
+      embed: data.embed,
       userId,
       channelId,
       replyToId: data.replyToId,
@@ -151,6 +153,79 @@ export class MessageService {
 
     await messageRepository.deleteMessage(messageId);
     return message;
+  }
+  /**
+   * Récupère un message par son ID
+   */
+  async getMessage(messageId: string, userId: string) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new NotFoundError('Message introuvable');
+    }
+
+    // Vérifier les permissions
+    if (message.channelId) {
+      const channel = await channelRepository.findById(message.channelId);
+      if (channel) {
+        const isMember = await memberRepository.isMember(userId, channel.serverId);
+        if (!isMember) throw new AuthorizationError('Accès refusé');
+      }
+    } else if (message.conversationId) {
+      const isMember = await conversationRepository.isMember(message.conversationId, userId);
+      if (!isMember) throw new AuthorizationError('Accès refusé');
+    }
+
+    return message;
+  }
+
+  /**
+   * Ajoute une réaction à un message
+   */
+  async addReaction(messageId: string, userId: string, emoji: string) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new NotFoundError('Message introuvable');
+    }
+
+    // Vérifier les permissions d'accès au message
+    if (message.channelId) {
+      const channel = await channelRepository.findById(message.channelId);
+      if (channel) {
+        const isMember = await memberRepository.isMember(userId, channel.serverId);
+        if (!isMember) throw new AuthorizationError('Accès refusé');
+      }
+    } else if (message.conversationId) {
+      const isMember = await conversationRepository.isMember(message.conversationId, userId);
+      if (!isMember) throw new AuthorizationError('Accès refusé');
+    }
+
+    const reaction = await messageRepository.addReaction(messageId, userId, emoji);
+    return { reaction, message };
+  }
+
+  /**
+   * Supprime une réaction d'un message
+   */
+  async removeReaction(messageId: string, userId: string, emoji: string) {
+    const message = await messageRepository.findById(messageId);
+    if (!message) {
+      throw new NotFoundError('Message introuvable');
+    }
+
+    // Vérifier les permissions (optionnel pour suppression de sa propre réaction, mais bon pour la cohérence)
+    if (message.channelId) {
+      const channel = await channelRepository.findById(message.channelId);
+      if (channel) {
+        const isMember = await memberRepository.isMember(userId, channel.serverId);
+        if (!isMember) throw new AuthorizationError('Accès refusé');
+      }
+    } else if (message.conversationId) {
+      const isMember = await conversationRepository.isMember(message.conversationId, userId);
+      if (!isMember) throw new AuthorizationError('Accès refusé');
+    }
+
+    await messageRepository.removeReaction(messageId, userId, emoji);
+    return { message };
   }
 }
 

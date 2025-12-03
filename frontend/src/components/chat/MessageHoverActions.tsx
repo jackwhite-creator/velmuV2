@@ -5,6 +5,7 @@ interface Props {
   onReply: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onAddReaction: (e: React.MouseEvent) => void;
 }
 
 const ActionButton = ({ 
@@ -13,7 +14,7 @@ const ActionButton = ({
   label, 
   danger = false 
 }: { 
-  onClick: () => void; 
+  onClick: (e: React.MouseEvent) => void; 
   icon: React.ReactNode; 
   label: string; 
   danger?: boolean 
@@ -22,7 +23,7 @@ const ActionButton = ({
     <button
       onClick={(e) => {
         e.stopPropagation();
-        onClick();
+        onClick(e);
       }}
       className={`
         flex items-center justify-center w-8 h-8 rounded-sm transition-all duration-100
@@ -37,7 +38,7 @@ const ActionButton = ({
   </Tooltip>
 );
 
-export default function MessageHoverActions({ isMe, onReply, onEdit, onDelete }: Props) {
+export default function MessageHoverActions({ isMe, onReply, onEdit, onDelete, onAddReaction }: Props) {
   return (
     // ✅ CORRECTION : Ajout de 'opacity-0 group-hover:opacity-100' pour cacher par défaut
     // Le parent (MessageItem) a la classe 'group', donc ça s'affichera au survol du message
@@ -46,6 +47,12 @@ export default function MessageHoverActions({ isMe, onReply, onEdit, onDelete }:
       {/* CONTENEUR : Fond Zinc #2b2d31 + Bordure sombre #1e1f22 + Shadow */}
       <div className="flex items-center bg-secondary border border-tertiary rounded-sm shadow-sm p-[1px] select-none">
         
+        <ActionButton 
+          label="Ajouter une réaction" 
+          onClick={onAddReaction} 
+          icon={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11v1a10 10 0 1 1-9-10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M16 5h6"/><path d="M19 2v6"/></svg>} 
+        />
+
         <ActionButton 
           label="Répondre" 
           onClick={onReply} 

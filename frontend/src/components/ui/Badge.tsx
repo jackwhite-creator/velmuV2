@@ -7,15 +7,16 @@ interface BadgeProps {
   size?: 'sm' | 'md' | 'lg';
 }
 
-export default function Badge({ name, iconUrl, size = 'md' }: BadgeProps) {
+export default function Badge({ name, iconUrl, description, size = 'md' }: BadgeProps) {
   const sizeClasses = {
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8'
+    sm: 'h-4 w-auto',
+    md: 'h-[22px] w-auto',
+    lg: 'h-8 w-auto'
   };
 
+  // Rendu standard pour tous les badges (y compris BOT)
   return (
-    <Tooltip text={name} side="top">
+    <Tooltip text={description || name} side="top">
       <div className="flex items-center justify-center cursor-pointer">
         <img 
           src={iconUrl} 

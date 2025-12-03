@@ -1,23 +1,38 @@
 import { Request, Response, NextFunction } from 'express';
-import { badgeRepository } from '../repositories';
+import { badgeRepository, userRepository } from '../repositories';
 
 export const getAllBadges = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const badges = await badgeRepository.findAll();
-    res.json(badges);
-  } catch (error) {
-    next(error);
-  }
+// ... (unchanged)
 };
 
 export const getUserBadges = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = req.params;
-    const userBadges = await badgeRepository.findUserBadges(userId);
-    res.json(userBadges.map(ub => ({
+    const [userBadges, user] = await Promise.all([
+        badgeRepository.findUserBadges(userId),
+        userRepository.findById(userId)
+    ]);
+
+    const result = userBadges.map(ub => ({
         ...ub.badge,
         assignedAt: ub.assignedAt
-    })));
+    }));
+
+    // Virtual badge removed in favor of DB badge
+    /*
+    if (user && user.isBot) {
+        result.unshift({
+            id: 'bot-badge',
+            name: 'BOT',
+            description: 'Application certifiée',
+            iconUrl: null, // Or a specific bot icon if available
+            createdAt: user.createdAt,
+            assignedAt: user.createdAt
+        } as any);
+    }
+    */
+
+    res.json(result);
   } catch (error) {
     next(error);
   }

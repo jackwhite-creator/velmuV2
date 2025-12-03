@@ -11,4 +11,5 @@ declare global {
 
 export interface AuthenticatedSocket extends Socket {
   userId: string;
+  userType?: string;
 }

@@ -9,6 +9,7 @@ interface Props {
   isOnline: boolean;
   friendStatus: string;
   isMe: boolean;
+  isBot?: boolean;
   actionLoading: boolean;
   onClose: () => void;
   actions: {
@@ -28,7 +29,7 @@ const Icons = {
     Copy: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>,
 };
 
-export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, actionLoading, onClose, actions }: Props) {
+export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, isBot, actionLoading, onClose, actions }: Props) {
   const [menuState, setMenuState] = useState<{ x: number; y: number } | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -39,6 +40,10 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, a
 
   const renderActionButton = () => {
     const btnBase = "px-4 py-1.5 rounded-sm font-medium text-sm transition shadow-sm flex items-center justify-center gap-2 min-w-[100px]";
+
+    if (isBot && !isMe) {
+        return <button onClick={actions.startDM} className={`${btnBase} bg-brand hover:bg-brand-hover text-white flex-1 md:w-auto`}> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Message </button>;
+    }
 
     switch (friendStatus) {
       case 'ME': return <button onClick={actions.openSettings} className={`${btnBase} bg-secondary hover:bg-modifier-selected text-zinc-200`}> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg> Modifier </button>;
@@ -99,9 +104,9 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, a
       <AnimatePresence>
         {menuState && (
           <ContextMenu position={menuState} onClose={() => setMenuState(null)}>
-            {friendStatus === 'FRIEND' && <ContextMenuItem label="Retirer l'ami" variant="danger" icon={Icons.UserMinus} onClick={() => { actions.removeFriend(); setMenuState(null); }} />}
-            {friendStatus === 'NONE' && <ContextMenuItem label="Ajouter en ami" icon={Icons.UserPlus} onClick={() => { actions.sendRequest(); setMenuState(null); }} />}
-            {friendStatus === 'SENT' && <ContextMenuItem label="Annuler la demande" variant="danger" icon={Icons.UserMinus} onClick={() => { actions.cancelRequest(); setMenuState(null); }} />}
+            {friendStatus === 'FRIEND' && !isBot && <ContextMenuItem label="Retirer l'ami" variant="danger" icon={Icons.UserMinus} onClick={() => { actions.removeFriend(); setMenuState(null); }} />}
+            {friendStatus === 'NONE' && !isBot && <ContextMenuItem label="Ajouter en ami" icon={Icons.UserPlus} onClick={() => { actions.sendRequest(); setMenuState(null); }} />}
+            {friendStatus === 'SENT' && !isBot && <ContextMenuItem label="Annuler la demande" variant="danger" icon={Icons.UserMinus} onClick={() => { actions.cancelRequest(); setMenuState(null); }} />}
             <ContextMenuSeparator />
             <ContextMenuItem label="Copier le nom d'utilisateur" icon={Icons.Copy} onClick={() => { navigator.clipboard.writeText(`${profile?.username}#${profile?.discriminator}`); setMenuState(null); }} />
           </ContextMenu>

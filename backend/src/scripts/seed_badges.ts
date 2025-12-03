@@ -22,6 +22,11 @@ const badges = [
     name: 'Early Supporter',
     description: 'Supporter de la première heure',
     iconUrl: 'https://cdn-icons-png.flaticon.com/512/616/616490.png' // Placeholder Star
+  },
+  {
+    name: 'BOT',
+    description: 'Application certifiée',
+    iconUrl: 'https://cdn-icons-png.flaticon.com/512/4712/4712109.png' // Robot icon
   }
 ];
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MessageEmbedSchema } from '../embed.validator';
 
 const uuidSchema = z.string().uuid("ID invalide");
 
@@ -7,12 +8,13 @@ export const CreateMessageSchema = z.object({
   content: z.string()
     .max(2000, "Le message ne peut pas dépasser 2000 caractères")
     .optional(),
+  embed: MessageEmbedSchema.optional(),
   channelId: uuidSchema.optional(),
   conversationId: uuidSchema.optional(),
   replyToId: uuidSchema.optional()
 }).refine(
-  (data) => data.content || data.channelId || data.conversationId,
-  "Le message doit contenir du texte ou une destination"
+  (data) => data.content || data.embed || data.channelId || data.conversationId,
+  "Le message doit contenir du texte, un embed ou une destination"
 ).refine(
   (data) => !(data.channelId && data.conversationId),
   "Le message ne peut pas être envoyé à la fois dans un channel et une conversation"

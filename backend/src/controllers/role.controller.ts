@@ -46,7 +46,6 @@ export const updateRole = async (req: Request, res: Response, next: NextFunction
   }
 };
 
-
 export const deleteRole = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { serverId, roleId } = req.params;

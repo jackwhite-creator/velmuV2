@@ -24,6 +24,12 @@ export default function SettingsSidebar({ activeTab, onTabChange, onClose }: Pro
         { id: 'appearance', label: 'Apparence' },
         { id: 'notifications', label: 'Notifications' },
       ]
+    },
+    {
+      title: 'Développeur',
+      items: [
+        { id: 'developer', label: 'Mes Applications' },
+      ]
     }
   ];
 

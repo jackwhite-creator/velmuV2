@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useServerStore } from '../store/serverStore';
 import { useSocketStore } from '../store/socketStore';
+import { useVoiceStore } from '../store/voiceStore';
 import api from '../lib/api';
 
 /**
@@ -44,16 +45,39 @@ export function useChatPageSocket() {
       }
     };
 
+    const handleVoiceStateUpdate = (data: { userId: string; channelId: string | null; previousChannelId?: string }) => {
+      const { updateParticipants } = useVoiceStore.getState();
+      if (data.previousChannelId) {
+        updateParticipants(data.previousChannelId, data.userId, 'leave');
+      }
+      if (data.channelId) {
+        updateParticipants(data.channelId, data.userId, 'join');
+      }
+    };
+
+    const handleServerVoiceStates = (data: { serverId: string; states: { userId: string; channelId: string }[] }) => {
+        const participants: Record<string, string[]> = {};
+        data.states.forEach(state => {
+            if (!participants[state.channelId]) participants[state.channelId] = [];
+            participants[state.channelId].push(state.userId);
+        });
+        useVoiceStore.getState().setParticipants(participants);
+    };
+
     socket.on('refresh_server_ui', handleRefreshServer);
     socket.on('member_added', handleMemberAdded);
     socket.on('member_removed', handleMemberRemoved);
     socket.on('member_updated', handleMemberUpdated);
+    socket.on('voice_state_update', handleVoiceStateUpdate);
+    socket.on('server_voice_states', handleServerVoiceStates);
 
     return () => {
       socket.off('refresh_server_ui', handleRefreshServer);
       socket.off('member_added', handleMemberAdded);
       socket.off('member_removed', handleMemberRemoved);
       socket.off('member_updated', handleMemberUpdated);
+      socket.off('voice_state_update', handleVoiceStateUpdate);
+      socket.off('server_voice_states', handleServerVoiceStates);
     };
   }, [socket, activeServer, updateServer]);
 

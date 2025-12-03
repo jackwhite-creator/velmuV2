@@ -1,15 +1,19 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import { formatDiscordDate } from '../../lib/dateUtils';
 import Tooltip from '../ui/Tooltip';
-import { useServerStore, Member } from '../../store/serverStore';
+import { useServerStore } from '../../store/serverStore';
 import { processMentionsForFrontend } from '../../lib/mentionUtils';
 import InviteEmbed from './InviteEmbed';
+import { Message } from '../../hooks/useChat';
+import { renderTwemoji } from '../../lib/emoji';
+import { useAuthStore } from '../../store/authStore';
+import Badge from '../ui/Badge';
 
 interface Props {
-  msg: any;
+  msg: Message;
   shouldGroup: boolean;
   isEditing: boolean;
   editContent: string;
@@ -17,34 +21,56 @@ interface Props {
   isModified: boolean;
   onUserClick: (e: React.MouseEvent) => void;
   onMentionClick: (e: React.MouseEvent, userId: string) => void;
-  setEditContent: (val: string) => void;
+  setEditContent: (content: string) => void;
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onImageClick: (url: string) => void;
   onImageLoad: () => void;
-  canMentionEveryone?: boolean;
+  canMentionEveryone: boolean;
 }
 
-export default function MessageContent({ 
-  msg, shouldGroup, isEditing, editContent, isMentioningMe, isModified,
-  onUserClick, onMentionClick, setEditContent, onSaveEdit, onCancelEdit, onImageClick,
-  onImageLoad, canMentionEveryone = true
+// Helper to wrap text children with Twemoji renderer
+const TwemojiWrapper = ({ children }: { children: React.ReactNode }) => {
+    return <>{React.Children.map(children, child => {
+        if (typeof child === 'string') {
+            return renderTwemoji(child);
+        }
+        return child;
+    })}</>;
+};
+
+function MessageContent({
+  msg,
+  shouldGroup,
+  isEditing,
+  editContent,
+  isMentioningMe: _isMentioningMe,
+  isModified,
+  onUserClick,
+  onMentionClick,
+  setEditContent,
+  onSaveEdit,
+  onCancelEdit,
+  onImageClick,
+  onImageLoad,
+  canMentionEveryone
 }: Props) {
+  const activeServer = useServerStore(state => state.activeServer);
+  const activeConversation = useServerStore(state => state.activeConversation);
+  const getMemberColor = useServerStore(state => state.getMemberColor);
+  const currentUser = useAuthStore(state => state.user);
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { activeServer, activeConversation, getMemberColor } = useServerStore();
 
-  // Extract invite code
-  const inviteCodeMatch = msg.content?.match(/(?:https?:\/\/)?(?:localhost:\d+|velmu\.com)\/invite\/([a-zA-Z0-9]+)/);
-  const inviteCode = inviteCodeMatch ? inviteCodeMatch[1] : null;
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const urls = msg.content?.match(urlRegex) || [];
+  const mediaUrls = urls.filter((url: string) => 
+      /\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url)
+  );
 
-  useEffect(() => {
-    if (isEditing && textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
-      textareaRef.current.setSelectionRange(textareaRef.current.value.length, textareaRef.current.value.length);
-    }
-  }, [isEditing, editContent]);
+  const inviteRegex = /(?:https?:\/\/)?(?:www\.)?(?:discord\.gg|velmu\.com\/invite)\/([a-zA-Z0-9-]+)/;
+  const inviteMatch = msg.content?.match(inviteRegex);
+  const inviteCode = inviteMatch ? inviteMatch[1] : null;
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -56,12 +82,19 @@ export default function MessageContent({
     }
   };
 
-  const processedContent = msg.content 
+  let contentToDisplay = msg.content || '';
+  mediaUrls.forEach(url => {
+      contentToDisplay = contentToDisplay.replace(url, '');
+  });
+  contentToDisplay = contentToDisplay.trim();
+
+  const processedContent = contentToDisplay 
     ? processMentionsForFrontend(
-        msg.content, 
+        contentToDisplay, 
         activeConversation, 
         activeServer,
-        !msg.isPending || canMentionEveryone
+        !msg.isPending || canMentionEveryone,
+        currentUser
       ).replace(/\n(?=\n)/g, '\n\u200B') 
     : '';
 
@@ -71,7 +104,7 @@ export default function MessageContent({
   return (
     <div className="flex-1 min-w-0 z-10 relative pr-2">
       {!shouldGroup && (
-        <div className="flex items-baseline gap-2 mb-0.5 select-none">
+        <div className="flex items-center gap-2 mb-0.5 select-none">
           <span 
             className="font-medium hover:underline cursor-pointer" 
             style={{ color: usernameColor }}
@@ -79,6 +112,7 @@ export default function MessageContent({
           >
             {msg.user.username}
           </span>
+          {msg.user.isBot && <Badge name="BOT" iconUrl="https://res.cloudinary.com/dfsjcbstz/image/upload/v1764615221/velmu-uploads/imageremovebgpreview1-1764615221289-53232039.png" size="sm" description="Application certifiée" />}
           <span className="text-[11px] text-text-muted font-medium">
             {formatDiscordDate(msg.createdAt)}
           </span>
@@ -117,12 +151,12 @@ export default function MessageContent({
         <div className={`leading-relaxed break-words -mt-1 select-text cursor-default text-text-normal`}>
           
           <div className="flex flex-wrap items-baseline gap-x-1">
-              {msg.content && (
+              {processedContent && (
                 <div className="markdown-body text-[15px] break-all">
                     <ReactMarkdown 
                         remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{
-                            a: ({node, href, children, ...props}) => {
+                            a: ({node, href, children, ...props}: any) => {
                                 if (href?.startsWith('#mention-')) {
                                     const userId = href.replace('#mention-', '');
                                     
@@ -143,7 +177,7 @@ export default function MessageContent({
                                                 e.stopPropagation(); 
                                                 onMentionClick(e, userId);
                                             }}
-                                            className="bg-brand/10 text-brand px-1 rounded-[3px] font-medium cursor-pointer hover:bg-brand hover:text-white transition-colors select-none"
+                                            className="bg-brand text-white px-1 rounded-[3px] font-medium cursor-pointer hover:bg-brand-hover transition-colors select-none"
                                             data-user-id={userId}
                                         >
                                             {children}
@@ -152,21 +186,41 @@ export default function MessageContent({
                                 }
                                 return (
                                     <a href={href} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline cursor-pointer cursor-text" {...props}>
-                                        {children}
+                                        <TwemojiWrapper>{children}</TwemojiWrapper>
                                     </a>
                                 );
                             },
-                            p: ({node, ...props}) => (
-                                <div className="mb-1 last:mb-0 min-h-[1.25rem] cursor-text w-fit max-w-full" {...props} />
+                            p: ({node, children, ...props}: any) => (
+                                <div className="mb-1 last:mb-0 min-h-[1.25rem] cursor-text w-fit max-w-full" {...props}>
+                                    <TwemojiWrapper>{children}</TwemojiWrapper>
+                                </div>
                             ),
-                            ul: ({node, ...props}) => (
-                                <ul className="list-disc list-inside ml-1 mb-1 cursor-text w-fit max-w-full" {...props} />
+                            ul: ({node, children, ...props}: any) => (
+                                <ul className="list-disc list-inside ml-1 mb-1 cursor-text w-fit max-w-full" {...props}>
+                                    <TwemojiWrapper>{children}</TwemojiWrapper>
+                                </ul>
                             ),
-                            ol: ({node, ...props}) => (
-                                <ol className="list-decimal list-inside ml-1 mb-1 cursor-text w-fit max-w-full" {...props} />
+                            ol: ({node, children, ...props}: any) => (
+                                <ol className="list-decimal list-inside ml-1 mb-1 cursor-text w-fit max-w-full" {...props}>
+                                    <TwemojiWrapper>{children}</TwemojiWrapper>
+                                </ol>
                             ),
-                            blockquote: ({node, ...props}) => (
-                                <blockquote className="border-l-[4px] border-background-tertiary pl-3 py-0.5 text-text-muted my-1 cursor-text w-fit max-w-full bg-background-secondary/30 rounded-r-sm" {...props} />
+                            li: ({node, children, ...props}: any) => (
+                                <li {...props}><TwemojiWrapper>{children}</TwemojiWrapper></li>
+                            ),
+                            blockquote: ({node, children, ...props}: any) => (
+                                <blockquote className="border-l-[4px] border-background-tertiary pl-3 py-0.5 text-text-muted my-1 cursor-text w-fit max-w-full bg-background-secondary/30 rounded-r-sm" {...props}>
+                                    <TwemojiWrapper>{children}</TwemojiWrapper>
+                                </blockquote>
+                            ),
+                            strong: ({node, children, ...props}: any) => (
+                                <strong {...props}><TwemojiWrapper>{children}</TwemojiWrapper></strong>
+                            ),
+                            em: ({node, children, ...props}: any) => (
+                                <em {...props}><TwemojiWrapper>{children}</TwemojiWrapper></em>
+                            ),
+                            del: ({node, children, ...props}: any) => (
+                                <del {...props}><TwemojiWrapper>{children}</TwemojiWrapper></del>
                             ),
                             code({node, inline, className, children, ...props}: any) {
                                 return inline ? (
@@ -180,7 +234,13 @@ export default function MessageContent({
                                         </pre>
                                     </div>
                                 );
-                            }
+                            },
+                            h1: ({node, children, ...props}: any) => <h1 className="text-2xl font-bold my-2" {...props}><TwemojiWrapper>{children}</TwemojiWrapper></h1>,
+                            h2: ({node, children, ...props}: any) => <h2 className="text-xl font-bold my-2" {...props}><TwemojiWrapper>{children}</TwemojiWrapper></h2>,
+                            h3: ({node, children, ...props}: any) => <h3 className="text-lg font-bold my-2" {...props}><TwemojiWrapper>{children}</TwemojiWrapper></h3>,
+                            h4: ({node, children, ...props}: any) => <h4 className="text-base font-bold my-2" {...props}><TwemojiWrapper>{children}</TwemojiWrapper></h4>,
+                            h5: ({node, children, ...props}: any) => <h5 className="text-sm font-bold my-2" {...props}><TwemojiWrapper>{children}</TwemojiWrapper></h5>,
+                            h6: ({node, children, ...props}: any) => <h6 className="text-xs font-bold my-2" {...props}><TwemojiWrapper>{children}</TwemojiWrapper></h6>
                         }}
                     >
                         {processedContent}
@@ -189,7 +249,7 @@ export default function MessageContent({
               )}
               
               {isModified && (
-                  <Tooltip text={new Date(msg.updatedAt).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })} side="top">
+                  <Tooltip text={new Date(msg.updatedAt || Date.now()).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })} side="top">
                     <span className="text-[10px] text-text-muted select-none cursor-default hover:text-text-normal transition-colors self-end pb-[2px]">
                         (modifié)
                     </span>
@@ -200,6 +260,27 @@ export default function MessageContent({
           {/* Invite Embed */}
           {inviteCode && (
             <InviteEmbed code={inviteCode} onLoad={onImageLoad} />
+          )}
+
+          {/* Media Embeds (Images/GIFs from URLs in content) */}
+          {mediaUrls.length > 0 && (
+                <div className="mt-2 flex flex-col gap-2 select-none cursor-default">
+                    {mediaUrls.map((url, idx) => (
+                        <div key={idx} className="group/image">
+                            <img 
+                                src={url} 
+                                alt="Media content" 
+                                onLoad={onImageLoad}
+                                className="max-w-full md:max-w-sm max-h-[350px] rounded-[4px] shadow-sm cursor-pointer hover:shadow-md transition"
+                                onClick={() => onImageClick(url)}
+                                onError={(e) => {
+                                    console.error("Erreur chargement media", url);
+                                    e.currentTarget.style.display = 'none';
+                                }}
+                            />
+                        </div>
+                    ))}
+                </div>
           )}
           
           {/* Attachments Rendering */}
@@ -255,15 +336,15 @@ export default function MessageContent({
           )}
           
           {/* Legacy support for old messages with fileUrl */}
-          {msg.fileUrl && !msg.attachments?.length && (
+          {(msg as any).fileUrl && !msg.attachments?.length && (
             <div className="mt-2 group/image select-none cursor-default"> 
               <img 
-                src={msg.fileUrl} 
+                src={(msg as any).fileUrl} 
                 alt="Attachment" 
                 onLoad={onImageLoad}
                 className="max-w-full md:max-w-sm max-h-[350px] rounded-[4px] shadow-sm cursor-pointer hover:shadow-md transition"
-                onClick={() => onImageClick(msg.fileUrl)}
-                onError={(e) => console.error("Erreur chargement image", msg.fileUrl)}
+                onClick={() => onImageClick((msg as any).fileUrl)}
+                onError={(e) => console.error("Erreur chargement image", (msg as any).fileUrl)}
               />
             </div>
           )}
@@ -272,3 +353,5 @@ export default function MessageContent({
     </div>
   );
 }
+
+export default React.memo(MessageContent);

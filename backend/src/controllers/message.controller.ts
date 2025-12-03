@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { messageService } from '../services/message.service';
+import { channelRepository } from '../repositories';
 
 export const getChannelMessages = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -37,7 +38,7 @@ export const getChannelMessages = async (req: Request, res: Response, next: Next
 export const sendChannelMessage = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = req.user!.userId;
-    const { channelId, conversationId, content, replyToId, attachments } = req.body;
+    const { channelId, conversationId, content, replyToId, attachments, embed } = req.body;
 
     if (!channelId && !conversationId) {
       res.status(400).json({ error: 'channelId or conversationId is required' });
@@ -106,13 +107,22 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
     if (channelId) {
       message = await messageService.createChannelMessage(channelId, userId, {
         content,
+        embed,
         replyToId,
         attachments: finalAttachments
       });
       
       const io = req.app.get('io');
       if (io) {
-        io.to(`channel_${channelId}`).emit('new_message', message);
+        // Emit to bots in the server
+        const channel = await channelRepository.findById(channelId);
+        if (channel) {
+            const payload = { ...message, serverId: channel.serverId };
+            io.to(`channel_${channelId}`).emit('new_message', payload);
+            io.to(`server_${channel.serverId}_bots`).emit('new_message', payload);
+        } else {
+            io.to(`channel_${channelId}`).emit('new_message', message);
+        }
       }
     } else {
       message = await messageService.createConversationMessage(conversationId, userId, {
@@ -134,7 +144,7 @@ export const sendChannelMessage = async (req: Request, res: Response, next: Next
             
             if (conversation && conversation.members) {
                 conversation.members.forEach((member: any) => {
-                    io.to(`user_${member.userId}`).emit('new_message', { ...message, conversationId });
+                    io.to(`user_${member.userId}`).emit('dm_notification', { ...message, conversationId });
                 });
             }
         } catch (err) {
@@ -194,3 +204,71 @@ export const deleteMessage = async (req: Request, res: Response, next: NextFunct
 
 export const getMessages = getChannelMessages;
 export const createMessage = sendChannelMessage;
+
+export const getMessage = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { messageId } = req.params;
+    const userId = req.user!.userId;
+    const message = await messageService.getMessage(messageId, userId);
+    res.json(message);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addReaction = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user!.userId;
+
+    const { reaction, message } = await messageService.addReaction(messageId, userId, emoji);
+
+    const io = req.app.get('io');
+    if (io) {
+      const roomId = message.channelId ? `channel_${message.channelId}` : `conversation_${message.conversationId}`;
+      const payload = { messageId, reaction };
+      io.to(roomId).emit('message_reaction_add', payload);
+
+      // Emit to bots if it's a server message
+      if (message.channelId) {
+        const channel = await channelRepository.findById(message.channelId);
+        if (channel) {
+            io.to(`server_${channel.serverId}_bots`).emit('message_reaction_add', payload);
+        }
+      }
+    }
+
+    res.status(201).json(reaction);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const removeReaction = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { messageId, emoji } = req.params;
+    const userId = req.user!.userId;
+
+    const { message } = await messageService.removeReaction(messageId, userId, emoji);
+
+    const io = req.app.get('io');
+    if (io) {
+      const roomId = message.channelId ? `channel_${message.channelId}` : `conversation_${message.conversationId}`;
+      const payload = { messageId, userId, emoji };
+      io.to(roomId).emit('message_reaction_remove', payload);
+
+      // Emit to bots if it's a server message
+      if (message.channelId) {
+        const channel = await channelRepository.findById(message.channelId);
+        if (channel) {
+            io.to(`server_${channel.serverId}_bots`).emit('message_reaction_remove', payload);
+        }
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};

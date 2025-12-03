@@ -54,3 +54,13 @@ export const getCurrentUser = async (req: Request, res: Response, next: NextFunc
     next(error);
   }
 };
+
+export const getUserServers = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.user!.userId;
+    const servers = await userService.getUserServers(userId);
+    res.json(servers);
+  } catch (error) {
+    next(error);
+  }
+};

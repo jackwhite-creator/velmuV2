@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Socket } from 'socket.io-client';
-import data from '@emoji-mart/data';
-import Picker from '@emoji-mart/react';
+import EmojiPicker from './EmojiPicker';
 
 import { Channel, useServerStore } from '../../store/serverStore';
 import TypingIndicator from './TypingIndicator';
@@ -10,11 +9,14 @@ import { useChatInput } from '../../hooks/useChatInput';
 import MentionList from './MentionList';
 import { Permissions } from '@backend/shared/permissions';
 import { usePermission } from '../../hooks/usePermission';
+import GifPicker from './GifPicker';
+import { parseEmoji } from '../../lib/emoji';
 
 interface Props {
   inputValue: string;
-  setInputValue: (val: string) => void;
+  setInputValue: React.Dispatch<React.SetStateAction<string>>;
   onSendMessage: (e: React.FormEvent, files?: File[]) => void;
+  onSendGif?: (url: string) => void;
   replyingTo: any;
   setReplyingTo: (msg: any) => void;
   socket: Socket | null;
@@ -25,18 +27,16 @@ const MAX_LENGTH = 2000;
 
 export default function ChatInput(props: Props) {
   const { 
-    inputValue, setInputValue, onSendMessage, 
+    inputValue, setInputValue, onSendMessage, onSendGif,
     replyingTo, setReplyingTo, socket, activeChannel 
   } = props;
 
   const { activeServer, activeConversation } = useServerStore();
   
-  // Use the custom hook for input logic
   const {
     fileInputRef,
     textInputRef,
     emojiPickerRef,
-    selectedFiles,
     previewUrls,
     showEmojiPicker,
     setShowEmojiPicker,
@@ -45,7 +45,6 @@ export default function ChatInput(props: Props) {
     removeFile,
     triggerSend,
     handleTyping,
-    addEmoji,
     canSend
   } = useChatInput({
     inputValue,
@@ -55,15 +54,39 @@ export default function ChatInput(props: Props) {
     socket
   });
 
-  // Permission check
   const canSendMessages = usePermission(Permissions.SEND_MESSAGES);
   const hasSendPermission = activeChannel.type === 'dm' || canSendMessages;
 
-  // Mention State
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState(0);
-  const [mentionPosition, setMentionPosition] = useState({ bottom: 40, left: 0 });
+  const [mentionPosition, setMentionPosition] = useState<{ bottom: number | string; left: number | string }>({ bottom: 40, left: 0 });
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+
+  const [showGifPicker, setShowGifPicker] = useState(false);
+  const gifPickerRef = useRef<HTMLDivElement>(null);
+  const contentEditableRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Sync refs
+  useEffect(() => {
+    if (contentEditableRef.current) {
+        (textInputRef as any).current = contentEditableRef.current;
+    }
+  }, [textInputRef]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (gifPickerRef.current && !gifPickerRef.current.contains(event.target as Node)) {
+        setShowGifPicker(false);
+      }
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [setShowEmojiPicker]);
 
   useEffect(() => {
     if (mentionQuery === null) {
@@ -81,13 +104,114 @@ export default function ChatInput(props: Props) {
     const lowerQuery = mentionQuery.toLowerCase();
     const filtered = users
         .filter(u => u.username.toLowerCase().includes(lowerQuery))
-        .slice(0, 10); // Limit to 10
+        .slice(0, 10);
 
     setFilteredUsers(filtered);
     setMentionIndex(0);
   }, [mentionQuery, activeServer, activeChannel, activeConversation]);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  // Sync inputValue to contentEditable content
+  useEffect(() => {
+    if (contentEditableRef.current) {
+        if (!inputValue) {
+            contentEditableRef.current.innerHTML = '';
+        } else {
+             if (contentEditableRef.current.innerText.trim() === '' && inputValue.trim() !== '') {
+                 // contentEditableRef.current.innerText = inputValue;
+             }
+        }
+    }
+  }, [inputValue]);
+
+  // Override addEmoji from hook to use our insert logic
+  const handleAddEmoji = (emoji: string) => {
+      contentEditableRef.current?.focus();
+      
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+          const range = selection.getRangeAt(0);
+          range.deleteContents();
+          
+          const imgHtml = parseEmoji(emoji) as string;
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = imgHtml;
+          const img = tempDiv.firstChild;
+          
+          if (img) {
+              range.insertNode(img);
+              range.collapse(false);
+          }
+      } else {
+          if (contentEditableRef.current) {
+              const imgHtml = parseEmoji(emoji) as string;
+              contentEditableRef.current.innerHTML += imgHtml;
+          }
+      }
+      
+      updateInputValue();
+      setShowEmojiPicker(false);
+  };
+
+  const updateInputValue = () => {
+      if (!contentEditableRef.current) return;
+      
+      let text = '';
+      const traverse = (node: Node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+              text += node.textContent;
+          } else if (node.nodeType === Node.ELEMENT_NODE) {
+              const el = node as HTMLElement;
+              if (el.tagName === 'IMG' && el.classList.contains('emoji')) {
+                  text += (el as HTMLImageElement).alt;
+              } else if (el.tagName === 'BR') {
+                  text += '\n';
+              } else {
+                  el.childNodes.forEach(traverse);
+                  if (el.tagName === 'DIV' || el.tagName === 'P') text += '\n';
+              }
+          }
+      };
+      
+      contentEditableRef.current.childNodes.forEach(traverse);
+      setInputValue(text.trim());
+      handleTyping();
+  };
+
+  const handleInput = () => {
+      updateInputValue();
+      
+      const selection = window.getSelection();
+      const range = selection?.getRangeAt(0);
+      
+      if (!selection || !range) return;
+      
+      // Detect mention
+      // Use selection anchorNode to find the text being typed
+      if (selection.anchorNode?.nodeType === Node.TEXT_NODE) {
+          const nodeText = selection.anchorNode.textContent || '';
+          const caretPos = selection.anchorOffset;
+          const textBeforeCaret = nodeText.slice(0, caretPos);
+          const match = textBeforeCaret.match(/@(\w*)$/);
+          
+          if (match) {
+              const query = match[1];
+              setMentionQuery(query);
+              
+              // Calculate position - Fixed above input on the left
+              // We don't need dynamic rect calculation anymore as per user request
+              setMentionPosition({ 
+                  bottom: '100%', // Fixed above the container
+                  left: 72        // Fixed offset to align with textarea (clearing the + button)
+              });
+          } else {
+              setMentionQuery(null);
+          }
+      } else {
+          setMentionQuery(null);
+      }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (filteredUsers.length > 0) {
         if (e.key === 'ArrowUp') {
             e.preventDefault();
@@ -113,55 +237,54 @@ export default function ChatInput(props: Props) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       triggerSend(e);
+      if (contentEditableRef.current) contentEditableRef.current.innerHTML = '';
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const val = e.target.value;
-    setInputValue(val);
-    handleTyping();
-
-    // Mention logic
-    const cursor = e.target.selectionStart;
-    const textBeforeCursor = val.slice(0, cursor);
-    const lastAt = textBeforeCursor.lastIndexOf('@');
-
-    if (lastAt !== -1) {
-        const query = textBeforeCursor.slice(lastAt + 1);
-        if (!query.includes(' ') && query.length > 0) {
-            setMentionQuery(query);
-            
-            // Calculate position
-            // This is a simplified calculation. For production, use a library like textarea-caret
-            setMentionPosition({ bottom: 60, left: 20 }); 
-        } else {
-            setMentionQuery(null);
-        }
-    } else {
-        setMentionQuery(null);
-    }
-    
-    // Auto-resize
-    e.target.style.height = 'auto';
-    e.target.style.height = `${Math.min(e.target.scrollHeight, 400)}px`;
   };
 
   const selectUser = (user: any) => {
-    if (!user) return;
-    const cursor = textInputRef.current?.selectionStart || 0;
-    const text = inputValue;
-    const lastAt = text.lastIndexOf('@', cursor - 1);
-    
-    const newText = text.substring(0, lastAt) + `@${user.username} ` + text.substring(cursor);
-    setInputValue(newText);
-    setMentionQuery(null);
-    textInputRef.current?.focus();
+      const selection = window.getSelection();
+      if (!selection || !selection.anchorNode) return;
+
+      const node = selection.anchorNode;
+      if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent || '';
+          const caretPos = selection.anchorOffset;
+          
+          // Find the start of the mention
+          const textBeforeCaret = text.slice(0, caretPos);
+          const match = textBeforeCaret.match(/@(\w*)$/);
+          
+          if (match) {
+              const mentionStart = match.index!;
+              const mentionEnd = caretPos;
+              
+              // Create a range to replace the content
+              const range = document.createRange();
+              range.setStart(node, mentionStart);
+              range.setEnd(node, mentionEnd);
+              range.deleteContents();
+              
+              // Insert the mention
+              const mentionText = document.createTextNode(`@${user.username} `);
+              range.insertNode(mentionText);
+              
+              // Move cursor to end of inserted text
+              range.setStartAfter(mentionText);
+              range.setEndAfter(mentionText);
+              selection.removeAllRanges();
+              selection.addRange(range);
+          }
+      }
+      
+      updateInputValue();
+      setMentionQuery(null);
   };
 
   const handleManualSend = (e: React.MouseEvent) => {
     e.preventDefault();
     if (inputValue.trim() || previewUrls.length > 0) {
-        triggerSend(e);
+        triggerSend(e as any); // Cast event type if needed
+        if (contentEditableRef.current) contentEditableRef.current.innerHTML = '';
     }
   };
 
@@ -179,11 +302,18 @@ export default function ChatInput(props: Props) {
     }
   };
 
+  const handleGifSelect = (url: string) => {
+    setShowGifPicker(false);
+    if (onSendGif) {
+        onSendGif(url);
+    }
+  };
+
   const remaining = MAX_LENGTH - inputValue.length;
   const showCounter = inputValue.length > 1500;
 
   return (
-    <div className="bg-background-primary flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
+    <div ref={containerRef} className="bg-background-primary flex-shrink-0 px-4 pb-6 pt-2 relative transition-colors duration-200">
         
         {filteredUsers.length > 0 && (
             <MentionList 
@@ -231,7 +361,7 @@ export default function ChatInput(props: Props) {
         )}
 
         <div 
-          onClick={() => textInputRef.current?.focus()}
+          onClick={() => contentEditableRef.current?.focus()}
           className={`bg-background-tertiary relative px-4 py-3 flex items-start gap-3 transition-all cursor-text ${replyingTo ? 'rounded-b-md' : 'rounded-md'}`}
         >
             <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileSelect} accept="image/*" multiple />
@@ -246,18 +376,15 @@ export default function ChatInput(props: Props) {
                 </button>
             </Tooltip>
             
-            <textarea 
-                ref={textInputRef}
-                rows={1}
-                disabled={!hasSendPermission}
-                className={`flex-1 bg-transparent outline-none font-normal text-[15px] resize-none py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed ${!hasSendPermission ? 'text-text-muted cursor-not-allowed placeholder-text-muted' : 'text-text-normal placeholder-text-muted'}`}
-                placeholder={!hasSendPermission ? "Tu n'as pas la permission d'envoyer des messages dans ce salon" : `Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`}
-                value={inputValue} 
-                onChange={handleChange} 
+            <div
+                ref={contentEditableRef}
+                contentEditable={hasSendPermission}
+                onInput={handleInput}
                 onKeyDown={handleKeyDown}
                 onPaste={handlePaste}
-                autoComplete="off"
-                maxLength={MAX_LENGTH}
+                className={`flex-1 bg-transparent outline-none font-normal text-[15px] py-0.5 pr-32 max-h-[400px] overflow-y-auto custom-scrollbar leading-relaxed break-words whitespace-pre-wrap ${!hasSendPermission ? 'text-text-muted cursor-not-allowed' : 'text-text-normal'}`}
+                style={{ minHeight: '24px' }}
+                data-placeholder={!hasSendPermission ? "Tu n'as pas la permission d'envoyer des messages dans ce salon" : `Envoyer un message ${activeChannel.type === 'dm' ? 'à @' + activeChannel.name : 'dans #' + activeChannel.name}`}
             />
             
             <div className={`absolute right-3 top-2.5 flex items-center gap-2 ${!hasSendPermission ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -267,19 +394,40 @@ export default function ChatInput(props: Props) {
                     </span>
                 )}
 
-                <div className="relative" ref={emojiPickerRef}>
-                    {showEmojiPicker && (
+                {/* GIF Picker */}
+                <div className="relative" ref={gifPickerRef}>
+                    {showGifPicker && (
                         <div 
-                            className="absolute bottom-full right-0 mb-4 z-50 shadow-2xl rounded-lg overflow-hidden border border-background-tertiary"
+                            className="absolute bottom-full right-0 mb-4 z-50"
                             onClick={(e) => e.stopPropagation()}
                             onMouseDown={(e) => e.stopPropagation()}
                         >
-                            <Picker data={data} onEmojiSelect={addEmoji} theme="dark" previewPosition="none" searchPosition="top" skinTonePosition="none" set="native" />
+                            <GifPicker onSelect={handleGifSelect} onClose={() => setShowGifPicker(false)} />
+                        </div>
+                    )}
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setShowGifPicker(!showGifPicker); setShowEmojiPicker(false); }}
+                        className={`transition p-1.5 rounded-sm text-text-muted hover:text-text-normal ${showGifPicker ? 'text-text-normal' : ''}`}
+                        title="Envoyer un GIF"
+                    >
+                        <div className="border-2 border-current rounded-[4px] px-1 text-[10px] font-bold leading-tight">GIF</div>
+                    </button>
+                </div>
+
+                {/* Emoji Picker */}
+                <div className="relative" ref={emojiPickerRef}>
+                    {showEmojiPicker && (
+                        <div 
+                            className="absolute bottom-full right-0 mb-4 z-50"
+                            onClick={(e) => e.stopPropagation()}
+                            onMouseDown={(e) => e.stopPropagation()}
+                        >
+                            <EmojiPicker onSelect={handleAddEmoji} onClose={() => setShowEmojiPicker(false)} />
                         </div>
                     )}
                     
                     <button 
-                        onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(!showEmojiPicker); }}
+                        onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(!showEmojiPicker); setShowGifPicker(false); }}
                         className={`transition p-1.5 text-text-muted hover:text-yellow-400 ${showEmojiPicker ? 'text-yellow-400' : ''}`}
                     >
                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
@@ -306,6 +454,13 @@ export default function ChatInput(props: Props) {
 
             </div>
         </div>
+        <style>{`
+            [contenteditable]:empty:before {
+                content: attr(data-placeholder);
+                color: var(--text-muted);
+                cursor: text;
+            }
+        `}</style>
     </div>
   );
 }

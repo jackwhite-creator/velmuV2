@@ -10,11 +10,25 @@ export interface Attachment {
   type: string;
 }
 
+export interface Reaction {
+  id: string;
+  emoji: string;
+  userId: string;
+  messageId: string;
+  user: {
+    id: string;
+    username: string;
+    discriminator: string;
+    avatarUrl?: string | null;
+  };
+  createdAt: string;
+}
+
 export interface Message {
   id: string;
   content: string;
   attachments: Attachment[];
-  user: { id: string; username: string; discriminator: string; avatarUrl?: string };
+  user: { id: string; username: string; discriminator: string; avatarUrl?: string; isBot?: boolean };
   createdAt: string;
   updatedAt?: string;
   type?: 'DEFAULT' | 'SYSTEM';
@@ -22,6 +36,8 @@ export interface Message {
   channelId?: string | null;
   conversationId?: string | null;
   isPending?: boolean;
+  reactions?: Reaction[];
+  embed?: any;
 }
 
 export const useChat = (targetId: string | undefined, isDm: boolean) => {
@@ -95,15 +111,43 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
         }
     };
 
+    const handleReactionAdd = (data: { messageId: string, reaction: Reaction }) => {
+        setMessages((prev) => prev.map(m => {
+            if (m.id === data.messageId) {
+                const currentReactions = m.reactions || [];
+                if (currentReactions.some(r => r.id === data.reaction.id)) return m;
+                return { ...m, reactions: [...currentReactions, data.reaction] };
+            }
+            return m;
+        }));
+    };
+
+    const handleReactionRemove = (data: { messageId: string, userId: string, emoji: string }) => {
+        setMessages((prev) => prev.map(m => {
+            if (m.id === data.messageId) {
+                const currentReactions = m.reactions || [];
+                return { 
+                    ...m, 
+                    reactions: currentReactions.filter(r => !(r.userId === data.userId && r.emoji === data.emoji)) 
+                };
+            }
+            return m;
+        }));
+    };
+
     socket.on('new_message', handleNewMessage);
     socket.on('message_updated', handleMessageUpdate);
     socket.on('message_deleted', handleMessageDelete);
+    socket.on('message_reaction_add', handleReactionAdd);
+    socket.on('message_reaction_remove', handleReactionRemove);
 
     return () => {
       socket.emit(leaveEvent, targetId);
       socket.off('new_message', handleNewMessage);
       socket.off('message_updated', handleMessageUpdate);
       socket.off('message_deleted', handleMessageDelete);
+      socket.off('message_reaction_add', handleReactionAdd);
+      socket.off('message_reaction_remove', handleReactionRemove);
     };
   }, [socket, targetId, isDm]);
 
@@ -177,12 +221,22 @@ export const useChat = (targetId: string | undefined, isDm: boolean) => {
     return res;
   }, [targetId, isDm, touchConversation]);
 
+  const addReaction = useCallback(async (messageId: string, emoji: string) => {
+    await api.post(`/messages/${messageId}/reactions`, { emoji });
+  }, []);
+
+  const removeReaction = useCallback(async (messageId: string, emoji: string) => {
+    await api.delete(`/messages/${messageId}/reactions/${emoji}`);
+  }, []);
+
   return { 
     messages, 
     loading, 
     hasMore, 
     loadMore, 
     sendMessage,
-    isLoadingMore
+    isLoadingMore,
+    addReaction,
+    removeReaction
   };
 };

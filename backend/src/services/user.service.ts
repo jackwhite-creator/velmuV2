@@ -77,6 +77,12 @@ export class UserService {
       createdAt: user.createdAt
     };
   }
+  /**
+   * Récupère les serveurs de l'utilisateur connecté
+   */
+  async getUserServers(userId: string) {
+    return userRepository.getUserServers(userId);
+  }
 }
 
 export const userService = new UserService();

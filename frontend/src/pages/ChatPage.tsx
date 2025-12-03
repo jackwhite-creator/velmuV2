@@ -11,7 +11,12 @@ import ChatArea from '../components/chat/ChatArea';
 import MemberList from '../components/server/MemberList';
 import UserFooter from '../components/chat/UserFooter';
 import FriendsDashboard from '../components/chat/FriendsDashboard';
-import GlobalSocketListener from '../components/chat/GlobalSocketListener';
+import { VoiceConnectionPanel } from '../components/voice/VoiceConnectionPanel';
+import { LiveKitRoom, RoomAudioRenderer } from '@livekit/components-react';
+import '@livekit/components-styles';
+import { useVoiceStore } from '../store/voiceStore';
+import { VoiceChannelView } from '../components/voice/VoiceChannelView';
+
 
 import { useChatPageSocket } from '../hooks/useChatPageSocket';
 import { useChatPageNavigation } from '../hooks/useChatPageNavigation';
@@ -21,6 +26,7 @@ import ChatPageModals from '../components/chat/ChatPageModals';
 export default function ChatPage() {
   const { user } = useAuthStore();
   const { socket } = useSocketStore();
+  const { token, isMuted } = useVoiceStore();
   
   const { 
     activeServer, activeChannel, activeConversation, setActiveChannel
@@ -35,7 +41,7 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState('');
   const [replyingTo, setReplyingTo] = useState<any>(null);
 
-  const { messages, loading, hasMore, loadMore, sendMessage } = useChat(
+  const { messages, loading, hasMore, loadMore, sendMessage, addReaction, removeReaction } = useChat(
     !activeServer ? activeConversation?.id : activeChannel?.id, 
     !activeServer
   );
@@ -75,6 +81,10 @@ export default function ChatPage() {
         return <FriendsDashboard onUserContextMenu={handleUserContextMenu} />;
     }
 
+    if (activeChannel?.type === 'AUDIO' || activeChannel?.type === 'VIDEO') {
+        return <VoiceChannelView onUserContextMenu={handleUserContextMenu} channelId={activeChannel.id} />;
+    }
+
     return (
         <ChatArea
           activeChannel={effectiveChannel || null} 
@@ -88,14 +98,27 @@ export default function ChatPage() {
           onUserClick={handleUserClick} sendMessage={async (content, files, replyToId) => {
             await sendMessage(content, files, replyToId);
           }}
+          onAddReaction={addReaction}
+          onRemoveReaction={removeReaction}
         />
     );
   };
 
   return (
-    <div className="flex h-screen w-full bg-background-tertiary text-text-normal overflow-hidden font-sans select-none">
-      <GlobalSocketListener />
+    <LiveKitRoom
+      token={token || undefined}
+      serverUrl={import.meta.env.VITE_LIVEKIT_URL || "ws://localhost:7880"}
+      connect={!!token}
+      audio={!isMuted}
+      onDisconnected={(reason) => console.log('LiveKit disconnected:', reason)}
+      data-lk-theme="default"
+      style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}
+    >
+      {/* RoomAudioRenderer handles audio playback without UI */}
+      <RoomAudioRenderer />
       
+    <div className="flex-1 flex w-full bg-background-tertiary text-text-normal overflow-hidden font-sans select-none">
+
       <ServerRail 
         onOpenCreateServer={() => modals.setIsCreateServerOpen(true)} 
         onOpenJoinServer={() => modals.setIsJoinServerOpen(true)} 
@@ -118,6 +141,7 @@ export default function ChatPage() {
               />
             )}
         </div>
+        <VoiceConnectionPanel />
         <UserFooter />
       </div>
 
@@ -149,5 +173,6 @@ export default function ChatPage() {
 
       <ChatPageModals modals={modals} />
     </div>
+    </LiveKitRoom>
   );
 }

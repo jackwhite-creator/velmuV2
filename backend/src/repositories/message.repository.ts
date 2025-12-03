@@ -49,6 +49,18 @@ export class MessageRepository extends BaseRepository<Message> {
               }
             }
           }
+        },
+        reactions: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                discriminator: true,
+                avatarUrl: true
+              }
+            }
+          }
         }
       }
     }) as Promise<MessageWithRelations[]>;
@@ -101,6 +113,7 @@ export class MessageRepository extends BaseRepository<Message> {
    */
   async createMessage(data: {
     content: string;
+    embed?: any;
     type?: MessageType;
     userId: string;
     channelId?: string;
@@ -227,6 +240,41 @@ export class MessageRepository extends BaseRepository<Message> {
   async isOwner(messageId: string, userId: string): Promise<boolean> {
     const message = await this.findById(messageId);
     return message?.userId === userId;
+  }
+  /**
+   * Ajoute une réaction
+   */
+  async addReaction(messageId: string, userId: string, emoji: string) {
+    return this.prisma.reaction.create({
+      data: {
+        messageId,
+        userId,
+        emoji
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+            discriminator: true,
+            avatarUrl: true
+          }
+        }
+      }
+    });
+  }
+
+  /**
+   * Supprime une réaction
+   */
+  async removeReaction(messageId: string, userId: string, emoji: string) {
+    await this.prisma.reaction.deleteMany({
+      where: {
+        messageId,
+        userId,
+        emoji
+      }
+    });
   }
 }
 

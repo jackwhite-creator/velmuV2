@@ -17,7 +17,7 @@ export const useChatInput = ({
   socket
 }: UseChatInputProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const textInputRef = useRef<HTMLTextAreaElement>(null);
+  const textInputRef = useRef<HTMLElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);

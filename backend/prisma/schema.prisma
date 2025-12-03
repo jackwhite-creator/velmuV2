@@ -25,42 +25,47 @@ enum RequestStatus {
 }
 
 model User {
-  id               String          @id @default(uuid())
-  email            String          @unique
-  passwordHash     String
-  username         String
-  discriminator    String
-  avatarUrl        String?
-  bannerUrl        String?
-  bio              String?
-  createdAt        DateTime        @default(now())
-  
-  memberships      Member[]
-  messages         Message[]
-  createdInvites   Invite[]
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String
+  username      String
+  discriminator String
+  avatarUrl     String?
+  bannerUrl     String?
+  bio           String?
+  createdAt     DateTime @default(now())
+  isBot         Boolean  @default(false)
+
+  memberships    Member[]
+  messages       Message[]
+  createdInvites Invite[]
 
   sentRequests     FriendRequest[] @relation("SentRequests")
   receivedRequests FriendRequest[] @relation("ReceivedRequests")
-  
-  conversations    ConversationMember[]
-  badges           UserBadge[]
-  
+
+  conversations ConversationMember[]
+  badges        UserBadge[]
+  reactions     Reaction[]
+
+  ownedBots  Bot[] @relation("BotOwner")
+  botProfile Bot?  @relation("BotUser")
+
   @@unique([username, discriminator])
   @@index([email])
 }
 
 model Server {
-  id          String     @id @default(uuid())
-  name        String
-  iconUrl     String?
-  ownerId     String
-  createdAt   DateTime   @default(now())
-  
-  members     Member[]
-  channels    Channel[]  @relation("ServerChannels")
-  categories  Category[]
-  invites     Invite[]
-  roles       Role[]
+  id        String   @id @default(uuid())
+  name      String
+  iconUrl   String?
+  ownerId   String
+  createdAt DateTime @default(now())
+
+  members    Member[]
+  channels   Channel[]  @relation("ServerChannels")
+  categories Category[]
+  invites    Invite[]
+  roles      Role[]
 
   systemChannelId String?
   systemChannel   Channel? @relation("SystemChannel", fields: [systemChannelId], references: [id])
@@ -70,28 +75,29 @@ model Role {
   id          String   @id @default(uuid())
   name        String
   color       String   @default("#99aab5")
-  permissions String[] 
+  permissions String[]
   position    Int      @default(0)
-  
-  serverId    String
-  server      Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  
-  members     Member[]
+  isManaged   Boolean  @default(false)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  members Member[]
 }
 
 model Member {
-  id        String   @id @default(uuid())
-  joinedAt  DateTime @default(now())
-  nickname  String?
-  
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  serverId  String
-  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  
-  roleIds   String[] 
-  roles     Role[] 
+  id       String   @id @default(uuid())
+  joinedAt DateTime @default(now())
+  nickname String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  roleIds String[]
+  roles   Role[]
 
   @@unique([userId, serverId])
   @@index([userId])
@@ -99,66 +105,66 @@ model Member {
 }
 
 model Category {
-  id        String    @id @default(uuid())
-  name      String
-  order     Int       @default(0)
-  
-  serverId  String
-  server    Server    @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  
-  channels  Channel[]
+  id    String @id @default(uuid())
+  name  String
+  order Int    @default(0)
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  channels Channel[]
 }
 
 model Channel {
-  id         String      @id @default(uuid())
-  name       String
-  type       ChannelType @default(TEXT)
-  order      Int         @default(0)
-  
+  id    String      @id @default(uuid())
+  name  String
+  type  ChannelType @default(TEXT)
+  order Int         @default(0)
+
   categoryId String?
-  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  
-  serverId   String
-  server     Server      @relation("ServerChannels", fields: [serverId], references: [id], onDelete: Cascade)
-  
-  messages   Message[]
-  systemFor  Server[]    @relation("SystemChannel")
+  category   Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  serverId String
+  server   Server @relation("ServerChannels", fields: [serverId], references: [id], onDelete: Cascade)
+
+  messages  Message[]
+  systemFor Server[]  @relation("SystemChannel")
 }
 
 model Invite {
-  id        String   @id @default(uuid())
-  code      String   @unique
-  uses      Int      @default(0)
-  maxUses   Int      @default(0)
+  id        String    @id @default(uuid())
+  code      String    @unique
+  uses      Int       @default(0)
+  maxUses   Int       @default(0)
   expiresAt DateTime?
-  createdAt DateTime @default(now())
-  
-  serverId  String
-  server    Server   @relation(fields: [serverId], references: [id], onDelete: Cascade)
-  
+  createdAt DateTime  @default(now())
+
+  serverId String
+  server   Server @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
   creatorId String
-  creator   User     @relation(fields: [creatorId], references: [id])
+  creator   User   @relation(fields: [creatorId], references: [id])
 }
 
 model Conversation {
-  id            String    @id @default(uuid())
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  lastMessageAt DateTime  @default(now())
-  
-  members       ConversationMember[]
-  messages      Message[]
+  id            String   @id @default(uuid())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  lastMessageAt DateTime @default(now())
+
+  members  ConversationMember[]
+  messages Message[]
 }
 
 model ConversationMember {
-  id             String       @id @default(uuid())
-  joinedAt       DateTime     @default(now())
-  lastReadAt     DateTime     @default(now())
-  closed         Boolean      @default(false)
-  
-  userId         String
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id         String   @id @default(uuid())
+  joinedAt   DateTime @default(now())
+  lastReadAt DateTime @default(now())
+  closed     Boolean  @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
@@ -166,37 +172,40 @@ model ConversationMember {
 }
 
 model Message {
-  id             String    @id @default(uuid())
-  type           MessageType @default(DEFAULT)
-  content        String    @db.Text
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  
-  userId         String
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  channelId      String?
-  channel        Channel?  @relation(fields: [channelId], references: [id], onDelete: Cascade)
-  
+  id          String   @id @default(uuid())
+  type        MessageType @default(DEFAULT)
+  content     String
+  embed       Json? // Support pour les embeds enrichis
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  attachments Attachment[]
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  channelId String?
+  channel   Channel? @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
   conversationId String?
   conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
-  replyToId      String?
-  replyTo        Message?  @relation("ReplyTo", fields: [replyToId], references: [id])
-  replies        Message[] @relation("ReplyTo")
 
-  attachments    Attachment[]
-  
-  @@index([channelId, createdAt(sort: Desc)]) 
-  @@index([conversationId, createdAt(sort: Desc)])
+  replyToId String?
+  replyTo   Message?  @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  replies   Message[] @relation("ReplyTo")
+
+  reactions Reaction[]
+
+  @@index([channelId])
+  @@index([conversationId])
+  @@index([userId])
 }
 
 model Attachment {
   id        String   @id @default(uuid())
   url       String
   filename  String
-  type      String   
-  size      Int      @default(0)
+  type      String
+  size      Int
   
   messageId String
   message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
@@ -207,34 +216,61 @@ model FriendRequest {
   createdAt DateTime      @default(now())
   status    RequestStatus @default(PENDING)
 
-  senderId  String
-  sender    User          @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
+  senderId String
+  sender   User   @relation("SentRequests", fields: [senderId], references: [id], onDelete: Cascade)
 
   receiverId String
-  receiver   User         @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
+  receiver   User   @relation("ReceivedRequests", fields: [receiverId], references: [id], onDelete: Cascade)
 
   @@unique([senderId, receiverId])
 }
 
 model Badge {
-  id          String      @id @default(uuid())
-  name        String      @unique
+  id          String   @id @default(uuid())
+  name        String   @unique
   description String?
   iconUrl     String
-  createdAt   DateTime    @default(now())
+  createdAt   DateTime @default(now())
 
-  users       UserBadge[]
+  users UserBadge[]
 }
 
 model UserBadge {
   id         String   @id @default(uuid())
   assignedAt DateTime @default(now())
 
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  badgeId    String
-  badge      Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+  badgeId String
+  badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
 
   @@unique([userId, badgeId])
+}
+
+model Reaction {
+  id        String   @id @default(uuid())
+  emoji     String
+  createdAt DateTime @default(now())
+
+  messageId String
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([messageId, userId, emoji])
+  @@index([messageId])
+}
+
+model Bot {
+  id          String   @id @default(uuid())
+  tokenSecret String
+  createdAt   DateTime @default(now())
+
+  ownerId String
+  owner   User   @relation("BotOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  botUserId String @unique
+  botUser   User   @relation("BotUser", fields: [botUserId], references: [id], onDelete: Cascade)
 }

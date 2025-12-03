@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation, BrowserRouter } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 import { useSocketStore } from './store/socketStore';
 import { useServerStore } from './store/serverStore';
@@ -7,6 +7,7 @@ import { useFriendStore } from './store/friendStore';
 import { useThemeStore } from './store/themeStore';
 import { useTitleNotifications } from './hooks/useTitleNotifications';
 import api from './lib/api';
+import '@livekit/components-styles';
 
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -16,13 +17,18 @@ import PatchNotesModal from './components/shared/modals/PatchNotesModal';
 import UserProfileModal from './components/server/modals/UserProfileModal';
 import GlobalSocketListener from './components/chat/GlobalSocketListener';
 import SnowEffect from './components/effects/SnowEffect';
+import HeartsEffect from './components/effects/HeartsEffect';
 import { PATCH_NOTE_DATA } from './config/patchNotes';
+import DeveloperPortal from './pages/DeveloperPortal';
+import ApplicationDetail from './pages/ApplicationDetail';
+import OAuth2Authorize from './pages/OAuth2Authorize';
+
 
 function App() {
   const location = useLocation();
   const { token } = useAuthStore();
   const { connect, disconnect, socket } = useSocketStore();
-  const { theme } = useThemeStore();
+  const { theme, showHearts } = useThemeStore();
 
   const { setOnlineUsers, addConversation, setServers, setIsLoaded, isLoaded, setConversations } = useServerStore();
   const { addRequest, updateRequest, removeRequest, setRequests } = useFriendStore(); 
@@ -37,6 +43,7 @@ function App() {
     if (theme === 'light') document.body.classList.add('theme-light');
     if (theme === 'amoled') document.body.classList.add('theme-amoled');
     if (theme === 'christmas') document.body.classList.add('theme-christmas');
+    if (theme === 'pink') document.body.classList.add('theme-pink');
     // Default 'dark' has no class
   }, [theme]);
 
@@ -160,11 +167,18 @@ function App() {
   return (
     <>
       {theme === 'christmas' && <SnowEffect />}
+      {theme === 'pink' && showHearts && <HeartsEffect />}
       <GlobalSocketListener />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/invite/:code" element={token ? <InvitePage /> : <Navigate to="/login" />} />
+        
+        {/* Developer Portal */}
+        <Route path="/developers/applications" element={token ? <DeveloperPortal /> : <Navigate to="/login" />} />
+        <Route path="/developers/applications/:id" element={token ? <ApplicationDetail /> : <Navigate to="/login" />} />
+        <Route path="/oauth2/authorize" element={token ? <OAuth2Authorize /> : <Navigate to="/login" />} />
+
         <Route path="/channels/:serverId/:channelId?" element={<ChatPage />} />
         <Route path="/" element={<Navigate to={token ? "/channels/@me" : "/login"} />} />
         <Route path="*" element={<Navigate to="/" />} />
@@ -176,6 +190,7 @@ function App() {
       />
 
       <UserProfileModal />
+
     </>
   );
 }

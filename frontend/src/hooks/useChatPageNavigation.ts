@@ -30,6 +30,10 @@ export function useChatPageNavigation() {
       if (targetServer) {
         if (activeServer?.id !== targetServer.id) {
           setActiveServer(targetServer);
+          // Fetch full server details (members, etc.)
+          api.get(`/servers/${targetServer.id}`)
+             .then(res => setActiveServer(res.data))
+             .catch(console.error);
         }
       }
 

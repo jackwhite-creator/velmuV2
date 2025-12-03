@@ -8,6 +8,7 @@ interface TooltipProps {
   children: React.ReactElement;
   side?: Side;
   delay?: number;
+  keepOpenOnClick?: boolean;
 }
 
 const styles = `
@@ -80,7 +81,7 @@ const PortalTooltip = ({ text, rect, side }: { text: string; rect: DOMRect; side
   );
 };
 
-export default function Tooltip({ children, text, side = 'top', delay = 0 }: TooltipProps) {
+export default function Tooltip({ children, text, side = 'top', delay = 0, keepOpenOnClick = false }: TooltipProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [coords, setCoords] = useState<DOMRect | null>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -100,9 +101,11 @@ export default function Tooltip({ children, text, side = 'top', delay = 0 }: Too
     setIsVisible(false);
   };
 
-  // ✅ NOUVEAU : Fermer le tooltip au clic
+  // ✅ NOUVEAU : Fermer le tooltip au clic (sauf si keepOpenOnClick est true)
   const handleClick = (e: React.MouseEvent) => {
-    setIsVisible(false);
+    if (!keepOpenOnClick) {
+        setIsVisible(false);
+    }
     // On préserve le onClick original de l'enfant s'il existe
     if (children.props.onClick) {
       children.props.onClick(e);
@@ -115,7 +118,9 @@ export default function Tooltip({ children, text, side = 'top', delay = 0 }: Too
         onMouseEnter: handleMouseEnter,
         onMouseLeave: handleMouseLeave,
         onClick: handleClick, // On injecte notre gestionnaire de clic
-        onMouseDown: () => setIsVisible(false) // Double sécurité pour fermer instantanément
+        onMouseDown: () => {
+            if (!keepOpenOnClick) setIsVisible(false);
+        }
       } as any)}
       {isVisible && coords && <PortalTooltip text={text} rect={coords} side={side} />}
     </>

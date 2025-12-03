@@ -53,6 +53,7 @@ export class ConversationRepository extends BaseRepository<Conversation> {
               where: {
                 userId: { not: userId } // Exclure l'utilisateur actuel
               },
+
               include: {
                 user: {
                   select: {

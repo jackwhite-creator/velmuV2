@@ -120,6 +120,7 @@ export interface Message {
   channelId: string | null;
   conversationId: string | null;
   replyToId: string | null;
+  embed?: any;
 }
 
 export interface Attachment {
@@ -139,6 +140,14 @@ export interface FriendRequest {
   receiverId: string;
 }
 
+export interface Reaction {
+  id: string;
+  emoji: string;
+  userId: string;
+  messageId: string;
+  createdAt: Date | string;
+}
+
 // ============================================================================
 // EXTENDED TYPES (With Relations)
 // ============================================================================
@@ -149,6 +158,7 @@ export interface UserPublic {
   discriminator: string;
   avatarUrl: string | null;
   bio?: string | null;
+  isBot?: boolean;
 }
 
 export interface ServerWithRelations extends Server {
@@ -167,10 +177,15 @@ export interface MemberWithUser extends Member {
   roles?: Role[];
 }
 
+export interface ReactionWithUser extends Reaction {
+  user: UserPublic;
+}
+
 export interface MessageWithRelations extends Message {
   user: UserPublic;
   attachments?: Attachment[];
   replyTo?: Message | null;
+  reactions?: ReactionWithUser[];
 }
 
 export interface ConversationWithMembers extends Conversation {

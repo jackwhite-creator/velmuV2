@@ -5,6 +5,7 @@ import SettingsSidebar from '../../settings/SettingsSidebar';
 import MyAccount from '../../settings/MyAccount';
 import Appearance from '../../settings/Appearance';
 import Notifications from '../../settings/Notifications';
+import DeveloperSettings from '../../settings/DeveloperSettings';
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export default function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         return <Appearance />;
       case 'notifications':
         return <Notifications />;
+      case 'developer':
+        return <DeveloperSettings />;
       default:
         return <MyAccount />;
     }

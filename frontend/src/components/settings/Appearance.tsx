@@ -1,13 +1,14 @@
 import { useThemeStore, Theme } from '../../store/themeStore';
 
 export default function Appearance() {
-  const { theme, setTheme } = useThemeStore();
+  const { theme, setTheme, showHearts, setShowHearts } = useThemeStore();
 
   const themes: { id: Theme; label: string; color: string }[] = [
     { id: 'light', label: 'Clair', color: '#ffffff' },
     { id: 'dark', label: 'Sombre', color: '#313338' },
     { id: 'amoled', label: 'AMOLED', color: '#000000' },
     { id: 'christmas', label: 'Noël 🎄', color: '#1a2f23' },
+    { id: 'pink', label: 'Rose 🌸', color: '#ffc0cb' },
   ];
 
   return (
@@ -45,6 +46,27 @@ export default function Appearance() {
           ))}
         </div>
       </div>
+
+      {theme === 'pink' && (
+        <div className="mb-8 animate-in slide-in-from-top-2 duration-300">
+          <h3 className="text-xs font-bold text-text-muted uppercase mb-4 tracking-wider">Options du thème</h3>
+          <div className="p-4 bg-background-secondary rounded-lg flex items-center justify-between border border-background-tertiary">
+            <div>
+              <h4 className="font-medium text-text-header flex items-center gap-2">
+                <span>Pluie de coeurs</span>
+                <span className="text-xs bg-brand/10 text-brand px-2 py-0.5 rounded-full">Fun</span>
+              </h4>
+              <p className="text-sm text-text-muted mt-1">Affiche une animation de coeurs tombants en arrière-plan</p>
+            </div>
+            <button
+              onClick={() => setShowHearts(!showHearts)}
+              className={`w-12 h-6 rounded-full transition-colors relative focus:outline-none focus:ring-2 focus:ring-brand/50 ${showHearts ? 'bg-brand' : 'bg-zinc-600'}`}
+            >
+              <div className={`w-4 h-4 rounded-full bg-white absolute top-1 transition-transform shadow-sm ${showHearts ? 'left-7' : 'left-1'}`} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

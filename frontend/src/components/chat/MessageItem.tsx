@@ -4,7 +4,6 @@ import { useAuthStore } from '../../store/authStore';
 import { useServerStore } from '../../store/serverStore';
 import { Permissions } from '../../../../backend/src/shared/permissions';
 import { ContextMenu, ContextMenuItem, ContextMenuSeparator } from '../ui/ContextMenu';
-import ConfirmModal from '../ui/ConfirmModal';
 import { Message } from '../../hooks/useChat';
 import { formatDiscordDate } from '../../lib/dateUtils';
 
@@ -13,6 +12,9 @@ import MessageAvatar from './MessageAvatar';
 import MessageContent from './MessageContent';
 import MessageHoverActions from './MessageHoverActions';
 import UserContextMenuContent from './UserContextMenuContent';
+import MessageReactions from './MessageReactions';
+import ReactionPicker from './ReactionPicker';
+import MessageEmbed from './MessageEmbed';
 
 interface Props {
   msg: Message;
@@ -27,6 +29,8 @@ interface Props {
   serverId?: string;
   onImageClick: (url: string) => void;
   onImageLoad: () => void;
+  onAddReaction: (messageId: string, emoji: string) => Promise<void>;
+  onRemoveReaction: (messageId: string, emoji: string) => Promise<void>;
 }
 
 const Icons = {
@@ -37,9 +41,10 @@ const Icons = {
   Kick: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="18" y1="8" x2="23" y2="13"/><line x1="23" y1="8" x2="18" y2="13"/></svg>
 };
 
-export default function MessageItem({ 
+function MessageItem({ 
   msg, isMe, shouldGroup, onReply, onDelete, onUserClick, onReplyClick,
-  isOwner, serverId, onImageClick, onImageLoad
+  isOwner, serverId, onImageClick, onImageLoad,
+  onAddReaction, onRemoveReaction
 }: Props) {
   const { user: currentUser } = useAuthStore();
   const { activeServer } = useServerStore();
@@ -47,7 +52,8 @@ export default function MessageItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(msg.content);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number } | null>(null);
-  const [confirmKickOpen, setConfirmKickOpen] = useState(false);
+  const [showReactionPicker, setShowReactionPicker] = useState(false);
+  const [pickerPosition, setPickerPosition] = useState({ top: 0, left: 0 });
 
   const isModified = msg.updatedAt && (new Date(msg.updatedAt).getTime() - new Date(msg.createdAt).getTime() > 2000);
 
@@ -97,6 +103,22 @@ export default function MessageItem({
     if (msg.isPending) return; // Pas de clic droit si pas encore envoyé
     e.stopPropagation();
     setContextMenu({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleReactionClick = async (emoji: string) => {
+      const hasReacted = msg.reactions?.some(r => r.emoji === emoji && r.userId === currentUser?.id);
+      if (hasReacted) {
+          await onRemoveReaction(msg.id, emoji);
+      } else {
+          await onAddReaction(msg.id, emoji);
+      }
+  };
+
+  const handleOpenReactionPicker = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const rect = e.currentTarget.getBoundingClientRect();
+      setPickerPosition({ top: rect.top - 460, left: rect.left }); // Position above
+      setShowReactionPicker(true);
   };
 
   return (
@@ -161,6 +183,12 @@ export default function MessageItem({
                 canMentionEveryone={canMentionEveryone}
             />
 
+            {msg.embed && <MessageEmbed embed={msg.embed} onImageClick={onImageClick} />}
+            
+            <MessageReactions 
+                reactions={msg.reactions || []} 
+                onReactionClick={handleReactionClick} 
+            />
 
           </div>
         </div>
@@ -172,6 +200,7 @@ export default function MessageItem({
             onReply={() => onReply(msg)}
             onEdit={() => { setIsEditing(true); setEditContent(msg.content); }}
             onDelete={() => onDelete(msg.id)}
+            onAddReaction={handleOpenReactionPicker}
           />
         )}
         </>
@@ -180,6 +209,8 @@ export default function MessageItem({
 
       {contextMenu && (
         <ContextMenu position={contextMenu} onClose={() => setContextMenu(null)}>
+          <ContextMenuItem label="Ajouter une réaction" onClick={(e) => { handleOpenReactionPicker(e); setContextMenu(null); }} icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11v1a10 10 0 1 1-9-10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/><path d="M16 5h6"/><path d="M19 2v6"/></svg>} />
+          <ContextMenuSeparator />
           <ContextMenuItem label="Répondre" onClick={() => { onReply(msg); setContextMenu(null); }} icon={Icons.Reply} />
           <ContextMenuItem label="Copier le texte" onClick={() => { navigator.clipboard.writeText(msg.content); setContextMenu(null); }} icon={Icons.Copy} />
           
@@ -200,6 +231,19 @@ export default function MessageItem({
           )}
         </ContextMenu>
       )}
+
+      {showReactionPicker && (
+          <ReactionPicker 
+            onSelect={(emoji) => {
+                onAddReaction(msg.id, emoji);
+                setShowReactionPicker(false);
+            }}
+            onClose={() => setShowReactionPicker(false)}
+            position={pickerPosition}
+          />
+      )}
     </>
   );
 }
+
+export default React.memo(MessageItem);

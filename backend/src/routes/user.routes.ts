@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { updateUser, getUser, getCurrentUser } from '../controllers/user.controller';
+import { updateUser, getUser, getCurrentUser, getUserServers } from '../controllers/user.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { upload } from '../middlewares/upload.middleware';
 import { validate } from '../middlewares/validate.middleware';
@@ -18,6 +18,7 @@ router.put('/me',
 );
     
 router.get('/me', authenticateToken, getCurrentUser);
+router.get('/me/servers', authenticateToken, getUserServers);
 router.get('/:userId', authenticateToken, getUser);
 
 export default router;
