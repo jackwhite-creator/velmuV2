@@ -56,13 +56,15 @@ export default function ProfileInfo({ profile, isMe, badges = [] }: Props) {
                       Serveurs en commun
                       {activeTab === 'mutual_servers' && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-brand rounded-t-full"></div>}
                   </button>
-                  <button 
-                    onClick={() => setActiveTab('mutual_friends')} 
-                    className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'mutual_friends' ? 'text-text-header' : 'text-text-muted hover:text-text-normal'}`}
-                  >
-                      Amis en commun
-                      {activeTab === 'mutual_friends' && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-brand rounded-t-full"></div>}
-                  </button>
+                  {!profile.isBot && (
+                      <button 
+                        onClick={() => setActiveTab('mutual_friends')} 
+                        className={`pb-3 text-sm font-semibold transition-colors relative ${activeTab === 'mutual_friends' ? 'text-text-header' : 'text-text-muted hover:text-text-normal'}`}
+                      >
+                          Amis en commun
+                          {activeTab === 'mutual_friends' && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-brand rounded-t-full"></div>}
+                      </button>
+                  )}
               </>
           )}
       </div>
@@ -87,7 +89,7 @@ export default function ProfileInfo({ profile, isMe, badges = [] }: Props) {
                 <div className="mt-auto">
                     <div className="w-full h-[1px] bg-background-modifier-accent my-3"></div>
                     <p className="text-[11px] text-text-muted font-medium uppercase tracking-wide">
-                        Membre depuis le <span className="text-text-normal normal-case ml-0.5">
+                        {profile.isBot ? "Créé le" : "Membre depuis le"} <span className="text-text-normal normal-case ml-0.5">
                             {profile.createdAt 
                                 ? new Date(profile.createdAt).toLocaleDateString('fr-FR') 
                                 : "Date inconnue"}
@@ -126,7 +128,7 @@ export default function ProfileInfo({ profile, isMe, badges = [] }: Props) {
              </div> 
          )}
 
-         {activeTab === 'mutual_friends' && ( 
+         {activeTab === 'mutual_friends' && !profile.isBot && ( 
              <div className="flex flex-col items-center justify-center py-6 opacity-50 animate-in fade-in slide-in-from-bottom-1 duration-200">
                  <div className="bg-background-secondary p-3 rounded-full mb-3">
                     <svg className="w-6 h-6 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>

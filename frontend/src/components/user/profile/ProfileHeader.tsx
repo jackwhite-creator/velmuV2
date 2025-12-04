@@ -42,7 +42,7 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, i
     const btnBase = "px-4 py-1.5 rounded-sm font-medium text-sm transition shadow-sm flex items-center justify-center gap-2 min-w-[100px]";
 
     if (isBot && !isMe) {
-        return <button onClick={actions.startDM} className={`${btnBase} bg-brand hover:bg-brand-hover text-white flex-1 md:w-auto`}> <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> Message </button>;
+        return null;
     }
 
     switch (friendStatus) {
@@ -109,6 +109,7 @@ export default function ProfileHeader({ profile, isOnline, friendStatus, isMe, i
             {friendStatus === 'SENT' && !isBot && <ContextMenuItem label="Annuler la demande" variant="danger" icon={Icons.UserMinus} onClick={() => { actions.cancelRequest(); setMenuState(null); }} />}
             <ContextMenuSeparator />
             <ContextMenuItem label="Copier le nom d'utilisateur" icon={Icons.Copy} onClick={() => { navigator.clipboard.writeText(`${profile?.username}#${profile?.discriminator}`); setMenuState(null); }} />
+            <ContextMenuItem label="Copier l'ID" icon={Icons.Copy} onClick={() => { navigator.clipboard.writeText(profile.id); setMenuState(null); }} />
           </ContextMenu>
         )}
       </AnimatePresence>
