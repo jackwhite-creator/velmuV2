@@ -16,7 +16,7 @@ interface Props {
   onClose: () => void;
 }
 
-const TENOR_KEY = 'AIzaSyAodK4UZiN9aD0wFykh13Up6WvJLY7A49g'; // Public Demo Key
+const TENOR_KEY = 'AIzaSyBqf6lLsJwGH7iTecupd93TtgeoJp2ldl8';
 const CLIENT_KEY = 'Velmu';
 
 const CATEGORIES = [
